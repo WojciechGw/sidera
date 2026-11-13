@@ -63,7 +63,11 @@
   and [simulation measurements](docs/simulation-performance.md).
 - Preserve unchanged plot margins: top/bottom compasses depend on bearing/FOV,
   side scales on elevation/FOV; the top and sides also depend on grid visibility.
-  Time updates preserve all three regions. Restore left ticks inside the cleared
+  Time updates preserve all three regions except the lower compass day/night
+  inversion: its full-width band below V is white from Sun Rise (inclusive) to
+  Set (exclusive), using displayed local minutes; Sun UP/DOWN handles polar days.
+  Pending/unavailable rise/set results use the normal dark band.
+  Restore left ticks inside the cleared
   plot, and invalidate margins on full clears and Ctrl+L. Interrupted redraws
   must not mark partially cleared axes as complete.
 - Five overlays (INIT, CITIES, EDIT, COVER, SOLAR) share CPU `$C800–$DEFF`

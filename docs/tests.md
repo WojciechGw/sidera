@@ -15,11 +15,16 @@
   unsigned deadline wrap, manual +15-minute pause/resume and the year-2200
   boundary. Q is also tested during catalogue preparation.
   Projection checks cover all 12 FOVs, negative rounding and inactive-buffer
-  ownership; the six existing reference PNGs remain unchanged.
+  ownership. Six reference PNGs cover sky and Solar System views; the daytime
+  C views include the inverted compass band.
   Perimeter checks reject writes to unchanged compasses and side scales during
   elevation, azimuth and LIVE/SIM time updates. They cover all 12 FOVs, every
   grid mode, shared boundary bytes, interrupted redraws and explicit refresh;
   the resulting bitmap must match a fresh full redraw.
+  Daylight checks cover local Rise/Set minute boundaries, reverse time, polar
+  UP/DOWN, midnight-spanning and single-crossing days, and stale event caches.
+  Bitmap checks require an exact inversion of rows 426–440 with every other
+  pixel (including V) unchanged, also after interrupted view/FOV redraws.
   City rendering checks verify the frame, preservation of surrounding pixels,
   incremental redraws, search and 14-row pagination.
   `sidera_platform_6502` checks the 125 Hz clock code, 16-bit counter wraparound,
@@ -42,6 +47,9 @@
 - `sidera_generated_assets`: reproduces the catalogue, tables, graphics, cities
   and time zones offline and compares them with the supplied files. For text,
   only line endings are normalized.
+- `sidera_daylight`: crosses sunrise in SIM/PLAY, then moves backward and forward
+  with manual time keys in the actual ROM at 8 MHz. It checks exact band inversion
+  and preservation of every other plot/compass pixel, including V.
 - `sidera_input`: measures actual-ROM response at 8 MHz with full G/T/C/P.
   Horizontal arrows (idle and during catalogue preparation), elevation arrows
   (idle) and physical LCtrl FOV (idle)

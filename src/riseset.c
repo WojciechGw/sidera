@@ -95,6 +95,22 @@ unsigned char rs_step(void)
     }
     return !rs_busy();
 }
+unsigned char rs_daylight(void)
+{
+    Date local;
+    int32_t offset;
+    int minute,rise=events[0],set=events[1];
+    /* Use the same local minute boundaries as the displayed Rise/Set times.
+     * Pending, incomplete or stale results must not colour a different day. */
+    if(state!=2||memcmp(&place,&observer,sizeof(place))||strcmp(zone,zone_name)||
+       !tz_local(&moment,&local,&offset)||date_day(&local)!=day)return 0;
+    minute=local.hour*60u+local.minute;
+    if(rise<0&&set<0)return seen[0]==1;
+    if(rise<0)return minute<set;
+    if(set<0)return minute>=rise;
+    if(rise<=set)return minute>=rise&&minute<set;
+    return minute>=rise||minute<set; /* Daylight spanning local midnight. */
+}
 void rs_text(unsigned char body,char *text)
 {
     unsigned char i;

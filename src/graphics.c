@@ -26,6 +26,7 @@ static unsigned draw_item;
 #define AXIS_SIDES 4
 static unsigned char axes_valid,axes_redraw;
 static unsigned char axes_grid;
+static unsigned char compass_daylight,compass_inverted;
 static int axes_bearing,axes_elevation,axes_circle;
 
 void gx_axes_invalidate(void) { axes_valid=0; }
@@ -68,7 +69,7 @@ void gx_clear(int y,int rows)
     unsigned char i;
     if(rows>0) {
         if(y<84&&y+rows>71)axes_valid&=~AXIS_TOP;
-        if(y<442&&y+rows>420)axes_valid&=~AXIS_BOTTOM;
+        if(y<441&&y+rows>420)axes_valid&=~AXIS_BOTTOM;
         if(y<418&&y+rows>78)axes_valid&=~AXIS_SIDES;
     }
     for(;rows>0;--rows,++y) {
@@ -484,6 +485,9 @@ static void grid_marks(unsigned char crosses,unsigned char dots)
 }
 static void axes_prepare(void)
 {
+    unsigned char day=rs_daylight();
+    if(day!=compass_daylight)axes_valid&=~AXIS_BOTTOM;
+    compass_daylight=day;
     if(axes_bearing!=bearing)axes_valid&=~(AXIS_TOP|AXIS_BOTTOM);
     if(axes_elevation!=elevation)axes_valid&=~AXIS_SIDES;
     if(axes_circle!=gx_circle)axes_valid=0;
@@ -563,6 +567,20 @@ void gx_grid_add(void)
     cs_labels(0);grid_axes();horizon_label();gx_planet_labels();
     axes_valid|=AXIS_TOP|AXIS_SIDES;
 }
+/* Full-width band starting at the ticks, with a black row below the V
+ * and white padding below the direction labels. XOR preserves geometry. */
+static void compass_invert(void)
+{
+    unsigned a;
+    RIA.step0=RIA.step1=1;RIA.addr0=RIA.addr1=426u*80;
+    for(a=0;a<15u*80;++a)RIA.rw0=RIA.rw1^255;
+    compass_inverted=!compass_inverted;
+}
+void gx_daylight(void)
+{
+    compass_daylight=rs_daylight();
+    if((axes_valid&AXIS_BOTTOM)&&compass_inverted!=compass_daylight)compass_invert();
+}
 static void compass(void)
 {
     static const char *const dirs[]={"N","NE","E","SE","S","SW","W","NW"};
@@ -581,9 +599,11 @@ static void compass(void)
     for(i=0;i<8;++i) {
         x=azimuth_x(i*45);
         if(x<VIEW_LEFT||x>VIEW_RIGHT)continue;
-        gx_line(x,426,x,431,0);gx_text(x-(int)strlen(dirs[i])*3,434,dirs[i]);
+        gx_line(x,426,x,431,0);gx_text(x-(int)strlen(dirs[i])*3,433,dirs[i]);
     }
     gx_line(VIEW_CENTER-4,420,VIEW_CENTER,424,0);gx_line(VIEW_CENTER,424,VIEW_CENTER+4,420,0);
+    compass_inverted=0;
+    if(compass_daylight)compass_invert();
     axes_valid|=AXIS_BOTTOM;
 }
 void gx_scene_begin(void)

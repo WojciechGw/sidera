@@ -32,8 +32,15 @@ rs_text(0,text);assert(!strcmp(text,"Rise ..:.. Set ..:.."));
 while(rs_busy()){rs_step();assert(++steps<2000);}
 rs_text(0,text);assert(!strcmp(text,"Rise 06:47 Set 15:51"));puts(text);
 rs_text(1,text);assert(!strcmp(text,"Rise 08:29 Set 15:43"));puts(text);
+assert(rs_daylight());
+moment.hour=5;moment.minute=46;moment.second=59;assert(!rs_daylight());
+moment.minute=47;moment.second=0;assert(rs_daylight());
+moment.hour=14;moment.minute=50;moment.second=59;assert(rs_daylight());
+moment.minute=51;moment.second=0;assert(!rs_daylight());
+moment.hour=12;moment.minute=0;
 assert(!rs_sync());assert(date_step(&moment,60));assert(!rs_sync());
 assert(date_step(&moment,86400L));assert(rs_sync()&&rs_busy());
+assert(!rs_daylight());
 rs_step();observer.longitude+=36000L;assert(rs_sync());
 assert(tz_set("Etc/UTC"));assert(rs_sync());
 rs_text(1,text);assert(!strcmp(text,"Rise ..:.. Set ..:.."));

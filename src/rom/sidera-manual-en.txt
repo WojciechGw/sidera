@@ -127,6 +127,11 @@ Object icons are illustrative and do not represent their angular diameters.
 Rise and Set are local times for the displayed LOCAL calendar date.
 ..:.. means calculation is in progress; --:-- means no such event that day.
 UP means above the horizon all day; DOWN means below it all day.
+The lower compass band below V has black ticks and directions on white from
+Sun Rise up to Sun Set, using the displayed local minutes in LIVE and SIM.
+At night it returns to white on black. Sun UP keeps it white all day;
+Sun DOWN keeps it black. While event times are pending or unavailable, the
+band stays black. The V marker keeps its normal appearance.
 N/A means the event times are unavailable. Times assume a level horizon
 and standard refraction; buildings, hills and weather can change visibility.
 

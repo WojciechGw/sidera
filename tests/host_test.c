@@ -477,7 +477,7 @@ static void grid_modes(const char *path)
         if(mode==3)assert(pixel(338,120)&&pixel(328,130)&&!pixel(328,129)&&!pixel(338,130));
         assert(pixel(378,428)&&pixel(378,430)&&!pixel(378,431));
         assert(pixel(328,426)&&pixel(328,431)&&!pixel(328,432));
-        assert(!pixel(328,433)&&pixel(326,434));
+        assert(!pixel(328,432)&&pixel(326,433));
         assert(pixel(328,424)&&!pixel(328,425));
         gx_footer();sprintf(name,"%s.g%u",path,mode);f=fopen(name,"wb");assert(f);
         assert(fwrite(xram,1,65536,f)==65536);fclose(f);
@@ -699,6 +699,44 @@ static void preserved_scales(void)
     sky_compute(&moment,&observer,&sky);planets_compute(&moment,&observer,planet_positions);
     cs_begin();while(cs_busy())cs_step();gx_scene();
     puts("PASS: untouched compass/scale pixels and bytes; LIVE/SIM, 12 FOVs, G modes, interrupted redraws");
+}
+static void daylight_compass(void)
+{
+    Date saved=moment;
+    unsigned i;
+    int zoom,saved_fov=fov,saved_bearing=bearing;
+    static unsigned char daytime[480*80];
+    assert(rs_daylight());
+    assert(!pixel(0,425)&&pixel(0,426)&&pixel(639,440)&&!pixel(639,441)&&pixel(VIEW_CENTER,424));
+    expect_text(VIEW_CENTER-3,433,"S",1);
+    memcpy(daytime,xram,sizeof(daytime));
+    /* Exact minute boundaries from the Warsaw fixture, expressed in UTC.
+     * Updating daylight alone must touch only the 15-row compass band. */
+    moment.hour=14;moment.minute=50;moment.second=59;
+    portal_writes=0;gx_daylight();assert(!portal_writes);
+    assert(date_step(&moment,1));assert(!rs_daylight());gx_daylight();
+    assert(portal_writes==15*80);
+    for(i=0;i<sizeof(daytime);++i)
+        assert(xram[i]==(i>=426*80&&i<441*80?(daytime[i]^255):daytime[i]));
+    expect_text(VIEW_CENTER-3,433,"S",0);
+    assert(date_step(&moment,-1));gx_daylight();assert(!memcmp(daytime,xram,sizeof(daytime)));
+    moment.hour=5;moment.minute=46;moment.second=59;gx_daylight();
+    assert(!pixel(0,426)&&pixel(VIEW_CENTER,424));
+    assert(date_step(&moment,1));gx_daylight();assert(!memcmp(daytime,xram,sizeof(daytime)));
+    /* Daytime view changes and interrupted clears must never double-invert. */
+    for(zoom=50;zoom<=160;zoom+=10) {
+        gx_zoom(zoom-fov);bearing=zoom%20?359:0;
+        gx_scene_interactive();gx_scene_step();
+        moment.hour=20;gx_daylight();moment.hour=12;gx_daylight();
+        gx_scene_interactive();while(gx_busy())gx_scene_step();
+        assert(!pixel(0,425)&&pixel(0,426)&&pixel(639,440)&&!pixel(639,441));
+        memcpy(daytime,xram,sizeof(daytime));gx_clear(71,377);gx_scene();
+        assert(!memcmp(daytime,xram,sizeof(daytime)));
+        gx_clear(440,1);gx_scene(); /* The white padding is cached content too. */
+        assert(!memcmp(daytime,xram,sizeof(daytime)));
+    }
+    moment=saved;bearing=saved_bearing;gx_zoom(saved_fov-fov);gx_scene();
+    puts("PASS: sunrise/sunset band inversion, backward time, unchanged V/plot, 12 FOVs and interrupted clears");
 }
 static void trail_label_repair(unsigned char mode)
 {
@@ -1111,6 +1149,7 @@ int main(int argc,char **argv)
     sprintf(buf,"%s.riseset",argv[2]);f=fopen(buf,"wb");assert(f);
     assert(fwrite(xram,1,65536,f)==65536);fclose(f);
     /* Local midnight is detected even while the displayed UTC date stays put. */
+    daylight_compass();
     assert(date_parse("2026-11-10 23:00:00",&moment));assert(rs_sync());gx_riseset();
     expect_text(250,53,"Rise ..:.. Set ..:..",0);assert(rs_busy());
     startup_settings(argv[1]);reference_views(argv[2]);

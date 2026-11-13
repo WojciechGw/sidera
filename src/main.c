@@ -83,7 +83,7 @@ int main(int argc,char **argv)
                 /* Modal snapshot: freeze all sky jobs and simulation, only LIVE clocks run. */
                 if(live&&(unsigned)(platform_ticks()-tick)>=PLATFORM_TICK_HZ) {
                     tick=platform_ticks();
-                    if(now())gx_clock();
+                    if(now()){gx_clock();gx_daylight();}
                     else {live=0;strcpy(note,"Cannot read system clock.");}
                 }
                 platform_sleep_ticks(1);continue;
@@ -196,7 +196,10 @@ int main(int argc,char **argv)
             star_check=0;
         }
         if(constellation_mode&&cs_busy()&&!gx_busy()){gx_status(1);if(cs_step())scene=1;}
-        if((head||clock_dirty)&&rs_sync())gx_riseset();
+        if(head||clock_dirty) {
+            if(rs_sync())gx_riseset();
+            gx_daylight();
+        }
         /* Keep the previous plot while preparing stars. Draw it only once,
          * with the new catalogue, instead of drawing old and new stars. */
         if(head){present=1;head=0;}
@@ -210,7 +213,7 @@ int main(int argc,char **argv)
         }
         if(clock_dirty){gx_clock();clock_dirty=0;}
         if(gx_busy())gx_scene_step();
-        if(rs_busy()&&!gx_busy()&&!refresh) {gx_status(1);if(rs_step())gx_riseset();}
+        if(rs_busy()&&!gx_busy()&&!refresh) {gx_status(1);if(rs_step()){gx_riseset();gx_daylight();}}
         else if(trails&&!trail_end&&trail_done<TRAIL_COUNT&&!gx_busy()&&!refresh) {
             gx_status(1);
             sky_positions(&trail_time,&observer,&trail_sky);

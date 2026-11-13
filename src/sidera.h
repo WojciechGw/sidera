@@ -78,8 +78,10 @@ extern char config_path[160], asset_path[160];
 unsigned char rs_sync(void);
 unsigned char rs_busy(void);
 unsigned char rs_step(void);
+unsigned char rs_daylight(void);
 void rs_text(unsigned char body,char *text);
 void gx_riseset(void);
+void gx_daylight(void);
 
 void paths_init(void);
 int config_load(void); /* 0 missing, 1 read, -1 invalid/I/O */

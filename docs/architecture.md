@@ -20,16 +20,16 @@ holds the active overlay's code, constants, initialized data and BSS.
 Sizes are from the current cc65 build. Each resource also has a 24-byte header,
 read outside the window. Build-time checks reject memory boundary violations.
 
-Resident code, constants and BSS end at `$BE4D` (exclusive).
-After reserving the entire window, **8371 B of unallocated RAM** remain below
-the C stack: 2483 B at `$BE4D–$C7FF` and 5888 B at `$E000–$F6FF`.
+Resident code, constants and BSS end at `$C062` (exclusive).
+After reserving the entire window, **7838 B of unallocated RAM** remain below
+the C stack: 1950 B at `$C062–$C7FF` and 5888 B at `$E000–$F6FF`.
 The C stack retains `$F700–$FEFF`, 2048 B. The upper free area is currently neither
 a linker segment nor a heap; using it in future code requires a separate segment
 and corresponding changes to image packing.
 
 In the original standalone build used for comparison, data ends at `$D5B1`,
 leaving 8527 B free. After adding X, removing the RMT layer and updating the
-controls, city panel, simulation scheduling and perimeter rendering, **156 B**
+controls, city panel, simulation scheduling and perimeter rendering, **689 B**
 less RAM is available than in the original, after accounting for the window,
 loader and panel code. Unused space inside
 overlays is not included in this result.

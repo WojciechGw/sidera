@@ -36,6 +36,11 @@ rp6502_test(NAME sidera_input COMMAND tests/measure_input_latency.py
     /grid 3 /paths on /constellations 3 /planets on /view "180,24")
 set_tests_properties(sidera_input PROPERTIES TIMEOUT 90)
 set_property(TEST sidera_input APPEND PROPERTY ENVIRONMENT "SIDERA_CHECK_LATENCY=1")
+rp6502_test(NAME sidera_daylight COMMAND tests/daylight_smoke.py
+    --memseed 123 --phi2 8000 "$<TARGET_PROPERTY:sidera,RP6502_ROM>"
+    -- /config SAVE:/daylight-unused.cfg /date "2026-11-10 05:46:00"
+    /location PL/Warsaw /view 180,24 /grid 0 /paths off /constellations 0 /planets off)
+set_tests_properties(sidera_daylight PROPERTIES TIMEOUT 90)
 add_test(NAME sidera_generated_assets
     COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/scripts/regenerate.py"
         --output "${CMAKE_CURRENT_BINARY_DIR}/generated" --check)

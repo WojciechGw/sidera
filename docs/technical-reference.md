@@ -212,7 +212,16 @@ geocentric distance; labels and daily paths require additional overlap handling.
 Perimeter scales are preserved independently of the plot interior. The upper
 and lower compasses change with bearing or FOV; the side scales change with
 elevation or FOV. Grid visibility also controls the upper and side scales.
-LIVE and SIM/PLAY updates leave all unchanged margins in place. Clearing uses
+LIVE and SIM/PLAY updates leave all unchanged margins in place, except for the
+lower compass's daylight style. Its full-width band (rows 426–440, below the V)
+uses black ticks and directions on white from the displayed Sun Rise minute
+(inclusive) to Set (exclusive). At night it uses white on black. Polar UP/DOWN
+and civil days with just one crossing are supported; pending, stale or unavailable
+event results use the normal dark band. A style transition XORs only that band,
+including when time runs backward, without clearing the plot or the V.
+Direction glyphs occupy rows 433–439, leaving one empty row after the ticks
+and one row of background below the letters.
+Clearing uses
 masked writes at the plot edges because margin and plot pixels share bytes.
 Left scale ticks inside the plot and the interior horizon are restored on each
 scene. Regions become valid only after drawing finishes, so interrupted view
