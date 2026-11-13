@@ -71,9 +71,35 @@ but are not hard real-time deadlines.
 
 In LIVE mode, displayed clocks update each second, solar/lunar/planetary positions
 refresh approximately every minute, and the star cache can be reused for up to
-five minutes. SIM/PLAY advances by 15 minutes when the scheduled step is due and
-the drawing and calculation jobs are ready. Its wall-clock speed therefore
-depends on the workload. SIM/PAUSE holds the selected UTC instant.
+five minutes. SIM/PLAY advances by five minutes when the previous drawing and
+calculation jobs, including enabled daily paths, are complete. The minimum
+start-to-start interval is 42 ticks (0.336 seconds); a busy step keeps its deadline
+pending rather than restarting a one-second wait. It never catches up by skipping
+instants. Actual speed depends on the workload. SIM/PAUSE holds the selected UTC
+instant; manual +/- remains 15 minutes and pauses playback.
+
+The loop sleeps only when background work is finished. Keyboard polling remains
+between bounded job batches. For time updates, a new catalogue is prepared before the scene is
+redrawn, avoiding an extra redraw of the previous star positions. The header and
+body sprites are presented with that scene. Projection preparation also precedes
+clearing the bitmap, so the old plot remains visible longer.
+
+Manual navigation has priority over this preparation: arrows, compass steps
+and FOV changes start drawing immediately from the last complete star angles,
+with exact projections calculated on demand. View/FOV fields update without
+redrawing the rest of the header or footer. Pending star calculation resumes
+after that drawing; its completion requests a fresh scene for the new instant.
+This preserves the inactive buffer and prevents auto-repeat from continually
+restarting a full-catalogue projection prepass. Complete rendering is still
+incremental; prompt feedback does not mean the whole plot finishes immediately.
+
+After star calculation, its inactive XRAM angle buffer temporarily holds exact
+screen coordinates. Stars, edges and labels reuse them. `cs_begin()` invalidates
+this cache before reusing the buffer for the next catalogue; pan, elevation and
+FOV changes invalidate screen coordinates too. There is no interpolation.
+Grid pixel rows are cached until elevation or FOV changes. Projection scaling
+uses unsigned shifts with an explicit sign to retain signed division's truncation
+toward zero without cc65's general 32-bit division routine.
 
 Space cycles LIVE → SIM/PAUSE → SIM/PLAY → LIVE. Leaving LIVE freezes the
 displayed time; returning reads the current system clock immediately. Shift+Right
@@ -171,7 +197,8 @@ refer to the same storage.
 The 640 × 480 one-bit canvas occupies XRAM `$0000–$95FF` (38,400 bytes).
 The rest holds the font, palettes, sprite images, VGA descriptors, star positions,
 constellation metadata and edges, label storage and daily-path caches. The Moon
-and projected star positions use double buffers. Consult
+and star angles use double buffers; the inactive star buffer also serves as the
+screen-coordinate cache between catalogue calculations. Consult
 [sidera.h](../src/sidera.h) and [solar.h](../src/solar.h) before changing allocations;
 the graphics and calculation subsystems share this address space.
 
@@ -181,6 +208,16 @@ coordinates, wrapping azimuth around the view direction. Horizontal field of vie
 ranges from 50 to 160 degrees. The Moon selects one of 129 stored phase images
 and rotates it to the calculated orientation. Sun and planet sprite ordering uses
 geocentric distance; labels and daily paths require additional overlap handling.
+
+Perimeter scales are preserved independently of the plot interior. The upper
+and lower compasses change with bearing or FOV; the side scales change with
+elevation or FOV. Grid visibility also controls the upper and side scales.
+LIVE and SIM/PLAY updates leave all unchanged margins in place. Clearing uses
+masked writes at the plot edges because margin and plot pixels share bytes.
+Left scale ticks inside the plot and the interior horizon are restored on each
+scene. Regions become valid only after drawing finishes, so interrupted view
+changes cannot leave an incomplete scale cached. Full bitmap clears and Ctrl+L
+invalidate the affected regions. The interior grid still redraws normally.
 
 The Solar System panel occupies 317 × 317 pixels. It shows all eight planets,
 including Earth and Neptune, on eight fixed concentric circles. Directions follow

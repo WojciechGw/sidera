@@ -23,7 +23,7 @@ Keys:
 Arrows           Pan the view
 + / -            Adjust observation time by + / - 15 min
 [ / ]            Move observation date backward / forward 1 day
-Space            Cycle LIVE -> SIM/PAUSE -> SIM/PLAY -> LIVE (15 min/step)
+Space            Cycle LIVE -> SIM/PAUSE -> SIM/PLAY -> LIVE (5 min/step)
 LCtrl+Left/Right  Decrease/Increase FOV by 10 deg (50–160 deg default: 120 deg)
 N                Set observation time to now (computer local time)
 D                Set observation date and time

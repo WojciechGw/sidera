@@ -38,11 +38,24 @@ static unsigned portal_writes;
 static unsigned vector_reads;
 static unsigned header_writes;
 static int checking_header;
+static unsigned char preserved_axes;
 
 unsigned platform_ticks(void){++ticks;++RIA.vsync;return ticks;}
 void xr_write0(unsigned v)
 {
     assert(RIA.addr0<XR_END);
+    if(preserved_axes&&RIA.addr0<480*80) {
+        unsigned row=RIA.addr0/80,col=RIA.addr0%80,mask=0;
+        if((preserved_axes&1)&&row>=71&&row<84&&col>=3&&col<=78)
+            mask|=col==3?0x0F:col==78?0xF0:255;
+        if((preserved_axes&2)&&row>=420&&row<448)mask=255;
+        if((preserved_axes&4)&&row>=78&&row<418)
+            mask|=col<3||col>78?255:col==3?0xF0:col==78?0x0F:0;
+        /* Shared bytes may be updated, but protected pixels must never blink.
+         * Fully protected bytes must not even be rewritten identically. */
+        assert(mask!=255);
+        assert(!((xram[RIA.addr0]^v)&mask));
+    }
     if(checking_cities) {
         unsigned a=RIA.addr0,bit;
         assert(a<480*80&&city_allowed[a/80]);
@@ -561,6 +574,68 @@ static void zoom_projection(const char *path)
     memcpy(trail[0],saved_trail,sizeof(saved_trail));
     puts("PASS: all 12 FOVs, angular scale, north seam, sprite size, fixed header and zoom bounds");
 }
+static void projected_catalogue(void)
+{
+    Date saved_date=moment;
+    int saved_bearing=bearing,saved_elevation=elevation,saved_fov=fov;
+    unsigned char saved_c=constellation_mode;
+    unsigned i,angles,points;int zoom,x,y;Position p;
+    constellation_mode=3;
+    for(zoom=50;zoom<=160;zoom+=10) {
+        assert(date_step(&moment,300));cs_begin();
+        memcpy(before_clock,xram,sizeof(xram));
+        assert(cs_project_step()); /* Inactive buffer belongs to the calculation. */
+        assert(!memcmp(before_clock,xram,sizeof(xram)));
+        while(cs_busy())cs_step();
+        assert(gx_zoom(zoom-fov));bearing=zoom%20?359:0;elevation=zoom%20?54:-54;
+        memcpy(before_clock,xram,sizeof(xram));gx_scene_begin();gx_scene_step();
+        assert(!memcmp(before_clock,xram,480*80)); /* Prepare before clearing. */
+        while(gx_busy())gx_scene_step();
+        angles=!memcmp(before_clock+XR_STARS0,xram+XR_STARS0,SIDERA_STAR_COUNT*4)?XR_STARS0:XR_STARS1;
+        points=angles==XR_STARS0?XR_STARS1:XR_STARS0;
+        assert(!memcmp(before_clock+angles,xram+angles,SIDERA_STAR_COUNT*4));
+        for(i=0;i<SIDERA_STAR_COUNT;++i) {
+            memcpy(&p,xram+angles+i*4,4);gx_project(&p,&x,&y);
+            assert((int16_t)word(points+i*4)==x&&(int16_t)word(points+i*4+2)==y);
+        }
+    }
+    moment=saved_date;bearing=saved_bearing;elevation=saved_elevation;gx_zoom(saved_fov-fov);
+    cs_begin();while(cs_busy())cs_step();constellation_mode=saved_c;gx_scene();
+    puts("PASS: exact projected cache, 12 FOVs, horizon/wrap, time invalidation, inactive-buffer ownership");
+}
+static void view_header(void)
+{
+    int saved_bearing=bearing,saved_elevation=elevation,saved_fov=fov;
+    unsigned i,bit;int x,y;
+    elevation=24;gx_header();memcpy(before_clock,xram,sizeof(xram));
+    bearing=123;elevation=9;gx_zoom(110-fov);gx_view();
+    expect_text(532,21," View 123\x01 / +9\x01",0);
+    expect_text(580,31,"FOV 110\x01",0);
+    for(i=0;i<sizeof(xram);++i)for(bit=0;bit<8;++bit)
+        if((before_clock[i]^xram[i])&(0x80u>>bit)) {
+            x=(int)(i%80)*8+bit;y=(int)(i/80);
+            assert((x>=532&&x<628&&y>=21&&y<29)||(x>=580&&x<628&&y>=31&&y<39));
+        }
+    bearing=saved_bearing;elevation=saved_elevation;gx_zoom(saved_fov-fov);gx_header();
+}
+static void interactive_scene(void)
+{
+    int saved_bearing=bearing;
+    unsigned char saved_c=constellation_mode;
+    constellation_mode=3;bearing=(bearing+5)%360;
+    cs_begin();assert(!cs_step()&&cs_busy());
+    memcpy(before_clock,xram,sizeof(xram));
+    gx_scene_interactive();while(gx_busy())gx_scene_step();
+    assert(cs_busy()); /* Drawing must not consume/overwrite the pending catalogue. */
+    assert(!memcmp(before_clock+XR_STARS0,xram+XR_STARS0,SIDERA_STAR_COUNT*4));
+    assert(!memcmp(before_clock+XR_STARS1,xram+XR_STARS1,SIDERA_STAR_COUNT*4));
+    while(cs_busy())cs_step();
+    gx_scene_interactive();while(gx_busy())gx_scene_step();
+    memcpy(before_clock,xram,480*80);gx_scene();
+    assert(!memcmp(before_clock,xram,480*80)); /* Same final pixels, without prepass. */
+    bearing=saved_bearing;constellation_mode=saved_c;gx_scene();
+    puts("PASS: immediate drawing preserves pending catalogue and matches prepared rendering");
+}
 static void staged_scene(void)
 {
     unsigned steps,writes;int saved_bearing=bearing;
@@ -573,13 +648,57 @@ static void staged_scene(void)
     steps=0;
     while(gx_busy()) {
         portal_writes=0;gx_scene_step();writes=portal_writes;
-        assert(writes<20000);assert(++steps<1000);
+        assert(writes<20000);assert(++steps<1800); /* Includes 759 cached projections. */
     }
     assert(steps>10);
     memcpy(before_clock,xram,sizeof(xram));gx_scene();
     assert(!memcmp(before_clock,xram,sizeof(xram)));
     bearing=saved_bearing;constellation_mode=saved_c;grid=saved_grid;
     puts("PASS: bounded drawing batches; interrupted/restarted frame equals a fresh frame");
+}
+static void check_axes_scene(unsigned char keep)
+{
+    preserved_axes=keep;gx_scene();preserved_axes=0;
+    memcpy(before_clock,xram,480*80);
+    gx_clear(71,377);gx_scene();
+    assert(!memcmp(before_clock,xram,480*80));
+}
+static void preserved_scales(void)
+{
+    int zoom,step,saved_bearing=bearing,saved_elevation=elevation,saved_fov=fov;
+    unsigned char saved_c=constellation_mode,saved_g=grid,saved_p=planets;
+    unsigned char saved_live=live,saved_playing=playing;
+    Date saved_date=moment;
+    constellation_mode=3;planets=1;
+    for(zoom=50;zoom<=160;zoom+=10) {
+        gx_zoom(zoom-fov);grid=(zoom/10)%4;bearing=355;elevation=24;gx_scene();
+        elevation=29;check_axes_scene(3); /* Both compasses survive tilt. */
+        bearing=0;check_axes_scene(4); /* Side scales survive wraparound. */
+        live=1;playing=0;assert(date_step(&moment,60));
+        sky_compute(&moment,&observer,&sky);planets_compute(&moment,&observer,planet_positions);
+        cs_begin();while(cs_busy())cs_step();check_axes_scene(7);
+        live=0;playing=1;assert(date_step(&moment,300));
+        sky_compute(&moment,&observer,&sky);planets_compute(&moment,&observer,planet_positions);
+        cs_begin();while(cs_busy())cs_step();check_axes_scene(7);
+        /* Repeated keys can interrupt clearing, grid drawing or catalogue work.
+         * Return to a formerly cached view before finishing the last frame. */
+        for(step=1;step<=140;step+=13) {
+            unsigned n;
+            bearing=step%360;elevation=step%109-54;
+            gx_zoom((step&1?50:160)-fov);grid=step%4;
+            gx_scene_interactive();
+            for(n=0;n<(unsigned)step&&gx_busy();++n)gx_scene_step();
+        }
+        bearing=0;elevation=29;gx_zoom(zoom-fov);grid=(zoom/10)%4;
+        check_axes_scene(0);
+        gx_axes_invalidate();check_axes_scene(0); /* Explicit Ctrl+L refresh. */
+    }
+    moment=saved_date;live=saved_live;playing=saved_playing;
+    bearing=saved_bearing;elevation=saved_elevation;gx_zoom(saved_fov-fov);
+    constellation_mode=saved_c;grid=saved_g;planets=saved_p;
+    sky_compute(&moment,&observer,&sky);planets_compute(&moment,&observer,planet_positions);
+    cs_begin();while(cs_busy())cs_step();gx_scene();
+    puts("PASS: untouched compass/scale pixels and bytes; LIVE/SIM, 12 FOVs, G modes, interrupted redraws");
 }
 static void trail_label_repair(unsigned char mode)
 {
@@ -921,6 +1040,9 @@ int main(int argc,char **argv)
     /* Five consecutive presses return to the original scene; stars also
      * appear below the horizon but cannot touch the compass/header/assets. */
     assert(!constellation_mode);cs_begin();while(cs_busy())cs_step();
+    /* Populate the scratch projection buffer before comparing mode-only
+     * changes; its bytes are working data, outside the visible bitmap. */
+    constellation_mode=1;gx_scene();constellation_mode=0;gx_scene();
     memcpy(before_clock,xram,sizeof(xram));
     for(bit=1;bit<=4;++bit) {
         cs_cycle();assert(constellation_mode==bit);gx_scene();
@@ -956,7 +1078,7 @@ int main(int argc,char **argv)
     reload_assets();
     catalogue_recovery();
     catalogue_freshness();
-    staged_scene();
+    projected_catalogue();view_header();interactive_scene();staged_scene();preserved_scales();
     trail_label_repair(3);trail_label_repair(4);
     /* Real northern and southern examples of the restricted mode. */
     constellation_mode=4;bearing=0;

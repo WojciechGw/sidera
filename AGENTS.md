@@ -54,6 +54,18 @@
   `$FFC0–$FFDF` and must be unmapped on exit. VGA is required.
   CITIES stays inside the sky plot with a 5-pixel margin,
   1-pixel frame and 14 rows per page; preserve the surrounding display.
+- SIM/PLAY uses exact 5-minute steps, a 42-tick minimum interval and waits for
+  pending jobs; manual +/- stays 15 minutes. Prepare stars before redrawing.
+  Manual navigation must bypass catalogue/projection preparation and update
+  only the View/FOV header fields; test input latency with `sidera_input`.
+  The inactive star buffer doubles as a screen-coordinate cache: invalidate it
+  in `cs_begin()` before any new angle writes. See `tests/benchmark_simulation.py`
+  and [simulation measurements](docs/simulation-performance.md).
+- Preserve unchanged plot margins: top/bottom compasses depend on bearing/FOV,
+  side scales on elevation/FOV; the top and sides also depend on grid visibility.
+  Time updates preserve all three regions. Restore left ticks inside the cleared
+  plot, and invalidate margins on full clears and Ctrl+L. Interrupted redraws
+  must not mark partially cleared axes as complete.
 - Five overlays (INIT, CITIES, EDIT, COVER, SOLAR) share CPU `$C800–$DEFF`
   (5888 bytes for code, constants, data and BSS). Scratch is `$DF00–$DFFF`;
   the C software stack is `$F700–$FEFF`.

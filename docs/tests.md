@@ -10,6 +10,16 @@
   clock resynchronization, clock failure and Shift+Left/Right direction wrapping.
   They also check FOV limits and that the retired H shortcuts and generic Ctrl
   arrows do not change the view.
+  Simulation scenarios exercise all 20 G/C combinations with T/P enabled,
+  exact five-minute steps, one redraw per instant, local/UTC date rollover,
+  unsigned deadline wrap, manual +15-minute pause/resume and the year-2200
+  boundary. Q is also tested during catalogue preparation.
+  Projection checks cover all 12 FOVs, negative rounding and inactive-buffer
+  ownership; the six existing reference PNGs remain unchanged.
+  Perimeter checks reject writes to unchanged compasses and side scales during
+  elevation, azimuth and LIVE/SIM time updates. They cover all 12 FOVs, every
+  grid mode, shared boundary bytes, interrupted redraws and explicit refresh;
+  the resulting bitmap must match a fresh full redraw.
   City rendering checks verify the frame, preservation of surrounding pixels,
   incremental redraws, search and 14-row pagination.
   `sidera_platform_6502` checks the 125 Hz clock code, 16-bit counter wraparound,
@@ -24,17 +34,30 @@
 - `sidera_emu`: runs the actual ROM in RP6502-EMU with a fixed date and a fixed seed
   for random RAM initialization. It exercises startup with the splash screen,
   the sky view, physical LCtrl-only FOV, Shift+arrow directions, retired H keys,
-  the X panel, the L editor, K cities, S saving to `SAVE:` and Q exit.
+  the X panel, the L editor, K cities, S saving to `SAVE:`, full-detail simulation
+  with five-minute steps and manual +15-minute pause, and Q exit.
   It checks application states, the absence of overlay errors and the existence
   of the saved file. The saved time must match the `/date` option, which also
   verifies monitor argument handling by the actual ROM.
 - `sidera_generated_assets`: reproduces the catalogue, tables, graphics, cities
   and time zones offline and compares them with the supplied files. For text,
   only line endings are normalized.
+- `sidera_input`: measures actual-ROM response at 8 MHz with full G/T/C/P.
+  Horizontal arrows (idle and during catalogue preparation), elevation arrows
+  (idle) and physical LCtrl FOV (idle)
+  must be accepted and begin visibly changing the plot within 15 video frames
+  (250 ms). A burst of repeat keys must retain all six steps. The output
+  `input-latency.json` distinguishes key handling from visible feedback;
+  it does not measure the time to finish rendering the entire plot.
 
 The SDK adds two helper fixtures: `rp6502.build` and `rp6502.save`.
 All test assertions remain enabled in Release as well.
 Tests do not upload anything to PICO or download astronomical data.
+
+`tests/benchmark_simulation.py` is an optional real-ROM measurement tool, separate
+from the pass/fail suite. It samples emulated frames without modifying application
+memory. Reproduction commands and results are in
+[simulation performance](simulation-performance.md).
 
 Application startup and option tests share `src/startup.c` and
 `src/overlays/boot.c`. Host adapters substitute files, time and RIA without

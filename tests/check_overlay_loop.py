@@ -26,6 +26,10 @@ with tempfile.TemporaryDirectory(prefix='sidera-loop-') as directory:
     command = [exe, str(root), str(root / 'settings.cfg')]
     subprocess.run(command, check=True)
     subprocess.run(command + ["controls"], check=True)
+    for grid in range(4):
+        for stars in range(5):
+            subprocess.run(command + [f"simulation-{grid}-{stars}"], check=True)
+    subprocess.run(command + ["simulation-limit"], check=True)
     subprocess.run(command + ["solar-loop"], check=True)
     subprocess.run(command + ["solar-live"], check=True)
     for name, data in assets.items():

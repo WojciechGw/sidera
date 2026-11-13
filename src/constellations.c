@@ -26,6 +26,11 @@ static unsigned char active=0,ready=0;
 static unsigned char cache_valid;
 static Date computed_date;
 static Observer computed_observer;
+/* While drawing, the inactive angle buffer holds exact projected coordinates.
+ * The next catalogue calculation invalidates and reuses it for angles. */
+static unsigned char projected;
+static unsigned project_next;
+static int project_bearing,project_elevation,project_circle;
 typedef struct { int left,top,right; } Box;
 typedef struct { int16_t x,y; unsigned char w; } Label;
 typedef struct { int x,y; } Marker;
@@ -61,6 +66,7 @@ unsigned char cs_current(void)
 }
 void cs_begin(void)
 {
+    projected=0;
     assets_forget_vectors();
     computed_date=moment;computed_observer=observer;cache_valid=1;
     star_frame(&moment,&observer,&frame);
@@ -90,7 +96,24 @@ unsigned char cs_step(void)
 static int project_star(unsigned i,int *x,int *y)
 {
     Position p;
+    int16_t xy[2];
+    if(projected) {
+        gx_read((active?XR_STARS0:XR_STARS1)+i*4u,xy,4);
+        *x=xy[0];*y=xy[1];
+        return *x>=VIEW_LEFT&&*x<VIEW_RIGHT&&*y>=VIEW_TOP&&*y<VIEW_BOTTOM;
+    }
     gx_read(positions+i*4u,&p,4);return gx_project(&p,x,y);
+}
+unsigned char cs_project_step(void)
+{
+    Position p;
+    int x,y;int16_t xy[2];
+    if(!constellation_mode||!ready||projected||cs_busy())return 1;
+    gx_read(positions+project_next*4u,&p,4);
+    gx_project(&p,&x,&y);xy[0]=x;xy[1]=y;
+    gx_write((active?XR_STARS0:XR_STARS1)+project_next*4u,xy,4);
+    if(++project_next==STAR_COUNT){projected=1;return 1;}
+    return 0;
 }
 static unsigned char outside(int x,int y)
 {
@@ -199,6 +222,10 @@ static unsigned char draw_figure,draw_label,draw_named;
 void cs_draw_begin(void)
 {
     unsigned char i;
+    if(project_bearing!=bearing||project_elevation!=elevation||project_circle!=gx_circle)
+        projected=0;
+    project_bearing=bearing;project_elevation=elevation;project_circle=gx_circle;
+    project_next=0;
     memset(&label,0,sizeof(label));
     for(i=0;i<LABEL_COUNT;++i)gx_write(XR_LABELS+i*5u,&label,5);
     labels_valid=1;

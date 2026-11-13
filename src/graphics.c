@@ -21,6 +21,14 @@ static int lx[PLANET_COUNT],ly[PLANET_COUNT];
 static int damage[4];
 static unsigned char drawing;
 static unsigned draw_item;
+#define AXIS_TOP 1
+#define AXIS_BOTTOM 2
+#define AXIS_SIDES 4
+static unsigned char axes_valid,axes_redraw;
+static unsigned char axes_grid;
+static int axes_bearing,axes_elevation,axes_circle;
+
+void gx_axes_invalidate(void) { axes_valid=0; }
 
 static void body_cache(void)
 {
@@ -58,6 +66,11 @@ void gx_clear(int y,int rows)
 {
     unsigned a;
     unsigned char i;
+    if(rows>0) {
+        if(y<84&&y+rows>71)axes_valid&=~AXIS_TOP;
+        if(y<442&&y+rows>420)axes_valid&=~AXIS_BOTTOM;
+        if(y<418&&y+rows>78)axes_valid&=~AXIS_SIDES;
+    }
     for(;rows>0;--rows,++y) {
         if(y<0||y>=480)continue;
         a=(unsigned)y*80u;
@@ -181,13 +194,21 @@ static int altitude_y(int alt)
     }
     return origin_y-(alt?scale(alt):0);
 }
+static int project_scale(int16_t angle)
+{
+    int32_t product=(int32_t)angle*gx_circle;
+    /* Exact signed division by 65536, including truncation toward zero.
+     * cc65 otherwise calls the general 32-bit division routine here. */
+    if(product<0)return -(int)((uint32_t)(-product)>>16);
+    return (int)((uint32_t)product>>16);
+}
 int gx_project(const Position *p,int *x,int *y)
 {
     int16_t da;
     if(last_bearing!=bearing){last_bearing=bearing;bearing_angle=as_angle((int32_t)bearing*1000);}
     da=(int16_t)(p->az-bearing_angle);
-    *x=VIEW_CENTER+(int)((int32_t)da*gx_circle/65536L);
-    *y=altitude_y(0)-(int)((int32_t)p->alt*gx_circle/65536L);
+    *x=VIEW_CENTER+project_scale(da);
+    *y=altitude_y(0)-project_scale(p->alt);
     return *x>=VIEW_LEFT && *x<VIEW_RIGHT && *y>=VIEW_TOP && *y<VIEW_BOTTOM;
 }
 static void header_icons(unsigned char show)
@@ -207,6 +228,7 @@ int gx_canvas(void)
 {
     int r;
     unsigned char i;
+    gx_axes_invalidate();
     header_icons(0);
     status_drawn=255;
     RIA.step0=1;RIA.addr0=XR_CFG;
@@ -346,6 +368,13 @@ void gx_status(unsigned char busy)
     draw_text(x,1,label,live?6:0);
     if(live)gx_line(604,0,639,0,0);
 }
+void gx_view(void)
+{
+    /* Erase the old leading cell when elevation shrinks to one digit. */
+    gx_text(VIEW_RIGHT-96,21," ");
+    sprintf(text,"View %03d\x01 / %+d\x01",bearing,elevation);text_right(21,text);
+    sprintf(text,"FOV %3d\x01",fov);text_right(31,text);
+}
 void gx_header(void)
 {
     int a,az;
@@ -361,8 +390,7 @@ void gx_header(void)
     gx_clock();
     strcpy(text,"Location ");location_format(text+9,&observer,0);gx_text(202,21,text);
     gx_text(256,31,location_name);
-    sprintf(text,"View %03d\x01 / %+d\x01",bearing,elevation);text_right(21,text);
-    sprintf(text,"FOV %3d\x01",fov);text_right(31,text);
+    gx_view();
     /* Fixed fields: Sun text ends 9 px before the Moon sprite. */
     for(i=0;i<2;++i) {
         p=i?&sky.moon:&sky.sun;az=as_degrees(p->az);
@@ -415,30 +443,86 @@ static void grid_pixel(int x,int y)
 {
     if(x>=VIEW_LEFT&&x<VIEW_RIGHT&&y>=VIEW_TOP&&y<VIEW_BOTTOM)gx_pixel(x,y);
 }
+/* Grid latitudes do not move as simulation time advances. Cache their exact
+ * pixel rows; fill lazily so a view change does not create a long input stall. */
+static int grid_y[91],grid_elevation=-100,grid_circle;
+static unsigned char grid_y_valid[91];
+static void grid_prepare(void)
+{
+    if(grid_elevation!=elevation||grid_circle!=gx_circle) {
+        memset(grid_y_valid,0,sizeof(grid_y_valid));
+        grid_elevation=elevation;grid_circle=gx_circle;
+    }
+}
+static int grid_row(int alt)
+{
+    unsigned char i=(unsigned char)((alt+90)/2);
+    if(!grid_y_valid[i]){grid_y[i]=altitude_y(alt);grid_y_valid[i]=1;}
+    return grid_y[i];
+}
 static void grid_column(int az,unsigned char crosses,unsigned char dots)
 {
     int alt,x,y,d;
     x=azimuth_x(az);
     if(x<VIEW_LEFT-2||x>=VIEW_RIGHT+2)return;
     if(dots)for(alt=-90;alt<=90;alt+=10)
-        if(alt)grid_pixel(x,altitude_y(alt));
+        if(alt)grid_pixel(x,grid_row(alt));
     if(az%10)return;
     if(x<VIEW_LEFT||x>=VIEW_RIGHT)return;
     if(crosses)for(alt=-90;alt<=90;alt+=10) {
         if(!alt)continue;
-        y=altitude_y(alt);
+        y=grid_row(alt);
         if(y<VIEW_TOP||y>=VIEW_BOTTOM)continue;
         for(d=-2;d<=2;++d){grid_pixel(x+d,y);grid_pixel(x,y+d);}
     }
     if(dots)for(alt=-90;alt<=90;alt+=2)
-        if(alt)grid_pixel(x,altitude_y(alt));
+        if(alt)grid_pixel(x,grid_row(alt));
 }
 static void grid_marks(unsigned char crosses,unsigned char dots)
 {
     int az;for(az=0;az<360;az+=2)grid_column(az,crosses,dots);
 }
-/* Signed altitude labels start in the margin; their degree glyph may
- * extend into the plot. Draw the tick after the opaque text cells. */
+static void axes_prepare(void)
+{
+    if(axes_bearing!=bearing)axes_valid&=~(AXIS_TOP|AXIS_BOTTOM);
+    if(axes_elevation!=elevation)axes_valid&=~AXIS_SIDES;
+    if(axes_circle!=gx_circle)axes_valid=0;
+    if(axes_grid!=!!grid)axes_valid&=~(AXIS_TOP|AXIS_SIDES);
+    axes_bearing=bearing;axes_elevation=elevation;axes_circle=gx_circle;axes_grid=!!grid;
+    axes_redraw=(AXIS_TOP|AXIS_BOTTOM|AXIS_SIDES)&~axes_valid;
+}
+/* Keep boundary nibbles: the plot and side scales share bitmap bytes. */
+static void clear_plot_row(unsigned a)
+{
+    unsigned char i,v;
+    RIA.step0=0;RIA.addr0=a+VIEW_LEFT/8;v=RIA.rw0;RIA.rw0=v&0xF0;
+    RIA.step0=1;RIA.addr0=a+VIEW_LEFT/8+1;
+    for(i=0;i<VIEW_RIGHT/8-VIEW_LEFT/8-1;++i)RIA.rw0=0;
+    RIA.step0=0;RIA.addr0=a+VIEW_RIGHT/8;v=RIA.rw0;RIA.rw0=v&0x0F;
+}
+static void clear_sides_row(unsigned a)
+{
+    unsigned char i,v;
+    RIA.step0=1;RIA.addr0=a;
+    for(i=0;i<VIEW_LEFT/8;++i)RIA.rw0=0;
+    RIA.step0=0;RIA.addr0=a+VIEW_LEFT/8;v=RIA.rw0;RIA.rw0=v&0x0F;
+    RIA.addr0=a+VIEW_RIGHT/8;v=RIA.rw0;RIA.rw0=v&0xF0;
+    RIA.step0=1;RIA.addr0=a+VIEW_RIGHT/8+1;
+    for(i=VIEW_RIGHT/8+1;i<80;++i)RIA.rw0=0;
+}
+static void scene_clear_row(unsigned y)
+{
+    unsigned a=y*80u;
+    unsigned char i;
+    if((y>=VIEW_TOP&&y<VIEW_BOTTOM)||
+       (y<VIEW_TOP&&(axes_redraw&AXIS_TOP)))clear_plot_row(a);
+    if(y>=VIEW_TOP-6&&y<VIEW_BOTTOM+2&&(axes_redraw&AXIS_SIDES))clear_sides_row(a);
+    if(y>=420&&(axes_redraw&AXIS_BOTTOM)) {
+        RIA.step0=1;RIA.addr0=a;
+        for(i=0;i<80;++i)RIA.rw0=0;
+    }
+}
+/* Left ticks lie inside the plot and need restoring after every scene. */
 static void grid_axes(void)
 {
     int a,x,y,tx;
@@ -446,10 +530,14 @@ static void grid_axes(void)
     for(a=-90;a<=90;a+=10) {
         y=altitude_y(a);
         if(!a||y<VIEW_TOP||y>=VIEW_BOTTOM)continue;
-        sprintf(text,"%+d\x01",a);
-        gx_text(24-(int)strlen(text)*6,y-6,text);
-        gx_line(VIEW_LEFT,y,VIEW_LEFT+2,y,0);gx_line(VIEW_RIGHT,y,VIEW_RIGHT+2,y,0);
+        if(axes_redraw&AXIS_SIDES) {
+            sprintf(text,"%+d\x01",a);
+            gx_text(24-(int)strlen(text)*6,y-6,text);
+            gx_line(VIEW_RIGHT,y,VIEW_RIGHT+2,y,0);
+        }
+        gx_line(VIEW_LEFT,y,VIEW_LEFT+2,y,0);
     }
+    if(!(axes_redraw&AXIS_TOP))return;
     for(a=0;a<360;a+=10) {
         x=azimuth_x(a);if(x<VIEW_LEFT||x>=VIEW_RIGHT)continue;
         gx_line(x,VIEW_TOP-4,x,VIEW_TOP-2,0);
@@ -463,15 +551,17 @@ static void horizon_label(void)
 {
     int y=altitude_y(0);
     if(y>=VIEW_TOP&&y<VIEW_BOTTOM) {
-        gx_text(12,y-6,"0\x01");
+        if(axes_redraw&AXIS_SIDES)gx_text(12,y-6,"0\x01");
         if(y>=VIEW_TOP+9)gx_text(VIEW_LEFT,y-9,"horizon");
     }
 }
 void gx_grid_add(void)
 {
+    grid_prepare();axes_prepare();
     /* Only add the new layer. Opaque labels must remain above the marks. */
     if(grid>=2)grid_marks(grid==2,grid==3);
     cs_labels(0);grid_axes();horizon_label();gx_planet_labels();
+    axes_valid|=AXIS_TOP|AXIS_SIDES;
 }
 static void compass(void)
 {
@@ -482,6 +572,7 @@ static void compass(void)
     if(y>=VIEW_TOP && y<VIEW_BOTTOM) {
         for(x=VIEW_LEFT;x<VIEW_RIGHT;x+=5)gx_pixel(x,y);
     }
+    if(!(axes_redraw&AXIS_BOTTOM))return;
     for(a=0;a<360;a+=10) {
         x=azimuth_x(a);
         if(x<VIEW_LEFT||x>VIEW_RIGHT)continue;
@@ -493,21 +584,31 @@ static void compass(void)
         gx_line(x,426,x,431,0);gx_text(x-(int)strlen(dirs[i])*3,434,dirs[i]);
     }
     gx_line(VIEW_CENTER-4,420,VIEW_CENTER,424,0);gx_line(VIEW_CENTER,424,VIEW_CENTER+4,420,0);
+    axes_valid|=AXIS_BOTTOM;
 }
 void gx_scene_begin(void)
 {
-    drawing=1;draw_item=VIEW_TOP-13;body_cache();cs_draw_begin();
+    grid_prepare();axes_prepare();
+    drawing=8;draw_item=VIEW_TOP-13;body_cache();cs_draw_begin();
+}
+void gx_scene_interactive(void)
+{
+    /* A held arrow must not keep restarting full-catalogue preparation.
+     * Render immediately from the last complete angles; compute projections
+     * on demand until a subsequent automatic scene can prepare its cache. */
+    gx_scene_begin();drawing=1;
 }
 unsigned char gx_busy(void) { return drawing!=0; }
 void gx_scene_step(void)
 {
-    unsigned start=platform_ticks();unsigned char n;
+    unsigned start=platform_ticks();unsigned char n,row;
     /* At most eight small units or two ticks before returning to the keyboard.
      * A single unit (e.g. label placement) always finishes atomically. */
     for(n=0;n<8&&drawing;++n) {
         switch(drawing) {
+        case 8:if(cs_project_step())drawing=1;break;
         case 1:
-            gx_clear(draw_item,draw_item+8>448?448-draw_item:8);draw_item+=8;
+            for(row=0;row<8&&draw_item<448;++row,++draw_item)scene_clear_row(draw_item);
             if(draw_item>=448){drawing=2;draw_item=0;}break;
         case 2:
             if(grid>=2){grid_column(draw_item,1,grid==3);draw_item+=2;}
@@ -517,7 +618,7 @@ void gx_scene_step(void)
             if(trails&&draw_item<trail_done){gx_trail(0,draw_item);gx_trail(1,draw_item);++draw_item;}
             else drawing=5;break;
         case 5:if(cs_draw_step())drawing=6;break;
-        case 6:grid_axes();horizon_label();drawing=7;break;
+        case 6:grid_axes();horizon_label();axes_valid|=AXIS_TOP|AXIS_SIDES;drawing=7;break;
         case 7:gx_planet_labels();drawing=0;break;
         }
         if((unsigned)(platform_ticks()-start)>=2)break;

@@ -15,9 +15,11 @@ static time_t test_time(time_t *p);
 static void checked_sky_compute(const Date *d,const Observer *o,Sky *s);
 static void checked_sky_positions(const Date *d,const Observer *o,Sky *s);
 static void checked_planets_compute(const Date *d,const Observer *o,Position *p);
+static void checked_scene_begin(void);
 #define sky_compute checked_sky_compute
 #define sky_positions checked_sky_positions
 #define planets_compute checked_planets_compute
+#define gx_scene_begin checked_scene_begin
 #define time test_time
 #define main sidera_main
 #include "../src/main.c"
@@ -26,6 +28,7 @@ static void checked_planets_compute(const Date *d,const Observer *o,Position *p)
 #undef sky_compute
 #undef sky_positions
 #undef planets_compute
+#undef gx_scene_begin
 #include "../src/editor.c"
 
 #ifdef SIDERA_OVERLAY_HOST
@@ -34,6 +37,9 @@ static unsigned overlay_reads;
 static const char *failed_overlay;
 static unsigned solar_test,solar_step;
 static unsigned control_test,control_step,direction_step;
+static unsigned simulation_test,simulation_step,simulation_polls,simulation_limit;
+static unsigned simulation_sky,simulation_planets,simulation_stars,simulation_scenes;
+static Date simulation_at,simulation_next;
 static Date frozen_date;
 static unsigned char frozen_frame[65536];
 static unsigned frozen_sky,frozen_planets,frozen_stars,frozen_trails,frozen_done,frozen_overlays;
@@ -54,6 +60,7 @@ int platform_getc_nb(void){if(cover_keys){--cover_keys;return 'Q';}return -1;}
 long host_lseek(int fd,long offset,int whence){return _lseek(fd,offset,whence);}
 int host_read(int fd,void *p,unsigned n){return _read(fd,p,n);}
 static unsigned sky_checks,planet_checks,star_checks,idle_steps;
+static unsigned scene_checks;
 static unsigned trail_checks,render_polls;
 static unsigned cache_test,cache_done,cache_checks,render_test;
 static unsigned replay,previous_stars,previous_sky,previous_planets;
@@ -93,6 +100,11 @@ static void checked_planets_compute(const Date *d,const Observer *o,Position *p)
 {
     expect_busy(1);++planet_checks;planets_compute(d,o,p);
 }
+static void checked_scene_begin(void)
+{
+    assert(!constellation_mode||!cs_busy());
+    ++scene_checks;gx_scene_begin();
+}
 
 /* A clock read is cheaper than one 8 ms tick. Keep explicit minute jumps in
  * the scenarios, without making every rendering unit take a full tick. */
@@ -106,6 +118,57 @@ unsigned platform_ticks(void)
 void platform_sleep_ticks(unsigned n){ticks+=n;if(vga)++RIA.vsync;}
 void platform_puts(const char *s){assert(strlen(output)+strlen(s)<sizeof(output));strcat(output,s);}
 #ifdef SIDERA_OVERLAY_HOST
+static unsigned simulation_keys(void)
+{
+    Sky expected;Position expected_planets[PLANET_COUNT];
+    assert(++simulation_polls<100000);
+    if(simulation_step==1) {
+        if(simulation_limit&&!playing) {
+            assert(!memcmp(&moment,&simulation_at,sizeof(Date)));
+            simulation_step=99;return 'Q';
+        }
+        if(!memcmp(&moment,&simulation_at,sizeof(Date)))return 0;
+        assert(!memcmp(&moment,&simulation_next,sizeof(Date)));
+        simulation_step=2;
+    }
+    if(simulation_step==5&&constellation_mode&&cs_busy()) {
+        /* Quit is polled during catalogue preparation, before drawing. */
+        simulation_step=99;return 'Q';
+    }
+    if(!sky_checks||gx_busy()||rs_busy()||(constellation_mode&&cs_busy())||(!trail_end&&trail_done<TRAIL_COUNT))return 0;
+    switch(simulation_step) {
+    case 0:
+        simulation_at=simulation_next=moment;
+        if(!simulation_limit)assert(date_step(&simulation_next,300));
+        simulation_sky=sky_checks;simulation_planets=planet_checks;
+        simulation_stars=star_checks;simulation_scenes=scene_checks;
+        ticks=~0u-10; /* Deadline crosses unsigned wrap while jobs run. */
+        ++simulation_step;return ' ';
+    case 2:
+        assert(sky_checks==simulation_sky+1&&planet_checks==simulation_planets+1);
+        assert(star_checks==simulation_stars+(constellation_mode?SIDERA_STAR_COUNT*4:0));
+        assert(scene_checks==simulation_scenes+1); /* One draw per instant. */
+        sky_compute(&moment,&observer,&expected);
+        assert(sky.sun.az==expected.sun.az&&sky.sun.alt==expected.sun.alt);
+        assert(sky.moon.az==expected.moon.az&&sky.moon.alt==expected.moon.alt);
+        assert(sky.phase==expected.phase&&sky.tilt==expected.tilt&&sky.illumination==expected.illumination);
+        planets_compute(&moment,&observer,expected_planets);
+        assert(!memcmp(planet_positions,expected_planets,sizeof(expected_planets)));
+        assert(date_step(&simulation_next,900));++simulation_step;return '+';
+    case 3:
+        assert(!live&&!playing&&!memcmp(&moment,&simulation_next,sizeof(Date)));
+        ticks+=2*PLATFORM_TICK_HZ;++simulation_step;return 0;
+    case 4:
+        assert(!live&&!playing&&!memcmp(&moment,&simulation_next,sizeof(Date)));
+        ++simulation_step;return ' ';
+    case 5:
+        if(!memcmp(&moment,&simulation_next,sizeof(Date)))return 0;
+        assert(date_step(&simulation_next,300));
+        assert(!memcmp(&moment,&simulation_next,sizeof(Date)));
+        simulation_step=99;return 'Q';
+    default:return 0;
+    }
+}
 static unsigned control_keys(void)
 {
     static const int bearings[]={50,45,0,315,0,45,315,0,0,0,0,0};
@@ -131,7 +194,7 @@ static unsigned control_keys(void)
         assert(!memcmp(&moment,&frozen_date,sizeof(Date)));
         ticks+=PLATFORM_TICK_HZ;++control_step;return 0;
     case 5:
-        assert(!live&&playing&&moment.minute==frozen_date.minute+15);
+        assert(!live&&playing&&moment.minute==frozen_date.minute+5);
         ++control_step;return ' ';
     case 6:
         utc=gmtime(&fake_time);
@@ -203,6 +266,7 @@ unsigned key_poll(void)
 {
     unsigned i;
 #ifdef SIDERA_OVERLAY_HOST
+    if(simulation_test)return simulation_keys();
     if(control_test)return control_keys();
     if(solar_test)return solar_keys();
     if(failed_overlay)return strstr(failed_overlay,"solar")?'X':strstr(failed_overlay,"edit")?'Z':'K';
@@ -336,7 +400,9 @@ void xr_write0(unsigned v)
 {
     assert(RIA.addr0<XR_END);
     if((RIA.addr0>=XR_STARS0&&RIA.addr0<XR_STARS0+SIDERA_STAR_COUNT*4)||
-       (RIA.addr0>=XR_STARS1&&RIA.addr0<XR_STARS1+SIDERA_STAR_COUNT*4)){expect_busy(1);++star_checks;}
+       (RIA.addr0>=XR_STARS1&&RIA.addr0<XR_STARS1+SIDERA_STAR_COUNT*4)){
+        expect_busy(1);if(cs_busy())++star_checks;
+    }
     ++portal_writes;xram[RIA.addr0]=(uint8_t)v;RIA.addr0+=RIA.step0;
 }
 unsigned char xr_read0(void){unsigned char v;v=xram[RIA.addr0];RIA.addr0+=RIA.step0;return v;}
@@ -386,6 +452,22 @@ int main(int argc,char **argv)
     assert(argc==3||argc==4);rom_dir=argv[1];save_path=argv[2];run_args[6]=argv[2];
     remove(save_path);
 #ifdef SIDERA_OVERLAY_HOST
+    if(argc==4&&!strncmp(argv[3],"simulation-",11)) {
+        char g[2],c[2];unsigned grid_mode,star_mode;
+        char *sim_args[]={"sidera.rp6502","/date",NULL,"/config",argv[2],
+            "/grid",g,"/constellations",c,"/paths","on","/planets","on"};
+        simulation_limit=!strcmp(argv[3],"simulation-limit");
+        if(simulation_limit){grid_mode=3;star_mode=3;}
+        else assert(sscanf(argv[3],"simulation-%u-%u",&grid_mode,&star_mode)==2);
+        sprintf(g,"%u",grid_mode);sprintf(c,"%u",star_mode);
+        sim_args[2]=simulation_limit?"2200-12-31 23:55:00":
+            star_mode%2?"2026-11-09 22:55:00":"2026-11-09 23:55:00";
+        simulation_test=1;vga=1;fake_time=0;
+        assert(!sidera_main(13,sim_args));
+        assert(simulation_step==99&&!opened&&!keyboard_mapped&&console_restored==1);
+        puts("PASS: five-minute SIM, one draw, exact sky, day rollover, manual +15/pause/resume, time limit, Q during work");
+        return 0;
+    }
     if(argc==4&&!strcmp(argv[3],"controls")) {
         control_test=1;vga=1;start.tm_year=126;start.tm_mon=10;start.tm_mday=9;start.tm_hour=4;
         fake_time=_mkgmtime(&start);

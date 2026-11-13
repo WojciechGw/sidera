@@ -80,7 +80,7 @@ X                   Show/hide a Solar System snapshot for the displayed UTC.
 Q / Esc             Quit to the monitor when no editor or city list is open.
 
 Space freezes the displayed UTC time when leaving LIVE. SIM/PLAY advances
-in 15-minute steps; returning to LIVE immediately reads the computer clock.
+in 5-minute steps; returning to LIVE immediately reads the computer clock.
 N still returns directly to LIVE. FOV uses the physical left Ctrl key only;
 right Ctrl (also when held together with left Ctrl) does not change FOV.
 H and Shift+H have no action.
@@ -148,8 +148,11 @@ panels in its second row. Active G/T/C/P labels are highlighted in inverse video
 T shows paths from midnight to midnight UTC: solid for Sun, dashed for Moon.
 
 LIVE updates the clock each second, Sun/Moon/planets each minute, and stars
-every five minutes. SIM / PLAY advances in 15-minute steps; calculations may
-delay a step. SIM / PAUSE holds the date. Working... marks calculation or
+every five minutes. SIM / PLAY advances in 5-minute steps when calculations
+and drawing finish, with at least 0.336 seconds between steps. Detailed views
+can take substantially longer. No intermediate instants are skipped and no
+positions are interpolated. Manual +/- still uses 15-minute steps and pauses
+playback. SIM / PAUSE holds the date. Working... marks calculation or
 drawing in progress. Paths and rise/set calculations can take a while.
 
 S saves the location, zone, View, FOV, G/T/C/P and time mode. The default file

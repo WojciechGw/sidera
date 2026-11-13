@@ -20,6 +20,9 @@ static int32_t trail_day;
 static Observer trail_observer;
 static unsigned char trail_end;
 unsigned char editing=0;
+/* Three five-minute steps have roughly the old nominal 15-minute/s rate.
+ * Slow frames extend the interval; never skip instants to catch up. */
+#define SIM_INTERVAL ((PLATFORM_TICK_HZ+2u)/3u)
 
 static int read_clock(Date *result)
 {
@@ -53,7 +56,7 @@ int main(int argc,char **argv)
 {
     int r,exit_code=0;
     unsigned k,tick,calc_tick,star_tick;
-    unsigned char refresh=1,scene=1,head=1,clock_dirty=0,star_check=1,result;
+    unsigned char refresh=1,scene=1,head=1,clock_dirty=0,star_check=1,result,present=0,interactive,view;
     int32_t jump;
     r=startup(argc,argv);
     if(ovl_failed)goto done;
@@ -70,6 +73,7 @@ int main(int argc,char **argv)
     trail_reset();tick=calc_tick=star_tick=platform_ticks();
     for(;;) {
         k=key_poll();
+        interactive=view=0;
         if(solar_visible) {
             if(k=='q'||k=='Q')goto done;
             if(k=='x'||k=='X') {
@@ -89,6 +93,7 @@ int main(int argc,char **argv)
             if(k) {
                 result=cities_key(k);
                 if(result) {
+                    interactive=1;
                     if(live)now();refresh=scene=head=1;
                     if(result==1)location_view();
                 }
@@ -97,24 +102,26 @@ int main(int argc,char **argv)
         } else if(editing) {
             if(k) {
                 r=editing;result=edit_key(k);
-                if(result){if(result==1){if(r==1)location_view();refresh=1;}scene=head=1;}
+                if(result){interactive=1;if(result==1){if(r==1)location_view();refresh=1;}scene=head=1;}
             }
             if(editing){platform_sleep_ticks(1);continue;}
         } else {
             jump=0;
+            interactive=1;
             switch(k) {
             case 'q':case 'Q':case K_ESC:goto done;
-            case K_LEFT:bearing=(bearing+355)%360;scene=head=1;break;
-            case K_RIGHT:bearing=(bearing+5)%360;scene=head=1;break;
+            case K_LEFT:bearing=(bearing+355)%360;scene=view=1;break;
+            case K_RIGHT:bearing=(bearing+5)%360;scene=view=1;break;
             case K_LEFT|K_LCTRL:case K_RIGHT|K_LCTRL:
-                if(gx_zoom(k==(K_LEFT|K_LCTRL)?-10:10))scene=head=1;break;
-            case K_UP:if(elevation<54)elevation+=5;if(elevation>54)elevation=54;scene=head=1;break;
-            case K_DOWN:if(elevation>-54)elevation-=5;if(elevation< -54)elevation=-54;scene=head=1;break;
-            case K_RIGHT|K_SHIFT:bearing=((bearing/45+1)*45)%360;scene=head=1;break;
+                if(gx_zoom(k==(K_LEFT|K_LCTRL)?-10:10))scene=view=1;else interactive=0;break;
+            case K_UP:if(elevation<54)elevation+=5;if(elevation>54)elevation=54;scene=view=1;break;
+            case K_DOWN:if(elevation>-54)elevation-=5;if(elevation< -54)elevation=-54;scene=view=1;break;
+            case K_RIGHT|K_SHIFT:bearing=((bearing/45+1)*45)%360;scene=view=1;break;
             case K_LEFT|K_SHIFT:
-                bearing=bearing?((bearing-1)/45)*45:315;scene=head=1;break;
-            case 'n':case 'N':live=now();playing=0;refresh=head=1;break;
+                bearing=bearing?((bearing-1)/45)*45:315;scene=view=1;break;
+            case 'n':case 'N':interactive=0;live=now();playing=0;refresh=head=1;break;
             case ' ':
+                interactive=0;
                 if(live)live=playing=0;
                 else if(!playing)playing=1;
                 else {
@@ -149,18 +156,27 @@ int main(int argc,char **argv)
                 }
                 gx_footer();break;
             case 's':case 'S':strcpy(note,config_save()?"":"Cannot save configuration.");gx_footer();break;
-            case 12:scene=head=1;break;
+            case 12:gx_axes_invalidate();scene=head=1;break;
+            default:interactive=0;break;
             }
             if(jump) {
+                interactive=0;
                 live=playing=0;
                 if(!date_step(&moment,jump))strcpy(note,"Date limit: 1900-01-01 through 2200-12-31.");
                 refresh=head=1;
             }
         }
-        if((unsigned)(platform_ticks()-tick)>=PLATFORM_TICK_HZ) {
+        if(live&&(unsigned)(platform_ticks()-tick)>=PLATFORM_TICK_HZ) {
             tick=platform_ticks();
-            if(live){if(!now()){live=0;strcpy(note,"Cannot read system clock.");head=1;}clock_dirty=1;}
-            else if(playing&&!gx_busy()&&!rs_busy()&&(!constellation_mode||!cs_busy())){if(!date_step(&moment,900))playing=0;refresh=head=1;}
+            if(!now()){live=0;strcpy(note,"Cannot read system clock.");head=1;}
+            clock_dirty=1;
+        } else if(!live&&playing&&!refresh&&!scene&&!head&&!present&&
+                  !gx_busy()&&!rs_busy()&&(!constellation_mode||!cs_busy())&&
+                  (!trails||trail_end||trail_done==TRAIL_COUNT)&&
+                  (unsigned)(platform_ticks()-tick)>=SIM_INTERVAL) {
+            tick=platform_ticks();
+            if(!date_step(&moment,300))playing=0;
+            refresh=head=1;
         }
         if(live&&(unsigned)(platform_ticks()-calc_tick)>=60u*PLATFORM_TICK_HZ)refresh=1;
         if(live&&constellation_mode&&(unsigned)(platform_ticks()-star_tick)>=300u*PLATFORM_TICK_HZ)star_check=1;
@@ -181,11 +197,16 @@ int main(int argc,char **argv)
         }
         if(constellation_mode&&cs_busy()&&!gx_busy()){gx_status(1);if(cs_step())scene=1;}
         if((head||clock_dirty)&&rs_sync())gx_riseset();
-        if(head||scene) {
+        /* Keep the previous plot while preparing stars. Draw it only once,
+         * with the new catalogue, instead of drawing old and new stars. */
+        if(head){present=1;head=0;}
+        if((present||scene)&&(interactive||!constellation_mode||!cs_busy())) {
             gx_status(1);
-            if(!gx_objects()){strcpy(note,"Cannot load Moon phase from sidera.dat.");playing=0;}
-            if(scene)gx_scene_begin();
-            if(head){gx_header();clock_dirty=0;}gx_footer();scene=head=0;
+            if(!gx_objects()){strcpy(note,"Cannot load Moon phase from sidera.dat.");playing=0;view=0;}
+            if(scene){if(interactive)gx_scene_interactive();else gx_scene_begin();}
+            if(present&&(!view||!constellation_mode||!cs_busy())){gx_header();clock_dirty=present=0;}
+            else if(view)gx_view();
+            if(!view)gx_footer();scene=0;
         }
         if(clock_dirty){gx_clock();clock_dirty=0;}
         if(gx_busy())gx_scene_step();
@@ -198,8 +219,10 @@ int main(int argc,char **argv)
             ++trail_done;
             if(!date_step(&trail_time,900))trail_end=1;
         }
-        gx_status(gx_busy()||rs_busy()||refresh||(constellation_mode&&cs_busy())||(trails&&!trail_end&&trail_done<TRAIL_COUNT));
-        if(!gx_busy())platform_sleep_ticks(1);
+        result=gx_busy()||rs_busy()||refresh||(constellation_mode&&cs_busy())||(trails&&!trail_end&&trail_done<TRAIL_COUNT);
+        gx_status(result);
+        /* Each job already yields to the keyboard after a bounded batch. */
+        if(!result)platform_sleep_ticks(1);
     }
 done:
     platform_keyboard_stop();

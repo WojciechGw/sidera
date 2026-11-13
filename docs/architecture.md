@@ -20,17 +20,18 @@ holds the active overlay's code, constants, initialized data and BSS.
 Sizes are from the current cc65 build. Each resource also has a 24-byte header,
 read outside the window. Build-time checks reject memory boundary violations.
 
-Resident code, constants and BSS end at `$B633` (exclusive).
-After reserving the entire window, **10445 B of unallocated RAM** remain below
-the C stack: 4557 B at `$B633–$C7FF` and 5888 B at `$E000–$F6FF`.
+Resident code, constants and BSS end at `$BE4D` (exclusive).
+After reserving the entire window, **8371 B of unallocated RAM** remain below
+the C stack: 2483 B at `$BE4D–$C7FF` and 5888 B at `$E000–$F6FF`.
 The C stack retains `$F700–$FEFF`, 2048 B. The upper free area is currently neither
 a linker segment nor a heap; using it in future code requires a separate segment
 and corresponding changes to image packing.
 
 In the original standalone build used for comparison, data ends at `$D5B1`,
 leaving 8527 B free. After adding X, removing the RMT layer and updating the
-controls and city panel, **1918 B** more RAM is available than in the original,
-after accounting for the window, loader and panel code. Unused space inside
+controls, city panel, simulation scheduling and perimeter rendering, **156 B**
+less RAM is available than in the original, after accounting for the window,
+loader and panel code. Unused space inside
 overlays is not included in this result.
 
 Standalone hardware support is in `src/platform/`. The monitor argument buffer
@@ -38,6 +39,11 @@ is 512 B and resident. `argv.c` is compiled directly into the `sidera` target
 so that the linker does not substitute cc65's default implementation.
 Overlay files and the linker configuration are in `src/overlays/`; their memory
 layout does not depend on the former RMT system.
+
+Simulation rendering reuses the inactive star-angle buffer in XRAM for exact
+screen coordinates. Calculation and projection preparation must never write
+that buffer concurrently. A grid-row cache uses 273 B of resident BSS, plus
+its view keys. See [simulation measurements](simulation-performance.md).
 
 The physical keyboard bitmap uses 32 bytes of separate XRAM at `$FFC0–$FFDF`,
 after the catalogue edge data ending at `$FFA4` (exclusive). A compile-time

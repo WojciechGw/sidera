@@ -25,10 +25,15 @@ checks = r'''
 int main(void) {
     static const int views[]={0,5,180,355};
     int zoom,v,tilt,az,alt,x,y,dx,wantx,wanty;
+    long angle;
     Position p;
     assert(fov==120);
     for(zoom=50;zoom<=160;zoom+=10) {
         assert(gx_zoom(zoom-fov));
+        for(angle=-32768L;angle<=32767L;angle+=97L)
+            assert(project_scale((int16_t)angle)==(int)(angle*gx_circle/65536L));
+        assert(project_scale(-1)==0&&project_scale(0)==0&&project_scale(1)==0);
+        assert(project_scale(32767)==(int)(32767L*gx_circle/65536L));
         for(v=0;v<4;++v)for(tilt=-54;tilt<=54;tilt+=54) {
             bearing=views[v];elevation=tilt;
             for(az=0;az<360;az+=30)for(alt=-90;alt<=90;alt+=30) {
