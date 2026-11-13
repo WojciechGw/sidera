@@ -71,6 +71,14 @@ with rp6502.Emu() as emu:
     else:
         raise AssertionError('star calculation did not start')
     results.append(pan('during_stars'))
+    # Finish the immediate pan; its pending catalogue must still be incomplete.
+    # Test FOV from a visible plot, so an already-cleared compass cannot hide
+    # the start of the next redraw from the pixel probe.
+    emu.cmd('wait _drawing 0 14400')
+    assert int.from_bytes(read('_next_star', 2), 'little') < 759
+    emu.cmd('press lctrl')
+    results.append(pan('left_ctrl_during_stars', 'left+ctrl', '_fov', -10))
+    emu.cmd('release lctrl')
     emu.cmd('key q')
     emu.cmd('wait exit 120')
     emu.cmd('expect exit 0')

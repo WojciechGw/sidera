@@ -57,6 +57,7 @@ int main(int argc,char **argv)
     int r,exit_code=0;
     unsigned k,tick,calc_tick,star_tick;
     unsigned char refresh=1,scene=1,head=1,clock_dirty=0,star_check=1,result,present=0,interactive,view;
+    unsigned char startup_panel=1;
     int32_t jump;
     r=startup(argc,argv);
     if(ovl_failed)goto done;
@@ -69,7 +70,7 @@ int main(int argc,char **argv)
     solar_hide();gx_clear(0,480);
     if(!gx_objects()||!gx_canvas()){gx_console();assets_close();platform_puts("sidera: cannot load sprite or configure VGA.\r\n");return 1;}
     if(!platform_keyboard_start()){strcpy(note,"Cannot map USB keyboard state.");exit_code=1;goto done;}
-    gx_status(1); /* First astronomical calculation runs in the loop below. */
+    gx_status(1);rs_sync();gx_header_pending();gx_footer();
     trail_reset();tick=calc_tick=star_tick=platform_ticks();
     for(;;) {
         k=key_poll();
@@ -134,10 +135,15 @@ int main(int argc,char **argv)
             case '[':jump=-86400L;break;
             case ']':jump=86400L;break;
             case 'g':case 'G':
-                gx_grid_cycle();if(!grid||gx_busy())scene=1;else if(!scene){gx_status(1);gx_grid_add();gx_footer();}break;
-            case 'c':case 'C':cs_cycle();if(constellation_mode==1)star_check=1;scene=1;break;
-            case 'p':case 'P':planets=!planets;refresh=scene=1;break;
-            case 't':case 'T':trails=!trails;scene=1;break;
+                gx_grid_cycle();gx_footer();
+                if(!grid||gx_busy())scene=1;else if(!scene){gx_status(1);gx_grid_add();}break;
+            case 'c':case 'C':
+                /* Select immediately, but prepare stars before painting this mode.
+                 * Further C presses replace the pending selection. */
+                interactive=0;cs_cycle();if(constellation_mode==1)star_check=1;
+                scene=1;gx_footer();break;
+            case 'p':case 'P':planets=!planets;gx_footer();refresh=scene=1;break;
+            case 't':case 'T':trails=!trails;gx_footer();scene=1;break;
             case 'x':case 'X':
                 solar_date=moment;
                 if(!ovl_select(OVL_SOLAR))goto done;
@@ -156,7 +162,7 @@ int main(int argc,char **argv)
                 }
                 gx_footer();break;
             case 's':case 'S':strcpy(note,config_save()?"":"Cannot save configuration.");gx_footer();break;
-            case 12:gx_axes_invalidate();scene=head=1;break;
+            case 12:gx_axes_invalidate();gx_footer_invalidate();scene=head=1;break;
             default:interactive=0;break;
             }
             if(jump) {
@@ -183,6 +189,10 @@ int main(int argc,char **argv)
         if(refresh&&(!gx_busy()||scene)) {
             gx_status(1);
             sky_compute(&moment,&observer,&sky);calc_tick=platform_ticks();
+            if(startup_panel) {
+                if(!gx_header_ready()){strcpy(note,"Cannot load Moon phase from sidera.dat.");exit_code=1;goto done;}
+                startup_panel=0;
+            }
             if(planets){planets_compute(&moment,&observer,planet_positions);scene=1;}
             if(date_day(&moment)!=trail_day||memcmp(&observer,&trail_observer,sizeof(observer)))
                 {trail_reset();scene=1;}

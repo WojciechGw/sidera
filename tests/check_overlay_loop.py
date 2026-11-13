@@ -26,6 +26,10 @@ with tempfile.TemporaryDirectory(prefix='sidera-loop-') as directory:
     command = [exe, str(root), str(root / 'settings.cfg')]
     subprocess.run(command, check=True)
     subprocess.run(command + ["controls"], check=True)
+    subprocess.run(command + ["startup-default"], check=True)
+    subprocess.run(command + ["startup-saved"], check=True)
+    for mode in (0,1,4):
+        subprocess.run(command + [f"constellations-{mode}"], check=True)
     for grid in range(4):
         for stars in range(5):
             subprocess.run(command + [f"simulation-{grid}-{stars}"], check=True)

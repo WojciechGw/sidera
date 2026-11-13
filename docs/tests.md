@@ -10,6 +10,16 @@
   clock resynchronization, clock failure and Shift+Left/Right direction wrapping.
   They also check FOV limits and that the retired H shortcuts and generic Ctrl
   arrows do not change the view.
+  C scenarios verify immediate footer/busy feedback, an unchanged plot during
+  catalogue calculation and one final draw of the latest mode. They include
+  repeated presses back to mode 0, initial loading and an outdated catalogue.
+  Startup scenarios require header/footer placeholders before the first sky
+  calculation, and visible Sun/Moon header icons before planet/star preparation.
+  They exercise saved LIVE presets and default settings, with one final scene.
+  Footer checks reject writes outside a changed option's label, including pixels
+  sharing boundary bytes. They require zero writes for unchanged states and
+  enabled-to-enabled G/C transitions, compare partial updates with a full redraw,
+  and check shorter/cleared messages, editor return and explicit invalidation.
   Simulation scenarios exercise all 20 G/C combinations with T/P enabled,
   exact five-minute steps, one redraw per instant, local/UTC date rollover,
   unsigned deadline wrap, manual +15-minute pause/resume and the year-2200
@@ -26,7 +36,8 @@
   Bitmap checks require an exact inversion of rows 426–440 with every other
   pixel (including V) unchanged, also after interrupted view/FOV redraws.
   City rendering checks verify the frame, preservation of surrounding pixels,
-  incremental redraws, search and 14-row pagination.
+  incremental redraws, search and 20-row pagination, plus exact sky and footer restoration
+  after closing the panel in night and daylight views.
   `sidera_platform_6502` checks the 125 Hz clock code, 16-bit counter wraparound,
   waiting, VGA detection, console I/O, the monitor argument buffer and the
   keyboard decoder (RIA sequences, physical LCtrl versus RCtrl/both modifiers,
@@ -47,12 +58,16 @@
 - `sidera_generated_assets`: reproduces the catalogue, tables, graphics, cities
   and time zones offline and compares them with the supplied files. For text,
   only line endings are normalized.
+- `sidera_startup`: loads a saved G/T/P/C preset in the actual ROM at 8 MHz,
+  verifies the early header/footer and placeholders, then checks Sun/Moon header
+  icons while the plot is still empty. It saves `startup-panels.png` and
+  `startup-sun-moon.png` in `build/cc65/<debug|release>/test/sidera_startup/`.
 - `sidera_daylight`: crosses sunrise in SIM/PLAY, then moves backward and forward
   with manual time keys in the actual ROM at 8 MHz. It checks exact band inversion
   and preservation of every other plot/compass pixel, including V.
 - `sidera_input`: measures actual-ROM response at 8 MHz with full G/T/C/P.
-  Horizontal arrows (idle and during catalogue preparation), elevation arrows
-  (idle) and physical LCtrl FOV (idle)
+  Horizontal arrows and physical LCtrl FOV (idle and during catalogue preparation),
+  plus elevation arrows (idle)
   must be accepted and begin visibly changing the plot within 15 video frames
   (250 ms). A burst of repeat keys must retain all six steps. The output
   `input-latency.json` distinguishes key handling from visible feedback;

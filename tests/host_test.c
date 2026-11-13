@@ -39,11 +39,22 @@ static unsigned vector_reads;
 static unsigned header_writes;
 static int checking_header;
 static unsigned char preserved_axes;
+static unsigned char checking_footer;
+static unsigned footer_x,footer_y,footer_w,footer_h;
 
 unsigned platform_ticks(void){++ticks;++RIA.vsync;return ticks;}
 void xr_write0(unsigned v)
 {
     assert(RIA.addr0<XR_END);
+    if(checking_footer) {
+        unsigned x=(RIA.addr0%80)*8,y=RIA.addr0/80,bit;
+        assert(y>=footer_y&&y<footer_y+footer_h&&x<footer_x+footer_w&&x+8>footer_x);
+        for(bit=0;bit<8;++bit)if(x+bit<footer_x||x+bit>=footer_x+footer_w) {
+            if((xram[RIA.addr0]^v)&(128>>bit))fprintf(stderr,"Footer write at %u,%u outside %u,%u %ux%u: %02x -> %02x\n",
+                x+bit,y,footer_x,footer_y,footer_w,footer_h,xram[RIA.addr0],v&255);
+            assert(!((xram[RIA.addr0]^v)&(128>>bit)));
+        }
+    }
     if(preserved_axes&&RIA.addr0<480*80) {
         unsigned row=RIA.addr0/80,col=RIA.addr0%80,mask=0;
         if((preserved_axes&1)&&row>=71&&row<84&&col>=3&&col<=78)
@@ -316,6 +327,23 @@ static void header_sprites(void)
     assert(!memcmp(xram+XR_MOON_CFG,xram+XR_MOON_HEADER_CFG,12));
     assert(!memcmp(xram+XR_MOON_CFG+16,xram+XR_MOON_HEADER_CFG+16,4));
 }
+static void initial_panels(void)
+{
+    unsigned i;
+    gx_header();gx_footer();memcpy(before_clock,xram,sizeof(xram));
+    gx_header_pending();gx_footer();
+    expect_text(226,43,"Sun AZ ... ALT ...",0);
+    expect_text(412,43,"Moon AZ ... ALT ... LIT ...",0);
+    assert((int16_t)word(XR_SUN_HEADER_CFG)==-64&&(int16_t)word(XR_MOON_HEADER_CFG+12)==-64);
+    assert(!memcmp(before_clock+71*80,xram+71*80,(480-71)*80));
+    assert(gx_header_ready());
+    assert(!memcmp(before_clock,xram,480*80)); /* Placeholders replaced without leftover dots. */
+    assert(word(XR_SUN_HEADER_CFG)==195&&word(XR_MOON_HEADER_CFG+12)==379);
+    assert((int16_t)word(XR_MOON_CFG+12)<0);
+    for(i=0;i<7;++i)assert((int16_t)word(XR_BODY_CFG+i*10)<0);
+    assert(gx_objects()); /* Restore the chart for subsequent tests. */
+    puts("PASS: initial placeholders, hidden icons, exact early header update without touching plot/footer");
+}
 static void calculation_status(void)
 {
     unsigned mode,i,writes;int x;
@@ -353,6 +381,54 @@ static void footer_states(void)
         expect_text(498,450,"Z: Timezone",0);expect_text(438,462,"K: Cities",0);
     }
     grid=saved_grid;constellation_mode=saved_c;trails=saved_t;planets=saved_p;gx_footer();
+}
+static void footer_region(unsigned x,unsigned y,unsigned w,unsigned h)
+{
+    footer_x=x;footer_y=y;footer_w=w;footer_h=h;
+    checking_footer=1;portal_writes=0;gx_footer();checking_footer=0;
+}
+static void footer_updates(void)
+{
+    static const unsigned x[]={114,180,246,330},w[]={36,42,54,96};
+    static unsigned char expected[480*80];
+    unsigned char saved_g=grid,saved_t=trails,saved_p=planets,saved_c=constellation_mode;
+    unsigned i,on,full,writes[4];
+    char saved_note[sizeof(note)];
+    strcpy(saved_note,note);strcpy(note,"Message stays visible while options change.");
+    grid=trails=planets=constellation_mode=0;
+    gx_footer_invalidate();portal_writes=0;gx_footer();full=portal_writes;
+    for(on=1;on<=2;++on)for(i=0;i<4;++i) {
+        switch(i) {
+        case 0:grid=on==1;break;case 1:trails=on==1;break;
+        case 2:planets=on==1;break;case 3:constellation_mode=on==1;break;
+        }
+        footer_region(x[i],462,w[i],8);
+        assert(portal_writes&&portal_writes<=w[i]/6*16);
+        if(on==1)writes[i]=portal_writes;
+        memcpy(expected,xram,sizeof(expected));
+        gx_footer_invalidate();gx_footer();assert(!memcmp(expected,xram,sizeof(expected)));
+        portal_writes=0;gx_footer();assert(!portal_writes);
+    }
+    grid=constellation_mode=1;gx_footer();
+    for(i=2;i<=4;++i) {
+        if(i<4)grid=i;
+        constellation_mode=i;portal_writes=0;gx_footer();assert(!portal_writes);
+    }
+    strcpy(note,"Saved");footer_region(0,472,640,8);assert(portal_writes);
+    expect_text(20,472,"Saved",0);
+    for(i=0;i<8*640;++i)if(i%640>=50)assert(!pixel(i%640,472+i/640));
+    note[0]=0;footer_region(0,472,640,8);
+    for(i=472*80;i<480*80;++i)assert(!xram[i]);
+    portal_writes=0;gx_footer();assert(!portal_writes);
+    /* Rebuild only the cleared region, or both after an editor owns the footer. */
+    gx_clear(474,1);footer_region(0,472,640,8);assert(portal_writes);
+    gx_clear(450,1);footer_region(0,448,640,24);assert(portal_writes);
+    memcpy(expected,xram,sizeof(expected));edit_start(2);assert(edit_key(K_ESC)==2);
+    gx_footer();assert(!memcmp(expected+448*80,xram+448*80,32*80));
+    gx_footer_invalidate();gx_footer();assert(!memcmp(expected+448*80,xram+448*80,32*80));
+    printf("PASS: partial footer, messages and editor/forced restoration; G/T/P/C %u/%u/%u/%u writes vs full %u\n",
+        writes[0],writes[1],writes[2],writes[3],full);
+    grid=saved_g;trails=saved_t;planets=saved_p;constellation_mode=saved_c;strcpy(note,saved_note);gx_footer();
 }
 static void depth_order(void)
 {
@@ -421,7 +497,10 @@ static void planet_display(const char *path)
         assert(word(XR_PLANET_PAL+i*512)==0); /* transparent background */
     }
     assert(!memcmp(before_clock,xram,64*80));
-    assert(!memcmp(before_clock+416*80,xram+416*80,(480-416)*80));
+    expect_text(246,462," Planets ",255); /* P feedback precedes the scene. */
+    for(i=416*80;i<480*80;++i)for(c=0;c<8;++c)
+        if((before_clock[i]^xram[i])&(128>>c))
+            assert(i/80>=462&&i/80<470&&(i%80)*8+c>=246&&(i%80)*8+c<300);
     sprintf(file,"%s.planet-icons",path);f=fopen(file,"wb");assert(f);
     assert(fwrite(xram,1,65536,f)==65536);fclose(f);
     assert(planet_key('P')&&!planets);assert(gx_objects());gx_scene();
@@ -440,7 +519,7 @@ static void planet_display(const char *path)
 static void label_styles(void)
 {
     unsigned char black[10][8];int x,y;
-    memset(xram,255,38400);gx_label(101,101,"A",0);
+    memset(xram,255,38400);gx_footer_invalidate();gx_label(101,101,"A",0);
     for(y=0;y<10;++y)for(x=0;x<8;++x) {
         black[y][x]=(unsigned char)pixel(100+x,100+y);
         if(!x||x==7||!y||y==9)assert(!black[y][x]);
@@ -801,7 +880,7 @@ static void city_key_checked(unsigned key,unsigned kind,unsigned old_row,unsigne
     if(kind==2) {
         memset(city_allowed+CITIES_TOP+59+old_row*14,1,10);memset(city_allowed+CITIES_TOP+59+new_row*14,1,10);
     }
-    if(kind==3)memset(city_allowed+CITIES_TOP+59,1,14*14);
+    if(kind==3)memset(city_allowed+CITIES_TOP+59,1,20*14);
     checking_cities=1;portal_writes=file_reads=0;
     assert(!cities_key(key));checking_cities=0;writes=portal_writes;
     if(!kind)assert(!writes&&!file_reads);
@@ -836,10 +915,10 @@ static void city_incremental(void)
     expect_text(CITIES_LEFT+6,CITIES_TOP+60,"No matching cities.",0);city_count("0 / 0");
     city_key_checked('\r',0,0,0);city_key_checked(K_DOWN,0,0,0);
     city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,1,0,0);
-    city_key_checked(K_PGDN,3,0,0);city_count("15 / 345");
+    city_key_checked(K_PGDN,3,0,0);city_count("21 / 345");
     city_key_checked(K_HOME,3,0,0);city_key_checked(K_END,3,0,0);
     city_count("345 / 345");city_key_checked(K_DOWN,0,0,0);
-    city_key_checked(K_UP,2,8,7);
+    city_key_checked(K_UP,2,4,3);
     assert(cities_key(K_ESC)==2);
 }
 static void city_catalogue(const char *asset,const char *output)
@@ -893,7 +972,7 @@ static void city_catalogue(const char *asset,const char *output)
     city_file=NULL;observer=saved;
     assert(cities_start()&&cities_active);modes=planet_mode;
     assert(gx_objects()&&planet_mode==modes); /* retain VGA planes and header sprites */
-    cities_draw();assert(!cities_key(K_PGDN));city_count("15 / 345");
+    cities_draw();assert(!cities_key(K_PGDN));city_count("21 / 345");
     assert(!cities_key(K_END));city_count("345 / 345");
     assert(!cities_key(K_HOME));assert(!cities_key(K_DOWN));
     assert(cities_key('\r')==1&&!cities_active&&observer.latitude==albania.latitude);
@@ -997,12 +1076,12 @@ static void reference_views(const char *output)
         assert(grid==1&&trails&&planets&&constellation_mode==4&&!gx_busy()&&!cs_busy()&&!rs_busy());
         snprintf(name,sizeof(name),"%s.test%c",output,'A'+i);
         file=fopen(name,"wb");assert(file);assert(fwrite(xram,1,sizeof(xram),file)==sizeof(xram));fclose(file);
-        if(i==0) {
+        if(i==0||i==2) {
             memcpy(before_clock,xram,sizeof(xram));
             assert(cities_start());assert(gx_objects());cities_draw();city_bounds();
-            snprintf(name,sizeof(name),"%s.cities-panel",output);
+            snprintf(name,sizeof(name),"%s.cities-panel%s",output,i==2?"-day":"");
             file=fopen(name,"wb");assert(file);assert(fwrite(xram,1,sizeof(xram),file)==sizeof(xram));fclose(file);
-            assert(cities_key(K_ESC)==2);gx_scene();assert(gx_objects());
+            assert(cities_key(K_ESC)==2);gx_scene();assert(gx_objects());gx_footer();
             assert(!memcmp(before_clock,xram,480*80));
         }
         memcpy(before_clock,xram,sizeof(xram));
@@ -1068,7 +1147,7 @@ int main(int argc,char **argv)
     location_names();
     header_sprites();
     calculation_status();
-    footer_states();
+    footer_states();footer_updates();initial_panels();
     assert(word(XR_CFG+6)==640&&word(XR_CFG+8)==480);
     assert(word(XR_SUN_CFG+4)==XR_SUN);
     assert(word(XR_MOON_CFG+16)==XR_MOON0);
@@ -1097,6 +1176,7 @@ int main(int argc,char **argv)
         sprintf(buf,"%s.%u",argv[2],bit);f=fopen(buf,"wb");assert(f);
         assert(fwrite(xram,1,65536,f)==65536);fclose(f);
         memcpy(xram+448*80,before_clock+448*80,32*80);
+        gx_footer_invalidate(); /* Raw test snapshot restore bypasses gx_clear. */
     }
     cs_cycle();assert(!constellation_mode);gx_scene();assert(!memcmp(before_clock,xram,sizeof(xram)));
     changes=0;

@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include "sidera.h"
 
-#define ROWS 14
+#define ROWS 20
 #define ROW_Y (CITIES_TOP+60)
 #define ROW_HEIGHT 14
 #define TEXT_X (CITIES_LEFT+6)
@@ -32,6 +32,9 @@ static Observer candidate;
 
 void cities_close(void)
 {
+    /* Erase the panel, including gaps outside the plot's normal redraw area.
+     * gx_clear also invalidates the axes and footer for restoration. */
+    if(cities_active)gx_clear(CITIES_TOP,CITIES_BOTTOM-CITIES_TOP);
     if(fd>=0)close(fd);fd=-1;cities_active=0;
 }
 static int bad(void)
@@ -191,7 +194,7 @@ void cities_draw(void)
     gx_text(TEXT_X,CITIES_TOP+44,"Country - City  [Capital / Seat of government]");
     draw_search();draw_list();draw_details();
     gx_text(TEXT_X,CITIES_BOTTOM-26,"Type: search (2+ chars)  Backspace: erase  Up/Down: select  PgUp/PgDn: page");
-    gx_text(TEXT_X,CITIES_BOTTOM-14,"Enter: use city  Esc: cancel  S saves location after returning to the sky");
+    gx_text(TEXT_X,CITIES_BOTTOM-14,"Enter: use city  Esc: cancel");
     draw_note();
 }
 /* Same results as the coordinate editor: 1 commit, 2 cancel, 0 continue. */

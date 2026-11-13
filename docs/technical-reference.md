@@ -63,6 +63,14 @@ The program uses a single polling loop with incremental work. Keyboard input,
 time updates, scene rendering, star transforms, daily paths and rise/set searches
 share that loop. Persistent state lives mainly in globals and fixed-size buffers.
 
+Immediately after the splash, startup draws the header and footer using the
+loaded settings, before the first astronomical calculation. Sun/Moon AZ/ALT/LIT
+fields show `...`; rise/set fields use the normal pending `..:..` format. Header
+icons remain hidden. The first Sun/Moon result updates just those header fields
+and reveals their correctly initialized icons before planet/star preparation.
+Plot sprites stay hidden until the scene is ready, and rise/set results appear
+when their incremental search finishes. This also applies without a saved preset.
+
 Expensive work is split into bounded steps. Scene rendering processes up to eight
 work units or a two-tick budget per call; an individual unit completes atomically.
 Star projection processes up to four stars per step, and rise/set search performs
@@ -83,6 +91,20 @@ between bounded job batches. For time updates, a new catalogue is prepared befor
 redrawn, avoiding an extra redraw of the previous star positions. The header and
 body sprites are presented with that scene. Projection preparation also precedes
 clearing the bitmap, so the old plot remains visible longer.
+
+C follows the same preparation rule when enabling stars or changing their mode:
+the selected footer option and Working indicator update immediately, while the
+existing plot stays visible until pending star positions are ready. Further C
+presses replace the pending mode; one final scene uses the latest selection.
+Switching back to mode 0 removes stars without waiting for their calculation.
+
+G/T/P/C update their footer highlights before starting chart work. The footer
+caches the four visible on/off states and the last message. Only a changed label
+is repainted; changing between enabled G or C modes requires no footer writes.
+A changed message clears and redraws only its own line, including removal of
+old trailing text. Unchanged LIVE/SIM refreshes perform no footer bitmap writes.
+Canvas setup and Ctrl+L invalidate the whole footer; clearing its rows (including
+editor entry) invalidates the affected content so the next call restores it.
 
 Manual navigation has priority over this preparation: arrows, compass steps
 and FOV changes start drawing immediately from the last complete star angles,
@@ -107,11 +129,14 @@ selects the next 45-degree compass direction; Shift+Left selects the previous
 one, including from bearings between compass directions. LCtrl+Left/Right narrows
 or widens FOV by 10 degrees within 50–160. H and Shift+H have no action.
 
-CITIES is a modal 590 × 322 pixel panel inside the sky plot, with a 5-pixel
-outer margin and a 1-pixel white border. It displays 14 rows per page and keeps
-all controls and messages inside the frame. Drawing preserves surrounding
-bitmap pixels and header sprites; sky sprites overlapping the panel are hidden
-until it closes. The main sky jobs remain suspended while selecting a city.
+CITIES is a modal 640 × 409 pixel panel from below the header to the bottom of
+the screen, covering the sky plot, both compasses, side scales and footer.
+It has no outer margin, a 1-pixel white border and 20 rows per page. Only city
+controls and messages appear inside the frame; the save reminder appears after
+selection, back in the sky view. Drawing preserves the header and its sprites; sky sprites are
+hidden until it closes. The main sky jobs remain suspended while selecting a
+city. Closing clears the panel and invalidates the axes and footer so the plot,
+scales, compasses and sky shortcuts are restored, including daylight inversion.
 
 The X panel captures a snapshot of the displayed date. While open, it suspends
 sky work and simulation advancement; LIVE clocks can still update. X closes the

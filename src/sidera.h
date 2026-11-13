@@ -55,10 +55,10 @@ void show_cover(void);
 #define VIEW_TOP 84
 #define VIEW_BOTTOM 416
 #define VIEW_MIDDLE 250
-#define CITIES_LEFT (VIEW_LEFT+5)
-#define CITIES_RIGHT (VIEW_RIGHT-5) /* exclusive */
-#define CITIES_TOP (VIEW_TOP+5)
-#define CITIES_BOTTOM (VIEW_BOTTOM-5) /* exclusive */
+#define CITIES_LEFT 0
+#define CITIES_RIGHT 640 /* exclusive */
+#define CITIES_TOP 71
+#define CITIES_BOTTOM 480 /* exclusive */
 #define TRAIL_COUNT 97
 
 extern Observer observer;
@@ -136,7 +136,10 @@ void gx_grid_add(void);
 void gx_clock(void);
 void gx_status(unsigned char busy);
 void gx_header(void);
+void gx_header_pending(void);
+int gx_header_ready(void);
 void gx_footer(void);
+void gx_footer_invalidate(void);
 void gx_planet_labels(void);
 void gx_trail(unsigned char body,unsigned char n);
 void cs_begin(void);

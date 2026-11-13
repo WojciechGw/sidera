@@ -38,6 +38,9 @@ static const char *failed_overlay;
 static unsigned solar_test,solar_step;
 static unsigned control_test,control_step,direction_step;
 static unsigned simulation_test,simulation_step,simulation_polls,simulation_limit;
+static unsigned constellation_test,constellation_step,constellation_target,constellation_round;
+static unsigned constellation_polls,constellation_stars,constellation_scenes;
+static unsigned startup_test,startup_seen;
 static unsigned simulation_sky,simulation_planets,simulation_stars,simulation_scenes;
 static Date simulation_at,simulation_next;
 static Date frozen_date;
@@ -72,6 +75,25 @@ static time_t test_time(time_t *p){if(p)*p=fake_time;return fake_time;}
 static const char *rom_dir,*save_path;
 static char output[4096];
 static const unsigned keys[]={'P','K',K_ESC,'G','G','G','G','C','K','W','a','r','s','a','w','\r','S','Z',K_ESC,'T','Q'};
+static void expect_text_at(unsigned x,unsigned y,const char *p,unsigned inverse)
+{
+    unsigned c,row,col,bits;
+    while(*p) {
+        c=(unsigned char)*p++;
+        for(row=0;row<8;++row) {
+            bits=xram[XR_FONT+c*8+row]^(inverse?0xFC:0);
+            for(col=0;col<6;++col)
+                assert(!!(xram[(y+row)*80+(x+col)/8]&(128>>((x+col)&7)))==!!(bits&(128>>col)));
+        }
+        x+=6;if(inverse)--inverse;
+    }
+}
+static void expect_header_icons(unsigned char visible)
+{
+    unsigned sun=xram[XR_SUN_HEADER_CFG]|((unsigned)xram[XR_SUN_HEADER_CFG+1]<<8);
+    unsigned moon=xram[XR_MOON_HEADER_CFG+12]|((unsigned)xram[XR_MOON_HEADER_CFG+13]<<8);
+    assert(sun==(visible?195:65472)&&moon==(visible?379:65472));
+}
 static void expect_busy(unsigned char busy)
 {
     const char *p="Working...";unsigned x=(live?604:playing?580:574)-66,row,col,c;
@@ -90,6 +112,20 @@ static void expect_busy(unsigned char busy)
 }
 static void checked_sky_compute(const Date *d,const Observer *o,Sky *s)
 {
+    if(!sky_checks) {
+        unsigned i;
+        expect_text_at(6,1,"SIDERA",6);expect_text_at(8,21,"Time ",0);
+        expect_text_at(202,21,"Location ",0);
+        expect_text_at(226,43,"Sun AZ ... ALT ...",0);
+        expect_text_at(412,43,"Moon AZ ... ALT ... LIT ...",0);
+        expect_text_at(12,450,"N: now",0);expect_text_at(12,462,"Arrows: view",0);
+        expect_text_at(114,462," grid ",grid?255:0);
+        expect_text_at(180,462," paths ",trails?255:0);
+        expect_text_at(246,462," Planets ",planets?255:0);
+        expect_text_at(330,462," constellations ",constellation_mode?255:0);
+        expect_header_icons(0);
+        for(i=71*80;i<448*80;++i)assert(!xram[i]);
+    }
     expect_busy(1);++sky_checks;sky_compute(d,o,s);
 }
 static void checked_sky_positions(const Date *d,const Observer *o,Sky *s)
@@ -98,6 +134,7 @@ static void checked_sky_positions(const Date *d,const Observer *o,Sky *s)
 }
 static void checked_planets_compute(const Date *d,const Observer *o,Position *p)
 {
+    if(!planet_checks)expect_header_icons(1); /* Sun/Moon published before planets/stars. */
     expect_busy(1);++planet_checks;planets_compute(d,o,p);
 }
 static void checked_scene_begin(void)
@@ -118,6 +155,40 @@ unsigned platform_ticks(void)
 void platform_sleep_ticks(unsigned n){ticks+=n;if(vga)++RIA.vsync;}
 void platform_puts(const char *s){assert(strlen(output)+strlen(s)<sizeof(output));strcat(output,s);}
 #ifdef SIDERA_OVERLAY_HOST
+static unsigned constellation_keys(void)
+{
+    assert(++constellation_polls<20000);
+    if(constellation_step==0||constellation_step==3) {
+        if(!sky_checks||gx_busy()||rs_busy()||(trails&&!trail_end&&trail_done<TRAIL_COUNT))return 0;
+        assert(!constellation_mode&&!live&&!playing);
+        memcpy(frozen_frame,xram,sizeof(xram));
+        constellation_stars=star_checks;constellation_scenes=scene_checks;
+        constellation_step=1;return 'C';
+    }
+    if(constellation_step==1) {
+        if(constellation_mode&&cs_busy()) {
+            assert(!gx_busy()&&scene_checks==constellation_scenes);
+            assert(!memcmp(frozen_frame+71*80,xram+71*80,377*80));
+            expect_busy(1);
+            assert(xram[462*80+330/8]&(128>>(330&7))); /* Selected C, immediately. */
+            if(constellation_mode!=constellation_target)return 'C';
+            return 0;
+        }
+        if(gx_busy())return 0;
+        assert(constellation_mode==constellation_target);
+        assert(scene_checks==constellation_scenes+1);
+        if(constellation_target)assert(star_checks==constellation_stars+SIDERA_STAR_COUNT*4);
+        if(constellation_round||!constellation_target){constellation_step=99;return 'Q';}
+        constellation_step=2;
+    }
+    if(constellation_step==2) {
+        if(gx_busy())return 0;
+        if(constellation_mode)return 'C';
+        /* Re-enable with an old completed catalogue, not just empty startup. */
+        constellation_round=1;constellation_step=3;return '+';
+    }
+    return 0;
+}
 static unsigned simulation_keys(void)
 {
     Sky expected;Position expected_planets[PLANET_COUNT];
@@ -266,6 +337,15 @@ unsigned key_poll(void)
 {
     unsigned i;
 #ifdef SIDERA_OVERLAY_HOST
+    if(startup_test) {
+        if(!sky_checks)return 0;
+        if(cs_busy()) {
+            expect_header_icons(1);assert(!scene_checks&&!gx_busy());++startup_seen;
+        }
+        if(gx_busy()||cs_busy()||rs_busy()||(trails&&trail_done<TRAIL_COUNT))return 0;
+        assert(startup_seen&&scene_checks==1);return 'Q';
+    }
+    if(constellation_test)return constellation_keys();
     if(simulation_test)return simulation_keys();
     if(control_test)return control_keys();
     if(solar_test)return solar_keys();
@@ -345,7 +425,7 @@ unsigned key_poll(void)
             assert(star_checks==previous_stars&&sky_checks==previous_sky&&planet_checks==previous_planets);
             assert(trail_done==TRAIL_COUNT&&!memcmp(saved_trail,xram+XR_TRAILS,sizeof(saved_trail)));
             if(zoom_noop)assert(portal_writes<30000); /* no full repaint at the limits */
-            else assert(portal_writes>=30000);
+            else assert(portal_writes>=25000); /* Plot clear, without a full footer repaint. */
         }
         if(zoom_step<24) {
             int step=zoom_step<8||zoom_step>=20?-10:10;
@@ -374,7 +454,7 @@ unsigned key_poll(void)
         for(i=472*80;i<480*80;++i)assert(!xram[i]);
     }
     if(key_index>=4&&key_index<=6)assert(portal_writes<30000);
-    if(key_index==7)assert(portal_writes>=30000);
+    if(key_index==7)assert(portal_writes>=25000); /* G off still clears the plot. */
     if(key_index>=4&&key_index<=7)for(i=114;i<120;++i)
         assert(!!(xram[462*80+i/8]&(128>>(i&7)))==!!grid);
     portal_writes=0;
@@ -452,6 +532,32 @@ int main(int argc,char **argv)
     assert(argc==3||argc==4);rom_dir=argv[1];save_path=argv[2];run_args[6]=argv[2];
     remove(save_path);
 #ifdef SIDERA_OVERLAY_HOST
+    if(argc==4&&(!strcmp(argv[3],"startup-saved")||!strcmp(argv[3],"startup-default"))) {
+        char *initial_args[]={"sidera.rp6502","/config",argv[2],"/constellations","4"};
+        startup_test=1;vga=1;start.tm_year=126;start.tm_mon=10;start.tm_mday=9;start.tm_hour=12;
+        fake_time=_mkgmtime(&start);
+        if(!strcmp(argv[3],"startup-saved")) {
+            char location[100];location_format(location,&observer,0);
+            f=fopen(save_path,"w");assert(f);
+            fprintf(f,"%s\nZone Europe/Warsaw\nCity Warsaw [PL]\nView 135,19 90 3 on on 4\nTime LIVE\n",location);
+            fclose(f);
+        }
+        assert(!sidera_main(5,initial_args));
+        assert(startup_seen&&!opened&&!keyboard_mapped&&console_restored==1);
+        if(!strcmp(argv[3],"startup-saved"))assert(bearing==135&&elevation==19&&fov==90&&grid==3&&planets&&trails);
+        puts("PASS: initial header/footer before astronomy, early Sun/Moon icons, one scene after stars; saved/default startup");
+        return 0;
+    }
+    if(argc==4&&!strncmp(argv[3],"constellations-",15)) {
+        char *star_args[]={"sidera.rp6502","/date","2026-11-09 12:00:00","/config",argv[2],
+            "/grid","3","/constellations","0","/paths","on","/planets","on"};
+        assert(sscanf(argv[3],"constellations-%u",&constellation_target)==1&&constellation_target<5);
+        constellation_test=1;vga=1;fake_time=0;
+        assert(!sidera_main(13,star_args));
+        assert(constellation_step==99&&!opened&&!keyboard_mapped&&console_restored==1);
+        puts("PASS: C keeps chart during star calculation, immediate feedback, latest mode, one final draw, fresh/stale catalogue");
+        return 0;
+    }
     if(argc==4&&!strncmp(argv[3],"simulation-",11)) {
         char g[2],c[2];unsigned grid_mode,star_mode;
         char *sim_args[]={"sidera.rp6502","/date",NULL,"/config",argv[2],

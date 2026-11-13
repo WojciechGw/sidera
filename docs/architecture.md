@@ -12,7 +12,7 @@ holds the active overlay's code, constants, initialized data and BSS.
 | `ROM:` resource | Contents | Bytes loaded into the window | BSS | Free within 5888 B |
 | --- | --- | ---: | ---: | ---: |
 | `sidera-init.ovl` | Options, settings and opening data files | 4517 B | 0 B | 1371 B |
-| `sidera-cities.ovl` | City search and selection | 3909 B | 295 B | 1684 B |
+| `sidera-cities.ovl` | City search and selection | 3872 B | 307 B | 1709 B |
 | `sidera-edit.ovl` | Location, date and time-zone editors | 3106 B | 112 B | 2670 B |
 | `sidera-cover.ovl` | Splash screen and initial VGA assets | 829 B | 0 B | 5059 B |
 | `sidera-solar.ovl` | Orbits and the Solar System panel opened with X | 5672 B | 82 B | 134 B |
@@ -20,16 +20,16 @@ holds the active overlay's code, constants, initialized data and BSS.
 Sizes are from the current cc65 build. Each resource also has a 24-byte header,
 read outside the window. Build-time checks reject memory boundary violations.
 
-Resident code, constants and BSS end at `$C062` (exclusive).
-After reserving the entire window, **7838 B of unallocated RAM** remain below
-the C stack: 1950 B at `$C062–$C7FF` and 5888 B at `$E000–$F6FF`.
+Resident code, constants and BSS end at `$C2E9` (exclusive).
+After reserving the entire window, **7191 B of unallocated RAM** remain below
+the C stack: 1303 B at `$C2E9–$C7FF` and 5888 B at `$E000–$F6FF`.
 The C stack retains `$F700–$FEFF`, 2048 B. The upper free area is currently neither
 a linker segment nor a heap; using it in future code requires a separate segment
 and corresponding changes to image packing.
 
 In the original standalone build used for comparison, data ends at `$D5B1`,
 leaving 8527 B free. After adding X, removing the RMT layer and updating the
-controls, city panel, simulation scheduling and perimeter rendering, **689 B**
+controls, city panel, simulation scheduling, early panels and partial rendering, **1336 B**
 less RAM is available than in the original, after accounting for the window,
 loader and panel code. Unused space inside
 overlays is not included in this result.
@@ -65,17 +65,18 @@ load when entering K, L/D/Z or X. Sky calculations and S saving are resident.
 
 ## City panel
 
-K opens CITIES inside the sky plot at x=33..622, y=89..410: a 590×322 px
-rectangle with a 5 px outer margin and a 1 px white frame. The black-on-white
-` CITIES ` label uses the same style as the Solar System title. Search, 14 rows
+K opens CITIES at x=0..639, y=71..479: a 640×409 px rectangle covering the plot,
+both compasses, side scales and footer, with no outer margin and a 1 px white frame.
+The black-on-white ` CITIES ` label uses the Solar System title style. Search, 20 rows
 spaced 14 px apart, coordinates, result count, messages and help stay inside.
 Long text is clipped with an ellipsis before it reaches the frame.
 
-Partial-byte masks preserve bitmap pixels outside the panel, including its
-margins. Opening the selector keeps VGA planes and header sprites configured;
-only sky sprites intersecting the panel are hidden. The resident event loop
-suspends sky jobs while CITIES is active and redraws the sky on selection or
-cancellation. Incremental row updates retain the border.
+Partial-byte masks preserve the frame during incremental row updates.
+Opening the selector keeps VGA planes and header configured; sky sprites
+are hidden. The resident event loop suspends sky jobs while CITIES is active.
+Only city controls are shown while the selector is active. On selection or
+cancellation, the entire panel is cleared and axes and footer invalidated before
+redrawing the sky, both compasses, side scales and sky shortcuts.
 
 ## X panel
 

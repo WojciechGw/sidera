@@ -20,7 +20,10 @@ At the Picocomputer monitor, enter:
 The ROM includes the graphics, city catalogue, time zones, help and manual.
 No separate data files are needed. An overlay load error ends the program
 with a diagnostic message and returns to the monitor. After a five-second
-splash, the sky opens.
+splash, the header and keyboard hints appear immediately using your settings.
+Uncalculated Sun/Moon fields show dots and their icons stay hidden until ready.
+The first Sun/Moon results appear before the stars finish calculating; the sky
+plot follows when its data is ready.
 Wait for Working... to disappear before judging a fully calculated view.
 Use Q to return to the monitor. The computer clock supplies LIVE time.
 
@@ -90,9 +93,10 @@ Backspace and Delete edit the text. In L, type D for degrees, an apostrophe
 for minutes and a double quote for seconds. Use tenths of an arcsecond, e.g.
 49d38'54.6" N, 19d09'19.7" E, 395 m AMSL. AMSL means Above Mean Sea Level;
 heights range from -500 to 10000 m. IANA zone names are case-sensitive.
-Cities occupies a 590 x 322 pixel panel inside the sky plot, with a 5-pixel
-outer margin, a 1-pixel white frame and a black-on-white CITIES label.
-The surrounding display stays visible. Search, 14 rows per page, coordinates,
+Cities occupies the full 640 x 409 pixel area below the header, covering the
+plot, compasses, side scales and footer with no outer margin. It has a 1-pixel
+white frame and a black-on-white CITIES label. Only the header stays visible;
+the panel shows city controls. Search, 20 rows per page, coordinates,
 result count, messages and keyboard help all fit inside the frame.
 In Cities, type a country code, country or city name; filtering starts at two
 characters. Use Up/Down, Page Up/Down or Home/End; Enter selects, Esc cancels.

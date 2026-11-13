@@ -8,6 +8,8 @@ static unsigned moon_image=XR_MOON1;
 static int loaded_phase=-1;
 static unsigned char header_visible;
 static unsigned char calculating,status_drawn=255;
+static unsigned char footer_valid,footer_flags; /* Valid bits: help rows 1, note row 2. */
+static char footer_note[sizeof(note)];
 static char text[120];
 int fov=120,gx_circle=1800; /* Horizontal degrees; pixels per full azimuth turn. */
 static int last_elevation=-100,origin_y;
@@ -30,6 +32,7 @@ static unsigned char compass_daylight,compass_inverted;
 static int axes_bearing,axes_elevation,axes_circle;
 
 void gx_axes_invalidate(void) { axes_valid=0; }
+void gx_footer_invalidate(void) { footer_valid=0; }
 
 static void body_cache(void)
 {
@@ -71,6 +74,8 @@ void gx_clear(int y,int rows)
         if(y<84&&y+rows>71)axes_valid&=~AXIS_TOP;
         if(y<441&&y+rows>420)axes_valid&=~AXIS_BOTTOM;
         if(y<418&&y+rows>78)axes_valid&=~AXIS_SIDES;
+        if(y<472&&y+rows>448)footer_valid&=~1;
+        if(y<480&&y+rows>472)footer_valid&=~2;
     }
     for(;rows>0;--rows,++y) {
         if(y<0||y>=480)continue;
@@ -230,6 +235,7 @@ int gx_canvas(void)
     int r;
     unsigned char i;
     gx_axes_invalidate();
+    gx_footer_invalidate();
     header_icons(0);
     status_drawn=255;
     RIA.step0=1;RIA.addr0=XR_CFG;
@@ -255,7 +261,7 @@ static unsigned char panel_hit(int x,int y,int w,int h)
        y<CITIES_BOTTOM&&y+h>CITIES_TOP)return 1;
     return solar_hit(x,y,w,h);
 }
-int gx_objects(void)
+static int draw_objects(unsigned char chart)
 {
     int sx,sy,mx,my,c,s;
     unsigned next,distance;
@@ -265,7 +271,8 @@ int gx_objects(void)
         if(!assets_phase(sky.phase,next))return 0;
         moon_image=next;loaded_phase=sky.phase;
     }
-    if(!gx_project(&sky.moon,&mx,&my)||panel_hit(mx-16,my-16,32,32))mx=-64;
+    mx=my=-64;
+    if(!chart||!gx_project(&sky.moon,&mx,&my)||panel_hit(mx-16,my-16,32,32))mx=-64;
     c=as_cos(sky.tilt)/64;s=as_sin(sky.tilt)/64;
     wait_vsync();
     RIA.step0=1;RIA.addr0=XR_SUN_HEADER_CFG;
@@ -283,7 +290,8 @@ int gx_objects(void)
         rank=0;distance=body_distance[i];
         for(j=0;j<=PLANET_COUNT;++j)
             if(body_distance[j]>distance||(body_distance[j]==distance&&j<i))++rank;
-        if(!gx_project(i==PLANET_COUNT?&sky.sun:&planet_positions[i],&sx,&sy)||
+        sx=sy=-64;
+        if(!chart||!gx_project(i==PLANET_COUNT?&sky.sun:&planet_positions[i],&sx,&sy)||
            (i<PLANET_COUNT&&!planets))sx=-64;
         c=i==PLANET_COUNT?16:4;
         if(panel_hit(sx-c,sy-c,c*2,c*2))sx=-64;
@@ -295,6 +303,7 @@ int gx_objects(void)
     }
     return 1;
 }
+int gx_objects(void) { return draw_objects(1); }
 int gx_body_hit(int x,int y,int w,int h)
 {
     unsigned char j;
@@ -376,11 +385,8 @@ void gx_view(void)
     sprintf(text,"View %03d\x01 / %+d\x01",bearing,elevation);text_right(21,text);
     sprintf(text,"FOV %3d\x01",fov);text_right(31,text);
 }
-void gx_header(void)
+static void header_base(void)
 {
-    int a,az;
-    unsigned char i;
-    const Position *p;
     header_icons(0);
     /* Let VGA latch the hidden descriptors before changing the bitmap. */
     wait_vsync();
@@ -392,6 +398,12 @@ void gx_header(void)
     strcpy(text,"Location ");location_format(text+9,&observer,0);gx_text(202,21,text);
     gx_text(256,31,location_name);
     gx_view();
+}
+static void header_values(void)
+{
+    int a,az;
+    unsigned char i;
+    const Position *p;
     /* Fixed fields: Sun text ends 9 px before the Moon sprite. */
     for(i=0;i<2;++i) {
         p=i?&sky.moon:&sky.sun;az=as_degrees(p->az);
@@ -401,6 +413,24 @@ void gx_header(void)
         if(i)sprintf(text+strlen(text)," LIT %3u.%u%%",sky.illumination/10,sky.illumination%10);
         gx_text(i?412:226,43,text);
     }
+}
+void gx_header_pending(void)
+{
+    header_base();
+    gx_text(226,43,"Sun AZ ... ALT ...");
+    gx_text(412,43,"Moon AZ ... ALT ... LIT ...");
+    gx_riseset();
+}
+int gx_header_ready(void)
+{
+    /* Publish the initial Sun/Moon results without exposing plot sprites or
+     * waiting for the star catalogue. Header icons are still hidden here. */
+    if(!draw_objects(0))return 0;
+    header_values();header_icons(1);return 1;
+}
+void gx_header(void)
+{
+    header_base();header_values();
     gx_riseset();header_icons(1);
 }
 void gx_riseset(void)
@@ -411,14 +441,24 @@ void gx_riseset(void)
 }
 void gx_footer(void)
 {
-    gx_clear(448,32);
-    gx_text(12,450,"N: now   Space: mode cycle    +/-: 15 min   [/]: day    D: date   L: location    Z: Timezone   S: save");
-    gx_text(12,462,"Arrows: view   G: grid    T: paths   P: Planets    C: constellations   K: Cities    X: Solar   Q: quit");
-    if(grid)draw_text(114,462," grid ",255);
-    if(trails)draw_text(180,462," paths ",255);
-    if(constellation_mode)draw_text(330,462," constellations ",255);
-    if(planets)draw_text(246,462," Planets ",255);
-    gx_text(20,472,note);
+    unsigned char flags=!!grid|((!!trails)<<1)|((!!planets)<<2)|((!!constellation_mode)<<3);
+    unsigned char changed;
+    if(!(footer_valid&1)) {
+        gx_clear(448,24);
+        gx_text(12,450,"N: now   Space: mode cycle    +/-: 15 min   [/]: day    D: date   L: location    Z: Timezone   S: save");
+        gx_text(12,462,"Arrows: view   G: grid    T: paths   P: Planets    C: constellations   K: Cities    X: Solar   Q: quit");
+        footer_flags=0;footer_valid|=1;
+    }
+    changed=flags^footer_flags;
+    if(changed&1)draw_text(114,462," grid ",flags&1?255:0);
+    if(changed&2)draw_text(180,462," paths ",flags&2?255:0);
+    if(changed&4)draw_text(246,462," Planets ",flags&4?255:0);
+    if(changed&8)draw_text(330,462," constellations ",flags&8?255:0);
+    footer_flags=flags;
+    if(!(footer_valid&2)||strcmp(footer_note,note)) {
+        gx_clear(472,8);gx_text(20,472,note);
+        strcpy(footer_note,note);footer_valid|=2;
+    }
 }
 void gx_trail(unsigned char body,unsigned char n)
 {

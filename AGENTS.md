@@ -48,16 +48,29 @@
 
 - One resident polling loop performs incremental work. Preserve responsiveness
   and LIVE/SIM behaviour when changing rendering or astronomical calculations.
+- After the splash, show the header and footer before astronomy runs, including
+  saved settings. Sun/Moon fields start as placeholders with header icons hidden.
+  Publish their first results before planet/star preparation; keep plot sprites
+  hidden until the prepared scene. Later time updates retain their existing order.
 - Space cycles LIVE → SIM/PAUSE → SIM/PLAY → LIVE; Shift+Right/Left select the
   next/previous compass direction. Only physical LCtrl+Left/Right changes FOV;
   RCtrl and the former H shortcuts do not. The USB HID bitmap occupies XRAM
   `$FFC0–$FFDF` and must be unmapped on exit. VGA is required.
-  CITIES stays inside the sky plot with a 5-pixel margin,
-  1-pixel frame and 14 rows per page; preserve the surrounding display.
+  CITIES fills x=0..639, y=71..479, covering the plot, compasses, side scales and
+  footer, with no outer margin, a 1-pixel frame and 20 rows per page. Preserve
+  the header and show only city controls. Closing clears the panel and
+  invalidates axes and footer so the sky and its shortcuts are restored.
 - SIM/PLAY uses exact 5-minute steps, a 42-tick minimum interval and waits for
   pending jobs; manual +/- stays 15 minutes. Prepare stars before redrawing.
   Manual navigation must bypass catalogue/projection preparation and update
   only the View/FOV header fields; test input latency with `sidera_input`.
+  C selects its mode and updates the footer immediately, but waits for pending
+  star calculations before drawing once. Repeated C presses replace the pending
+  selection; preserve the immediate response of arrows and FOV.
+  G/T/P/C update their footer highlights before calculation or chart drawing.
+  Cache footer highlights and note text; unchanged content must cause no bitmap
+  writes. Clear operations invalidate the affected rows; Ctrl+L and canvas setup
+  invalidate the whole footer. Editors overwrite it and require restoration.
   The inactive star buffer doubles as a screen-coordinate cache: invalidate it
   in `cs_begin()` before any new angle writes. See `tests/benchmark_simulation.py`
   and [simulation measurements](docs/simulation-performance.md).
