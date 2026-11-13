@@ -65,6 +65,7 @@ int main(int argc,char **argv)
     if(live&&!now()){live=0;strcpy(note,"System clock unavailable. D sets UTC date.");}
     solar_hide();gx_clear(0,480);
     if(!gx_objects()||!gx_canvas()){gx_console();assets_close();platform_puts("sidera: cannot load sprite or configure VGA.\r\n");return 1;}
+    if(!platform_keyboard_start()){strcpy(note,"Cannot map USB keyboard state.");exit_code=1;goto done;}
     gx_status(1); /* First astronomical calculation runs in the loop below. */
     trail_reset();tick=calc_tick=star_tick=platform_ticks();
     for(;;) {
@@ -88,7 +89,6 @@ int main(int argc,char **argv)
             if(k) {
                 result=cities_key(k);
                 if(result) {
-                    if(!gx_canvas())break;
                     if(live)now();refresh=scene=head=1;
                     if(result==1)location_view();
                 }
@@ -106,13 +106,22 @@ int main(int argc,char **argv)
             case 'q':case 'Q':case K_ESC:goto done;
             case K_LEFT:bearing=(bearing+355)%360;scene=head=1;break;
             case K_RIGHT:bearing=(bearing+5)%360;scene=head=1;break;
-            case K_LEFT|K_SHIFT:case K_RIGHT|K_SHIFT:
-                if(gx_zoom(k==(K_LEFT|K_SHIFT)?-10:10))scene=head=1;break;
+            case K_LEFT|K_LCTRL:case K_RIGHT|K_LCTRL:
+                if(gx_zoom(k==(K_LEFT|K_LCTRL)?-10:10))scene=head=1;break;
             case K_UP:if(elevation<54)elevation+=5;if(elevation>54)elevation=54;scene=head=1;break;
             case K_DOWN:if(elevation>-54)elevation-=5;if(elevation< -54)elevation=-54;scene=head=1;break;
-            case 'h':case 'H':bearing=((bearing/45+1)*45)%360;scene=head=1;break;
+            case K_RIGHT|K_SHIFT:bearing=((bearing/45+1)*45)%360;scene=head=1;break;
+            case K_LEFT|K_SHIFT:
+                bearing=bearing?((bearing-1)/45)*45:315;scene=head=1;break;
             case 'n':case 'N':live=now();playing=0;refresh=head=1;break;
-            case ' ':live=0;playing=!playing;head=star_check=1;break;
+            case ' ':
+                if(live)live=playing=0;
+                else if(!playing)playing=1;
+                else {
+                    playing=0;live=now();refresh=1;
+                    if(!live)strcpy(note,"Cannot read system clock.");
+                }
+                tick=platform_ticks();head=star_check=1;break;
             case '+':case '=':jump=900;break;
             case '-':jump=-900;break;
             case '[':jump=-86400L;break;
@@ -134,7 +143,10 @@ int main(int argc,char **argv)
             case 'z':case 'Z':if(!ovl_select(OVL_EDIT))goto done;edit_start(3);continue;
             case 'k':case 'K':
                 if(!ovl_select(OVL_CITIES))goto done;
-                if(cities_start()){if(!gx_canvas())goto done;cities_draw();continue;}
+                if(cities_start()) {
+                    if(!gx_objects()){strcpy(note,"Cannot load Moon phase from sidera.dat.");exit_code=1;goto done;}
+                    cities_draw();continue;
+                }
                 gx_footer();break;
             case 's':case 'S':strcpy(note,config_save()?"":"Cannot save configuration.");gx_footer();break;
             case 12:scene=head=1;break;
@@ -190,6 +202,7 @@ int main(int argc,char **argv)
         if(!gx_busy())platform_sleep_ticks(1);
     }
 done:
+    platform_keyboard_stop();
     if(ovl_loaded(OVL_CITIES))cities_close();
     tz_close();gx_console();assets_close();
     if(ovl_failed||exit_code){platform_puts(note);platform_puts("\r\n");return 1;}

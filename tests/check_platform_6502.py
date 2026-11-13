@@ -1,4 +1,4 @@
-"""Exercise standalone timing, argv storage and terminal decoding on 65C02."""
+"""Exercise timing, USB modifiers, argv storage and RIA key decoding on 65C02."""
 from pathlib import Path
 import subprocess
 import sys
@@ -13,13 +13,36 @@ platform = Path(__file__).resolve().parents[1] / 'src/platform'
 (work / 'rp6502.h').write_text('''#include <stdint.h>
 typedef struct { unsigned char ready,rx,tx,vsync; } TestRIA;
 extern volatile TestRIA RIA;
+int xreg(unsigned device,unsigned channel,unsigned reg,unsigned address);
+void xram0_set(unsigned address,unsigned char value,unsigned count);
+unsigned char xram0_peek8(unsigned address);
 ''')
 (work / 'runtime.c').write_text(r'''#include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <time.h>
 #include "platform.h"
+#include "key.h"
 volatile TestRIA RIA;
+static unsigned char modifiers,map_fail;
+static unsigned mapped=0xFFFFu,clears;
+int xreg(unsigned device,unsigned channel,unsigned reg,unsigned address)
+{
+    assert(!device&&!channel&&!reg);
+    assert(address==KEYBOARD_XRAM||address==0xFFFFu);
+    if(map_fail&&address!=0xFFFFu)return -1;
+    mapped=address;return 0;
+}
+void xram0_set(unsigned address,unsigned char value,unsigned count)
+{
+    assert(address==KEYBOARD_XRAM&&!value&&count==32);
+    modifiers=0;++clears;
+}
+unsigned char xram0_peek8(unsigned address)
+{
+    assert(mapped==KEYBOARD_XRAM&&address==KEYBOARD_XRAM+28);
+    return modifiers;
+}
 static clock_t value,step;
 static unsigned calls;
 static unsigned char vga;
@@ -34,6 +57,16 @@ void *__fastcall__ __argv_mem(size_t size);
 int main(void)
 {
     unsigned start;void *buffer;
+    assert(platform_keyboard_modifiers()==0);
+    platform_keyboard_stop();assert(mapped==0xFFFFu);
+    map_fail=1;assert(!platform_keyboard_start());
+    assert(platform_keyboard_modifiers()==0&&mapped==0xFFFFu);
+    map_fail=0;assert(platform_keyboard_start()&&clears==2);
+    assert(platform_keyboard_modifiers()==0);
+    modifiers=0x01;assert(platform_keyboard_modifiers()==0x01);
+    modifiers=0x10;assert(platform_keyboard_modifiers()==0x10);
+    platform_keyboard_stop();assert(mapped==0xFFFFu);
+    assert(platform_keyboard_modifiers()==0);
     value=CLOCKS_PER_SEC;step=0;assert(platform_ticks()==125);
     /* 524.288 seconds crosses the 16-bit 125 Hz time counter. */
     value=(clock_t)(524280UL*CLOCKS_PER_SEC/1000);
@@ -48,7 +81,7 @@ int main(void)
     RIA.ready=0x80;platform_puts("OK");assert(RIA.tx=='K');
     buffer=__argv_mem(512);assert(buffer&&__argv_mem(1)==buffer);
     assert(!__argv_mem(513));
-    puts("PASS: 125 Hz clock, 16-bit wrap/sleep, VGA timeout, UART, argv capacity");
+    puts("PASS: USB bitmap mapping/failure/unmapping, clock/wrap, VGA, UART, argv");
     return 0;
 }
 ''')
@@ -58,13 +91,16 @@ subprocess.run([compiler, '-t', 'sim65c02', '-O', '-Dclock=test_clock', '-DCLOCK
 subprocess.run([simulator, str(work/'runtime')], cwd=work, check=True, timeout=20)
 
 # Compile the real decoder against a timed byte stream, including incomplete input.
-(work/'platform.h').write_text('unsigned platform_ticks(void);\nint platform_getc_nb(void);\n')
+(work/'platform.h').write_text('unsigned platform_ticks(void);\nint platform_getc_nb(void);\n'
+                              'unsigned char platform_keyboard_modifiers(void);\n')
 (work/'keys.c').write_text(r'''#include <assert.h>
 #include <limits.h>
 #include <stdio.h>
 #include "key.h"
 static const unsigned char *input;
 static unsigned ticks,delay,polls;
+static unsigned char modifiers;
+unsigned char platform_keyboard_modifiers(void){return modifiers;}
 unsigned platform_ticks(void){assert(++polls<100);return ticks++;}
 int platform_getc_nb(void)
 {
@@ -84,6 +120,18 @@ int main(void)
     check("\033[C",K_RIGHT);check("\033[D",K_LEFT);
     check("\033[1;2D",K_LEFT|K_SHIFT);check("\033[1;2C",K_RIGHT|K_SHIFT);
     check("\033[1;5A",K_UP|K_CTRL);check("\033[1;3A",K_UP|K_ALT);
+    /* Only physical left Ctrl qualifies horizontal arrows for FOV. */
+    check("\033[1;5D",K_LEFT|K_CTRL);
+    modifiers=0x01;
+    check("\033[1;5D",K_LEFT|K_LCTRL);check("\033[1;5C",K_RIGHT|K_LCTRL);
+    check("\033[1;6D",K_LEFT|K_LCTRL|K_SHIFT);
+    check("\033[1;7C",K_RIGHT|K_LCTRL|K_ALT);
+    check("\033[1;5A",K_UP|K_CTRL);check("h",'h');check("H",'H');
+    modifiers=0x10;
+    check("\033[1;5D",K_LEFT|K_CTRL);check("\033[1;5C",K_RIGHT|K_CTRL);
+    modifiers=0x11;
+    check("\033[1;5D",K_LEFT|K_CTRL);check("\033[1;5C",K_RIGHT|K_CTRL);
+    modifiers=0;
     check("\033[H",K_HOME);check("\033[F",K_END);
     check("\033[1~",K_HOME);check("\033[4~",K_END);
     check("\033[5~",K_PGUP);check("\033[6~",K_PGDN);
@@ -98,7 +146,7 @@ int main(void)
     /* Empty polling leaves later bytes available. */
     input=(const unsigned char *)"x";delay=1;polls=0;
     assert(key_poll()==K_NONE&&key_poll()=='x');
-    puts("PASS: arrows/modifiers, editors, terminal variants, ESC timeout and wrap");
+    puts("PASS: arrows, exclusive LCtrl vs RCtrl/both, editing, ESC timeout/wrap");
     return 0;
 }
 ''')

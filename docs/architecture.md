@@ -12,7 +12,7 @@ holds the active overlay's code, constants, initialized data and BSS.
 | `ROM:` resource | Contents | Bytes loaded into the window | BSS | Free within 5888 B |
 | --- | --- | ---: | ---: | ---: |
 | `sidera-init.ovl` | Options, settings and opening data files | 4517 B | 0 B | 1371 B |
-| `sidera-cities.ovl` | City search and selection | 3579 B | 303 B | 2006 B |
+| `sidera-cities.ovl` | City search and selection | 3909 B | 295 B | 1684 B |
 | `sidera-edit.ovl` | Location, date and time-zone editors | 3106 B | 112 B | 2670 B |
 | `sidera-cover.ovl` | Splash screen and initial VGA assets | 829 B | 0 B | 5059 B |
 | `sidera-solar.ovl` | Orbits and the Solar System panel opened with X | 5672 B | 82 B | 134 B |
@@ -20,23 +20,29 @@ holds the active overlay's code, constants, initialized data and BSS.
 Sizes are from the current cc65 build. Each resource also has a 24-byte header,
 read outside the window. Build-time checks reject memory boundary violations.
 
-Resident code, constants and BSS end at `$B3F1` (exclusive).
-After reserving the entire window, **11023 B of unallocated RAM** remain below
-the C stack: 5135 B at `$B3F1–$C7FF` and 5888 B at `$E000–$F6FF`.
+Resident code, constants and BSS end at `$B633` (exclusive).
+After reserving the entire window, **10445 B of unallocated RAM** remain below
+the C stack: 4557 B at `$B633–$C7FF` and 5888 B at `$E000–$F6FF`.
 The C stack retains `$F700–$FEFF`, 2048 B. The upper free area is currently neither
 a linker segment nor a heap; using it in future code requires a separate segment
 and corresponding changes to image packing.
 
 In the original standalone build used for comparison, data ends at `$D5B1`,
-leaving 8527 B free. After adding X and removing the RMT layer, **2496 B** more RAM
-is available than in the original, after accounting for the window, loader and
-panel code. Unused space inside overlays is not included in this result.
+leaving 8527 B free. After adding X, removing the RMT layer and updating the
+controls and city panel, **1918 B** more RAM is available than in the original,
+after accounting for the window, loader and panel code. Unused space inside
+overlays is not included in this result.
 
 Standalone hardware support is in `src/platform/`. The monitor argument buffer
 is 512 B and resident. `argv.c` is compiled directly into the `sidera` target
 so that the linker does not substitute cc65's default implementation.
 Overlay files and the linker configuration are in `src/overlays/`; their memory
 layout does not depend on the former RMT system.
+
+The physical keyboard bitmap uses 32 bytes of separate XRAM at `$FFC0–$FFDF`,
+after the catalogue edge data ending at `$FFA4` (exclusive). A compile-time
+check guards against overlap. Its modifier byte distinguishes LCtrl from RCtrl
+for FOV shortcuts; the mapping is released before returning to the monitor.
 
 ## Calls and data lifetime
 
@@ -50,6 +56,20 @@ functions. An overlay cannot replace its own window or retain pointers into it
 after returning. Startup proceeds through INIT prepare, optional CITIES for
 `/location`, INIT apply, COVER and the sky view. During observation, overlays
 load when entering K, L/D/Z or X. Sky calculations and S saving are resident.
+
+## City panel
+
+K opens CITIES inside the sky plot at x=33..622, y=89..410: a 590×322 px
+rectangle with a 5 px outer margin and a 1 px white frame. The black-on-white
+` CITIES ` label uses the same style as the Solar System title. Search, 14 rows
+spaced 14 px apart, coordinates, result count, messages and help stay inside.
+Long text is clipped with an ellipsis before it reaches the frame.
+
+Partial-byte masks preserve bitmap pixels outside the panel, including its
+margins. Opening the selector keeps VGA planes and header sprites configured;
+only sky sprites intersecting the panel are hidden. The resident event loop
+suspends sky jobs while CITIES is active and redraws the sky on selection or
+cancellation. Incremental row updates retain the border.
 
 ## X panel
 
@@ -82,7 +102,9 @@ by 8 px (text at y=105). `snapshot YYYY-MM-DD HH:MM:SS UTC` stays at y=97,
 right-aligned with a 2 px margin.
 At the bottom, `Schematic view (not in AU scale)` and `X: close` are right-aligned
 with a 2 px margin. Both keyboard shortcut rows below the main plot start at x=12
-(an 8 px shift).
+and span 102 character cells. The first row (y=450) groups time and settings;
+the second (y=462) groups view controls, panels and quitting. G/T/C/P retain
+inverse-video state labels. Messages remain on a separate row at y=472.
 
 Six planets use the existing images and palettes. The additional resource
 `ROM:sidera-solar.dat` contains Earth and Neptune.

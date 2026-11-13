@@ -48,6 +48,12 @@
 
 - One resident polling loop performs incremental work. Preserve responsiveness
   and LIVE/SIM behaviour when changing rendering or astronomical calculations.
+- Space cycles LIVE → SIM/PAUSE → SIM/PLAY → LIVE; Shift+Right/Left select the
+  next/previous compass direction. Only physical LCtrl+Left/Right changes FOV;
+  RCtrl and the former H shortcuts do not. The USB HID bitmap occupies XRAM
+  `$FFC0–$FFDF` and must be unmapped on exit. VGA is required.
+  CITIES stays inside the sky plot with a 5-pixel margin,
+  1-pixel frame and 14 rows per page; preserve the surrounding display.
 - Five overlays (INIT, CITIES, EDIT, COVER, SOLAR) share CPU `$C800–$DEFF`
   (5888 bytes for code, constants, data and BSS). Scratch is `$DF00–$DFFF`;
   the C software stack is `$F700–$FEFF`.

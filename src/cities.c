@@ -6,7 +6,13 @@
 #include <unistd.h>
 #include "sidera.h"
 
-#define ROWS 18
+#define ROWS 14
+#define ROW_Y (CITIES_TOP+60)
+#define ROW_HEIGHT 14
+#define TEXT_X (CITIES_LEFT+6)
+#define DETAILS_Y (CITIES_BOTTOM-60)
+#define NOTE_Y (CITIES_BOTTOM-46)
+#define TEXT_CHARS ((CITIES_RIGHT-TEXT_X-2)/6)
 #define RECORD 96
 unsigned char cities_active=0;
 #ifdef SIDERA_OVERLAYS
@@ -122,45 +128,70 @@ int cities_start(void)
     if(!fill()){cities_close();return 0;}
     cities_active=1;return 1;
 }
+/* Clear only the interior: preserve the frame and surrounding sky pixels,
+ * including the partial bytes at the left and right edges. */
+static void clear_rows(int y,int height)
+{
+    unsigned char row[(CITIES_RIGHT-2)/8-(CITIES_LEFT+1)/8+1];
+    unsigned a;
+    memset(row,0,sizeof(row));
+    for(;height>0;--height,++y) {
+        a=(unsigned)y*80u+(CITIES_LEFT+1)/8;
+        gx_read(a,row,1);row[0]&=0xFFu<<(8-((CITIES_LEFT+1)&7));
+        gx_read(a+sizeof(row)-1,row+sizeof(row)-1,1);
+        row[sizeof(row)-1]&=0xFFu>>( (CITIES_RIGHT-1)&7);
+        gx_write(a,row,sizeof(row));
+    }
+}
+static void fit_line(void)
+{
+    if(strlen(line)>TEXT_CHARS)strcpy(line+TEXT_CHARS-3,"...");
+}
 static void draw_search(void)
 {
-    gx_clear(36,8);
-    sprintf(line,"Search: %s",query);gx_text(28,36,line);
+    clear_rows(CITIES_TOP+28,8);
+    sprintf(line,"Search: %s",query);gx_text(TEXT_X,CITIES_TOP+28,line);
 }
 static int draw_row(unsigned char i)
 {
-    gx_clear(71+i*16,10); /* include the old inverse label's border */
+    clear_rows(ROW_Y-1+i*ROW_HEIGHT,10); /* include the old inverse label's border */
     if(!read_city(ids[i]))return 0;
     sprintf(line,"%s %s - %s%s",record,record+3,record+43,
             record[93]&2?" [Capital]":record[93]&4?" [Seat]":"");
-    gx_label(28,72+i*16,line,selected==page+i);return 1;
+    fit_line();gx_label(TEXT_X,ROW_Y+i*ROW_HEIGHT,line,selected==page+i);return 1;
 }
 static void draw_list(void)
 {
     unsigned char i;
-    gx_clear(71,ROWS*16);
+    clear_rows(ROW_Y-1,ROWS*ROW_HEIGHT);
     for(i=0;i<rows;++i)if(!draw_row(i))break;
-    if(!total)gx_text(28,72,"No matching cities.");
+    if(!total)gx_text(TEXT_X,ROW_Y,"No matching cities.");
 }
 static void draw_details(void)
 {
-    gx_clear(388,8);gx_clear(412,8);
+    clear_rows(DETAILS_Y,8);
     if(rows&&read_city(ids[selected-page])) {
-        location_format(line,&candidate,0);gx_text(28,388,line);
+        location_format(line,&candidate,0);gx_text(TEXT_X,DETAILS_Y,line);
     }
-    sprintf(line,"%u / %u",total?selected+1:0,total);gx_text(28,412,line);
+    sprintf(line,"%u / %u",total?selected+1:0,total);
+    gx_text(CITIES_RIGHT-6-(int)strlen(line)*6,DETAILS_Y,line);
 }
 static void draw_note(void)
 {
-    gx_clear(472,8);gx_text(28,472,note);
+    clear_rows(NOTE_Y,8);strcpy(line,note);fit_line();gx_text(TEXT_X,NOTE_Y,line);
 }
 void cities_draw(void)
 {
-    gx_clear(0,480);gx_label(28,12,"SIDERA > Cities",1);
-    gx_text(28,52,"Country - City  [Capital / Seat of government]");
+    clear_rows(CITIES_TOP+1,CITIES_BOTTOM-CITIES_TOP-2);
+    gx_line(CITIES_LEFT,CITIES_TOP,CITIES_RIGHT-1,CITIES_TOP,0);
+    gx_line(CITIES_LEFT,CITIES_TOP,CITIES_LEFT,CITIES_BOTTOM-1,0);
+    gx_line(CITIES_RIGHT-1,CITIES_TOP,CITIES_RIGHT-1,CITIES_BOTTOM-1,0);
+    gx_line(CITIES_LEFT,CITIES_BOTTOM-1,CITIES_RIGHT-1,CITIES_BOTTOM-1,0);
+    gx_label(CITIES_LEFT+2,CITIES_TOP+12," CITIES ",1);
+    gx_text(TEXT_X,CITIES_TOP+44,"Country - City  [Capital / Seat of government]");
     draw_search();draw_list();draw_details();
-    gx_text(28,436,"Type: search (2+ chars)  Backspace: erase  Up/Down: select  PgUp/PgDn: page");
-    gx_text(28,452,"Enter: use city  Esc: cancel  S saves location after returning to the sky");
+    gx_text(TEXT_X,CITIES_BOTTOM-26,"Type: search (2+ chars)  Backspace: erase  Up/Down: select  PgUp/PgDn: page");
+    gx_text(TEXT_X,CITIES_BOTTOM-14,"Enter: use city  Esc: cancel  S saves location after returning to the sky");
     draw_note();
 }
 /* Same results as the coordinate editor: 1 commit, 2 cancel, 0 continue. */

@@ -25,6 +25,7 @@ with tempfile.TemporaryDirectory(prefix='sidera-loop-') as directory:
         (root / filename).write_bytes(data)
     command = [exe, str(root), str(root / 'settings.cfg')]
     subprocess.run(command, check=True)
+    subprocess.run(command + ["controls"], check=True)
     subprocess.run(command + ["solar-loop"], check=True)
     subprocess.run(command + ["solar-live"], check=True)
     for name, data in assets.items():

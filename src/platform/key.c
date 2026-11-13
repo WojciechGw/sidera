@@ -1,5 +1,7 @@
 /*
- * key.c -- keys from the terminal as K_ codes (key.h).
+ * key.c -- RIA character sequences as K_ codes (key.h).
+ * Ctrl+horizontal arrows also consult the USB HID modifier bitmap, since
+ * the character sequence alone does not distinguish left and right Ctrl.
  *
  * The RIA's own keyboard sends VT sequences: ESC [ A for Up, ESC O P for
  * F1, ESC [ 15 ~ for F5, ESC [ 1 ; m X with a modifier m = 1 + Shift +
@@ -162,6 +164,10 @@ static unsigned decode(int c)
 unsigned key_poll(void)
 {
     int c = platform_getc_nb();
-    return c < 0 ? K_NONE : decode(c);
+    unsigned k = c < 0 ? K_NONE : decode(c);
+    if((K_CODE(k)==K_LEFT||K_CODE(k)==K_RIGHT)&&(k&K_CTRL)&&
+       (platform_keyboard_modifiers()&0x11)==0x01)
+        k=(k&~K_CTRL)|K_LCTRL;
+    return k;
 }
 

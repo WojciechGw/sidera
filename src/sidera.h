@@ -36,6 +36,9 @@ void tz_close(void);
 #define XR_EDGES 0xF400u
 #define CATALOGUE_RECORD_BYTES (SIDERA_RECORD_COUNT*4u)
 #define XR_END (XR_EDGES+CATALOGUE_RECORD_BYTES)
+#if XR_END > KEYBOARD_XRAM || KEYBOARD_XRAM > 0xFFE0u
+#error Keyboard bitmap overlaps graphics data or exceeds XRAM
+#endif
 #define DATA_PHASES 2568L
 #define DATA_PLANETS 266760L
 #define PLANET_BYTES 64u
@@ -52,6 +55,10 @@ void show_cover(void);
 #define VIEW_TOP 84
 #define VIEW_BOTTOM 416
 #define VIEW_MIDDLE 250
+#define CITIES_LEFT (VIEW_LEFT+5)
+#define CITIES_RIGHT (VIEW_RIGHT-5) /* exclusive */
+#define CITIES_TOP (VIEW_TOP+5)
+#define CITIES_BOTTOM (VIEW_BOTTOM-5) /* exclusive */
 #define TRAIL_COUNT 97
 
 extern Observer observer;

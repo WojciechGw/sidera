@@ -16,3 +16,6 @@ for view in ('A','B','C'):
 for view in ('A','B','C'):
     subprocess.run([sys.executable,str(renderer),str(snapshot)+f'.solar{view}',
                     str(output/f'sidera-solar{view}.png'),'--solar'],check=True)
+
+subprocess.run([sys.executable,str(renderer),str(snapshot)+'.cities-panel',
+                str(output/'sidera-cities.png')],check=True)

@@ -59,10 +59,11 @@ Country and city names ignore case; use ASCII spellings such as Gdansk.
 
 Left / Right        Turn the view by 5 degrees.
 Up / Down           Raise/lower the view centre by 5 degrees, within +/-54.
-Shift+Left/Right    Narrow/widen FOV by 10 degrees, within 50-160.
-H                   Next direction: N, NE, E, SE, S, SW, W, NW.
+LCtrl+Left/Right     Narrow/widen FOV by 10 degrees, within 50-160.
+Shift+Right         Next direction: N, NE, E, SE, S, SW, W, NW.
+Shift+Left          Previous compass direction; 50 -> 45 -> 0 -> 315 degrees.
 N                   Return to LIVE using the computer's current UTC time.
-Space               Start or pause simulation; each step advances 15 minutes.
+Space               Cycle LIVE -> SIM/PAUSE -> SIM/PLAY -> LIVE.
 + / -               Move forward/backward 15 minutes and pause simulation.
 [ / ]               Move backward/forward one day and pause simulation.
 D                   Edit UTC date and time.
@@ -78,11 +79,21 @@ Ctrl+L              Redraw the screen.
 X                   Show/hide a Solar System snapshot for the displayed UTC.
 Q / Esc             Quit to the monitor when no editor or city list is open.
 
+Space freezes the displayed UTC time when leaving LIVE. SIM/PLAY advances
+in 15-minute steps; returning to LIVE immediately reads the computer clock.
+N still returns directly to LIVE. FOV uses the physical left Ctrl key only;
+right Ctrl (also when held together with left Ctrl) does not change FOV.
+H and Shift+H have no action.
+
 In an editor, Enter applies changes and Esc cancels. Left/Right, Home/End,
 Backspace and Delete edit the text. In L, type D for degrees, an apostrophe
 for minutes and a double quote for seconds. Use tenths of an arcsecond, e.g.
 49d38'54.6" N, 19d09'19.7" E, 395 m AMSL. AMSL means Above Mean Sea Level;
 heights range from -500 to 10000 m. IANA zone names are case-sensitive.
+Cities occupies a 590 x 322 pixel panel inside the sky plot, with a 5-pixel
+outer margin, a 1-pixel white frame and a black-on-white CITIES label.
+The surrounding display stays visible. Search, 14 rows per page, coordinates,
+result count, messages and keyboard help all fit inside the frame.
 In Cities, type a country code, country or city name; filtering starts at two
 characters. Use Up/Down, Page Up/Down or Home/End; Enter selects, Esc cancels.
 A selected city supplies its coordinates, height and time zone. Selection
@@ -132,7 +143,8 @@ on black. Star names take priority over constellation labels; labels that
 cannot fit without overlapping are omitted. Alpha Centauri uses the
 catalogue position of component B (HIP 71681).
 Figures can extend beyond the view and are also drawn below the horizon.
-Active G/T/C/P labels in the footer are highlighted in inverse video.
+The footer groups time and settings in its first row, and view controls and
+panels in its second row. Active G/T/C/P labels are highlighted in inverse video.
 T shows paths from midnight to midnight UTC: solid for Sun, dashed for Moon.
 
 LIVE updates the clock each second, Sun/Moon/planets each minute, and stars

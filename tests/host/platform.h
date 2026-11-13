@@ -21,6 +21,8 @@ int platform_getc_nb(void);
 void platform_sleep_ticks(unsigned);
 unsigned platform_ticks(void);
 unsigned char platform_vga_ready(void);
+unsigned char platform_keyboard_start(void);
+void platform_keyboard_stop(void);
 typedef struct { uint16_t addr0,addr1; uint8_t step0,step1,vsync; } HostRIA;
 extern HostRIA RIA;
 extern uint8_t xram[65536];

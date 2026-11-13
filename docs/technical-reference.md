@@ -75,6 +75,18 @@ five minutes. SIM/PLAY advances by 15 minutes when the scheduled step is due and
 the drawing and calculation jobs are ready. Its wall-clock speed therefore
 depends on the workload. SIM/PAUSE holds the selected UTC instant.
 
+Space cycles LIVE → SIM/PAUSE → SIM/PLAY → LIVE. Leaving LIVE freezes the
+displayed time; returning reads the current system clock immediately. Shift+Right
+selects the next 45-degree compass direction; Shift+Left selects the previous
+one, including from bearings between compass directions. LCtrl+Left/Right narrows
+or widens FOV by 10 degrees within 50–160. H and Shift+H have no action.
+
+CITIES is a modal 590 × 322 pixel panel inside the sky plot, with a 5-pixel
+outer margin and a 1-pixel white border. It displays 14 rows per page and keeps
+all controls and messages inside the frame. Drawing preserves surrounding
+bitmap pixels and header sprites; sky sprites overlapping the panel are hidden
+until it closes. The main sky jobs remain suspended while selecting a city.
+
 The X panel captures a snapshot of the displayed date. While open, it suspends
 sky work and simulation advancement; LIVE clocks can still update. X closes the
 panel and refreshes the sky, and Q exits. Panel state is not saved in settings.
@@ -133,7 +145,14 @@ SOLAR has little spare space, so changes there require a size check.
 
 The [platform implementation](../src/platform/rp6502.c) reads and writes the RIA
 console registers directly. The [keyboard decoder](../src/platform/key.c) handles
-terminal escape sequences for navigation, editing and modifier keys. Timing uses
+RIA character sequences for navigation, editing and modifier keys. Since these
+sequences combine left and right Ctrl, startup also maps the 32-byte USB HID
+keyboard bitmap at XRAM `$FFC0–$FFDF` using `xreg(0,0,0,address)`. Ctrl+horizontal
+arrows read its modifier byte at `$FFDC`: left Ctrl must be down and right Ctrl
+must be up to produce a FOV event. An unmapped keyboard or a generic Ctrl sequence
+alone cannot change FOV. Cleanup unmaps the bitmap with address `$FFFF`.
+See the [RIA keyboard interface](https://picocomputer.github.io/ria.html#keyboard).
+The application requires VGA. Timing uses
 125 ticks per second; elapsed-time comparisons use unsigned subtraction to allow
 the 16-bit tick counter to wrap. Sleeps are busy waits. VGA detection and frame
 synchronization use bounded waits.

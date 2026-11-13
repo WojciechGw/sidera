@@ -33,6 +33,7 @@ unsigned char ovl_memory[6144];
 static unsigned overlay_reads;
 static const char *failed_overlay;
 static unsigned solar_test,solar_step;
+static unsigned control_test,control_step,direction_step;
 static Date frozen_date;
 static unsigned char frozen_frame[65536];
 static unsigned frozen_sky,frozen_planets,frozen_stars,frozen_trails,frozen_done,frozen_overlays;
@@ -45,6 +46,9 @@ uint8_t xram[65536];
 HostRIA RIA;
 static unsigned ticks,key_index,console_restored,opened,rom_reads,menu_seen,portal_writes;
 static int vga;
+static unsigned char keyboard_mapped;
+unsigned char platform_keyboard_start(void){keyboard_mapped=1;return 1;}
+void platform_keyboard_stop(void){keyboard_mapped=0;}
 static unsigned cover_active,cover_start,cover_duration,cover_keys=4,cover_shown;
 int platform_getc_nb(void){if(cover_keys){--cover_keys;return 'Q';}return -1;}
 long host_lseek(int fd,long offset,int whence){return _lseek(fd,offset,whence);}
@@ -102,6 +106,54 @@ unsigned platform_ticks(void)
 void platform_sleep_ticks(unsigned n){ticks+=n;if(vga)++RIA.vsync;}
 void platform_puts(const char *s){assert(strlen(output)+strlen(s)<sizeof(output));strcat(output,s);}
 #ifdef SIDERA_OVERLAY_HOST
+static unsigned control_keys(void)
+{
+    static const int bearings[]={50,45,0,315,0,45,315,0,0,0,0,0};
+    static const unsigned direction_keys[]={K_LEFT|K_SHIFT,K_LEFT|K_SHIFT,K_LEFT|K_SHIFT,
+        K_RIGHT|K_SHIFT,K_RIGHT|K_SHIFT,K_LEFT|K_SHIFT,K_RIGHT|K_SHIFT,
+        'h','H',K_LEFT|K_CTRL,K_RIGHT|K_CTRL,'Q'};
+    struct tm *utc;
+    if(gx_busy())return 0;
+    switch(control_step) {
+    case 0:++control_step;return 'N';
+    case 1:
+        assert(live&&!playing);frozen_date=moment;
+        fake_time+=60;++control_step;return ' ';
+    case 2:
+        assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
+        fake_time+=60;ticks+=2*PLATFORM_TICK_HZ;++control_step;return 0;
+    case 3:
+        assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
+        ++control_step;return ' ';
+    case 4:
+        assert(!live&&playing);
+        if(rs_busy())return 0;
+        assert(!memcmp(&moment,&frozen_date,sizeof(Date)));
+        ticks+=PLATFORM_TICK_HZ;++control_step;return 0;
+    case 5:
+        assert(!live&&playing&&moment.minute==frozen_date.minute+15);
+        ++control_step;return ' ';
+    case 6:
+        utc=gmtime(&fake_time);
+        assert(live&&!playing&&moment.hour==utc->tm_hour&&moment.minute==utc->tm_min);
+        frozen_date=moment;++control_step;return ' ';
+    case 7:
+        assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
+        ++control_step;return ' ';
+    case 8:
+        assert(!live&&playing);fake_time=(time_t)-1;frozen_date=moment;
+        ++control_step;return ' ';
+    case 9:
+        assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
+        assert(strstr(note,"Cannot read system clock"));
+        bearing=50;++control_step;return 0;
+    default:
+        assert(direction_step<sizeof(bearings)/sizeof(bearings[0]));
+        assert(bearing==bearings[direction_step]&&fov==120);
+        if(direction_step==5)bearing=359;
+        return direction_keys[direction_step++];
+    }
+}
 static unsigned solar_keys(void)
 {
     static const unsigned ignored[]={'+','K','D','S',K_LEFT,'G',' ','N',K_ESC,12,'L','Z','P','T','C','[',']','-'};
@@ -151,17 +203,18 @@ unsigned key_poll(void)
 {
     unsigned i;
 #ifdef SIDERA_OVERLAY_HOST
+    if(control_test)return control_keys();
     if(solar_test)return solar_keys();
     if(failed_overlay)return strstr(failed_overlay,"solar")?'X':strstr(failed_overlay,"edit")?'Z':'K';
 #endif
     if(gx_busy()&&!editing&&!cities_active) {
         ++render_polls;expect_busy(1);
         switch(render_test) {
-        case 1:assert(bearing==50);++render_test;return K_LEFT|K_SHIFT;
+        case 1:assert(bearing==50);++render_test;return K_LEFT|K_LCTRL;
         case 2:assert(fov==110);++render_test;return 'G';
         case 3:case 4:case 5:assert(grid==render_test-2);++render_test;return 'G';
         case 6:assert(!grid);++render_test;return K_LEFT;
-        case 7:assert(bearing==45);++render_test;return K_RIGHT|K_SHIFT;
+        case 7:assert(bearing==45);++render_test;return K_RIGHT|K_LCTRL;
         case 8:assert(fov==120);++render_test;fake_time+=1;ticks+=PLATFORM_TICK_HZ;return 0;
         case 9:
             assert(moment.second==1); /* clock serviced between drawing batches */
@@ -235,7 +288,7 @@ unsigned key_poll(void)
             zoom_noop=expected_fov+step<50||expected_fov+step>160;
             if(!zoom_noop)expected_fov+=step;
             ++zoom_step;portal_writes=0;
-            return step<0?K_LEFT|K_SHIFT:K_RIGHT|K_SHIFT;
+            return step<0?K_LEFT|K_LCTRL:K_RIGHT|K_LCTRL;
         }
         assert(fov==120);
         assert(!render_test);render_test=1;return K_RIGHT;
@@ -258,7 +311,7 @@ unsigned key_poll(void)
     }
     if(key_index>=4&&key_index<=6)assert(portal_writes<30000);
     if(key_index==7)assert(portal_writes>=30000);
-    if(key_index>=4&&key_index<=7)for(i=156;i<162;++i)
+    if(key_index>=4&&key_index<=7)for(i=114;i<120;++i)
         assert(!!(xram[462*80+i/8]&(128>>(i&7)))==!!grid);
     portal_writes=0;
     if(cities_active)++menu_seen;
@@ -333,6 +386,14 @@ int main(int argc,char **argv)
     assert(argc==3||argc==4);rom_dir=argv[1];save_path=argv[2];run_args[6]=argv[2];
     remove(save_path);
 #ifdef SIDERA_OVERLAY_HOST
+    if(argc==4&&!strcmp(argv[3],"controls")) {
+        control_test=1;vga=1;start.tm_year=126;start.tm_mon=10;start.tm_mday=9;start.tm_hour=4;
+        fake_time=_mkgmtime(&start);
+        assert(!sidera_main(7,run_args));
+        assert(control_step==10&&direction_step==12&&!opened&&console_restored==1&&!keyboard_mapped);
+        puts("PASS: Space LIVE/PAUSE/PLAY cycle, frozen/resumed time, clock failure and Shift+arrows wrapping, retired H and rejected generic/right Ctrl");
+        return 0;
+    }
     if(argc==4&&(!strcmp(argv[3],"solar-loop")||!strcmp(argv[3],"solar-live"))) {
         solar_test=!strcmp(argv[3],"solar-live")?2:1;vga=1;start.tm_year=126;start.tm_mon=10;start.tm_mday=9;start.tm_hour=4;
         fake_time=_mkgmtime(&start);
@@ -382,7 +443,7 @@ int main(int argc,char **argv)
     tz_close();
     f=fopen(save_path,"rb");assert(f);fclose(f);remove(save_path);
     local_directions();assert(!opened);
-    puts("PASS: application loop, Shift+arrows FOV/bounds without astronomy recalculation, cities, G/P/K/C/S, Q cleanup");
+    puts("PASS: application loop, LCtrl+arrows FOV/bounds without astronomy recalculation, cities, G/P/K/C/S, Q cleanup");
     return 0;
 }
 

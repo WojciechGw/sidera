@@ -1,6 +1,25 @@
 /* Direct console and clock access for the standalone RP6502 application. */
 #include <time.h>
 #include "platform.h"
+#include "key.h"
+
+static unsigned char keyboard_mapped;
+unsigned char platform_keyboard_start(void)
+{
+    xram0_set(KEYBOARD_XRAM,0,32);
+    keyboard_mapped=xreg(0,0,0,KEYBOARD_XRAM)>=0;
+    return keyboard_mapped;
+}
+void platform_keyboard_stop(void)
+{
+    if(keyboard_mapped)xreg(0,0,0,0xFFFFu);
+    keyboard_mapped=0;
+}
+unsigned char platform_keyboard_modifiers(void)
+{
+    /* USB HID usages E0..E7: LCtrl is bit 0, RCtrl is bit 4. */
+    return keyboard_mapped?xram0_peek8(KEYBOARD_XRAM+28):0;
+}
 
 unsigned platform_ticks(void)
 {

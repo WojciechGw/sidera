@@ -213,7 +213,6 @@ int gx_canvas(void)
     put16(0);put16(0);put16(0);put16(640);put16(480);put16(0);put16(0xFFFF);
     r=xreg(1,0,0,3);
     if(r>=0)r=xreg(1,0,1,3,0,XR_CFG,0,0,0);
-    if(cities_active)return r>=0;
     /* Positions are supplied after the next calculation/scene refresh. */
     RIA.addr0=XR_MOON_CFG+12;put16(-64);
     for(i=0;i<=PLANET_COUNT;++i){RIA.addr0=XR_BODY_CFG+i*10;put16(-64);}
@@ -227,6 +226,12 @@ void gx_console(void)
 {
     xreg(1,0,0,0);
 }
+static unsigned char panel_hit(int x,int y,int w,int h)
+{
+    if(cities_active&&x<CITIES_RIGHT&&x+w>CITIES_LEFT&&
+       y<CITIES_BOTTOM&&y+h>CITIES_TOP)return 1;
+    return solar_hit(x,y,w,h);
+}
 int gx_objects(void)
 {
     int sx,sy,mx,my,c,s;
@@ -237,7 +242,7 @@ int gx_objects(void)
         if(!assets_phase(sky.phase,next))return 0;
         moon_image=next;loaded_phase=sky.phase;
     }
-    if(!gx_project(&sky.moon,&mx,&my)||solar_hit(mx-16,my-16,32,32))mx=-64;
+    if(!gx_project(&sky.moon,&mx,&my)||panel_hit(mx-16,my-16,32,32))mx=-64;
     c=as_cos(sky.tilt)/64;s=as_sin(sky.tilt)/64;
     wait_vsync();
     RIA.step0=1;RIA.addr0=XR_SUN_HEADER_CFG;
@@ -258,7 +263,7 @@ int gx_objects(void)
         if(!gx_project(i==PLANET_COUNT?&sky.sun:&planet_positions[i],&sx,&sy)||
            (i<PLANET_COUNT&&!planets))sx=-64;
         c=i==PLANET_COUNT?16:4;
-        if(solar_hit(sx-c,sy-c,c*2,c*2))sx=-64;
+        if(panel_hit(sx-c,sy-c,c*2,c*2))sx=-64;
         RIA.step0=1;RIA.addr0=XR_BODY_CFG+rank*10;
         put16(sx-c);put16(sy-c);
         put16(i==PLANET_COUNT?XR_SUN:XR_PLANETS+i*PLANET_BYTES);
@@ -378,13 +383,12 @@ void gx_riseset(void)
 void gx_footer(void)
 {
     gx_clear(448,32);
-    gx_text(12,450,"Arrows: view  N: now  Space: play/pause  +/-: 15 min  [/]: day  D: date  P: Planets  K: Cities");
-    gx_text(12,462,"L: location  S: save  G: grid  T: paths  H: N/NE/E/SE/S/SW/W/NW  C: constellations  Z: Zone  Q: quit");
-    if(grid)draw_text(156,462," grid ",255);
-    if(trails)draw_text(210,462," paths ",255);
-    if(constellation_mode)draw_text(414,462," constellations ",255);
-    if(planets)draw_text(462,450," Planets ",255);
-    gx_text(582,450,"X: Solar");
+    gx_text(12,450,"N: now   Space: mode cycle    +/-: 15 min   [/]: day    D: date   L: location    Z: Timezone   S: save");
+    gx_text(12,462,"Arrows: view   G: grid    T: paths   P: Planets    C: constellations   K: Cities    X: Solar   Q: quit");
+    if(grid)draw_text(114,462," grid ",255);
+    if(trails)draw_text(180,462," paths ",255);
+    if(constellation_mode)draw_text(330,462," constellations ",255);
+    if(planets)draw_text(246,462," Planets ",255);
     gx_text(20,472,note);
 }
 void gx_trail(unsigned char body,unsigned char n)

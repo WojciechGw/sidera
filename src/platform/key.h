@@ -1,4 +1,4 @@
-/* Terminal keys decoded by key.c. */
+/* RIA keyboard events decoded by key.c. */
 #ifndef SIDERA_KEY_H
 #define SIDERA_KEY_H
 
@@ -19,6 +19,8 @@
 #define K_SHIFT 0x1000
 #define K_ALT 0x2000
 #define K_CTRL 0x4000
+#define K_LCTRL 0x8000u /* Ctrl arrow confirmed by the physical left-Control bit. */
+#define KEYBOARD_XRAM 0xFFC0u /* 32-byte USB HID bitmap, separate from CPU RAM. */
 #define K_CODE(k) ((k) & 0x0FFF)
 #define CTRL(c) ((c) & 0x1F)
 

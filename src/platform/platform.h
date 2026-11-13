@@ -11,4 +11,7 @@ void __fastcall__ platform_sleep_ticks(unsigned ticks);
 void __fastcall__ platform_puts(const char *text);
 int platform_getc_nb(void);
 unsigned char platform_vga_ready(void);
+unsigned char platform_keyboard_start(void);
+void platform_keyboard_stop(void);
+unsigned char platform_keyboard_modifiers(void);
 #endif
