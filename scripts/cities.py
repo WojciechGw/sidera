@@ -138,6 +138,7 @@ def imported(directory):
 
 def build(data):
     from timezones import zone_names
+    from world_regions import region
     zones=zone_names()
     rows=data['cities'];seen=set()
     assert {r['code'] for r in rows}==set(COUNTRIES)
@@ -149,7 +150,8 @@ def build(data):
         assert -90<=r['latitude']<=90 and -180<=r['longitude']<=180 and -500<=r['altitude']<=10000,r
         output+=struct.pack('<3s40s40siihBH',r['code'].encode('ascii'),r['country'].encode('ascii'),
                             r['city'].encode('ascii'),round(r['latitude']*36000),round(r['longitude']*36000),
-                            r['altitude'],int(r['default'])+2*int(r['capital'])+4*int(r['seat']),zones.index(r['timezone']))
+                            r['altitude'],int(r['default'])+2*int(r['capital'])+4*int(r['seat'])+
+                            16*region(r['longitude'],r['latitude']),zones.index(r['timezone']))
     return output
 
 if __name__=='__main__':

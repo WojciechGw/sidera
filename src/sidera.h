@@ -25,6 +25,7 @@ void tz_close(void);
 #define XR_SUN_HEADER_CFG 0xB030u
 #define XR_MOON_HEADER_CFG 0xB038u
 #define XR_BODY_CFG 0xB050u /* Seven 10-byte custom Mode 5 descriptors, farthest first. */
+#define XR_CITY_CFG 0xB0F0u /* After all 16 sky/SOLAR descriptors. */
 #define XR_STARS0 0xB100u
 #define XR_STARS1 0xBD00u
 #define XR_VECTORS 0xC900u /* 64 catalogue vectors, in the gap before planets. */
@@ -32,6 +33,8 @@ void tz_close(void);
 #define XR_PLANETS 0xD000u
 #define XR_META 0xD180u /* Star sizes and 88 fixed-size constellation records. */
 #define XR_LABELS 0xDF78u /* 96 label rectangles, five bytes each. */
+#define XR_CITY_IMAGE 0xE700u /* Eight 1bpp rows, then two palette entries. */
+#define XR_CITY_PAL (XR_CITY_IMAGE+8)
 #define XR_PLANET_PAL 0xE800u
 #define XR_EDGES 0xF400u
 #define CATALOGUE_RECORD_BYTES (SIDERA_RECORD_COUNT*4u)
@@ -109,6 +112,32 @@ int cities_start(void);
 unsigned char cities_key(unsigned k);
 void cities_draw(void);
 void cities_close(void);
+unsigned char cities_step(void);
+void world_begin(void);
+void world_close(void);
+void world_select(unsigned char continent,const Observer *place);
+extern unsigned char find_active;
+int find_start(void);
+unsigned char find_step(void);
+unsigned char find_key(unsigned k);
+void find_close(void);
+extern unsigned target_id;
+extern unsigned char target_figure; /* 0..87, or 255 for a single object/no target. */
+#define FIND_FIGURE_FIRST (SIDERA_STAR_COUNT+8u)
+#define FIND_COUNT (FIND_FIGURE_FIRST+88u)
+void figure_reset(void);
+void figure_add(const Position *p);
+void figure_finish(void);
+void figure_result(Position *p,int *zoom);
+unsigned char figure_side(void); /* 0 below, 1 above, 2 crosses horizon. */
+void figure_begin(unsigned char id,const Date *at);
+unsigned char figure_step(void); /* 0 pending, 1 done, 2 I/O error. */
+unsigned char cs_enabled(void);
+int cs_focus(Position *p,int *zoom);
+int target_select(unsigned id,const char *name,const Position *position);
+void target_update(void);
+void target_center(void);
+void target_draw(void);
 
 void gx_clear(int y, int rows);
 void gx_text(int x, int y, const char *text);
@@ -140,6 +169,7 @@ void gx_header_pending(void);
 int gx_header_ready(void);
 void gx_footer(void);
 void gx_footer_invalidate(void);
+void gx_panel_restore(void);
 void gx_planet_labels(void);
 void gx_trail(unsigned char body,unsigned char n);
 void cs_begin(void);

@@ -1,0 +1,18 @@
+SIDERA world locator
+
+Land contours: Natural Earth, 1:110 million land, version 4.1.0.
+Downloaded 2026-11-13 from:
+https://naciscdn.org/naturalearth/110m/physical/ne_110m_land.zip
+Natural Earth vector and raster data are in the public domain:
+https://www.naturalearthdata.com/about/terms-of-use/
+
+The normalized rings and source archive SHA-256 are in src/data/world-land.json.
+SIDERA rasterizes these contours to 300 x 150 pixels. Geographic grouping is
+original SIDERA code, separate from Natural Earth; it does not use national
+borders. Europe/Asia uses a simplified Urals, Caspian, Caucasus and Turkish
+Straits boundary. Oceania includes New Guinea and Pacific islands, including
+Hawaii. Greenland is grouped with North America; Madeira and the Canaries with
+Africa. These are schematic, conventional groupings, not territorial claims.
+
+Original code and generated regional grouping: GPL-3.0-only.
+Copyright (c) 2026 Wojciech Gwiozdzik (WojciechGw).

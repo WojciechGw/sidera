@@ -34,7 +34,7 @@ int main(void) {
             assert(project_scale((int16_t)angle)==(int)(angle*gx_circle/65536L));
         assert(project_scale(-1)==0&&project_scale(0)==0&&project_scale(1)==0);
         assert(project_scale(32767)==(int)(32767L*gx_circle/65536L));
-        for(v=0;v<4;++v)for(tilt=-54;tilt<=54;tilt+=54) {
+        for(v=0;v<4;++v)for(tilt=-90;tilt<=90;tilt+=30) {
             bearing=views[v];elevation=tilt;
             for(az=0;az<360;az+=30)for(alt=-90;alt<=90;alt+=30) {
                 p.az=as_angle(az*1000L);p.alt=(int16_t)as_angle(alt*1000L);

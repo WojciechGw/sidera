@@ -17,7 +17,7 @@ add_executable(sidera
     # Keep the mainargs override out of an archive: cc65 also supplies a default.
     src/platform/argv.c
     src/main.c src/startup.c src/astro.c src/cities.c src/constellations.c src/cover.c
-    src/editor.c src/files.c src/graphics.c src/riseset.c src/timezone.c
+    src/editor.c src/files.c src/graphics.c src/riseset.c src/timezone.c src/find.c src/target.c src/figure.c src/world_map.c
     src/solar_draw.c src/solar_labels.c src/solar_math.c src/solar_ui.c
     src/overlays/boot.c src/overlays/init_files.c src/overlays/overlay.c)
 target_compile_definitions(sidera PRIVATE SIDERA_OVERLAYS)

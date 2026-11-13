@@ -20,6 +20,8 @@ commands = [
     ('assets.py', '--output', out/'rom/sidera.dat', '--tables'),
     ('solar_assets.py', '--output', out/'rom/sidera-solar.dat'),
     ('cities.py', '--output', out/'rom/sidera.cty'),
+    ('world_map.py', '--output', out/'rom/sidera.map'),
+    ('find_catalogue.py', '--output', out/'rom/sidera.find'),
     ('timezones.py', '--output-dir', out/'rom'),
 ]
 for script, *args in commands:

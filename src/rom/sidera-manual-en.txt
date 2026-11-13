@@ -36,7 +36,7 @@ Optional startup parameters:
   /location NAME       Country code, city or CC/City; quote names with spaces.
   /date "YYYY-MM-DD HH:MM:SS"   UTC date and time; starts in SIM / PAUSE.
   /live                Use the current UTC time.
-  /view AZ,ALT          Azimuth 0-359, altitude -54 to +54; whole degrees.
+  /view AZ,ALT          Azimuth 0-359, altitude -90 to +90; whole degrees.
   /fov N               Horizontal field of view: 50-160, in steps of 10.
   /grid N              Grid mode 0-3; 0 means off.
   /paths on|off        Show or hide the daily Sun and Moon paths.
@@ -61,7 +61,7 @@ Country and city names ignore case; use ASCII spellings such as Gdansk.
 3. KEYBOARD CONTROLS
 
 Left / Right        Turn the view by 5 degrees.
-Up / Down           Raise/lower the view centre by 5 degrees, within +/-54.
+Up / Down           Raise/lower the view centre by 5 degrees, within +/-90.
 LCtrl+Left/Right     Narrow/widen FOV by 10 degrees, within 50-160.
 Shift+Right         Next direction: N, NE, E, SE, S, SW, W, NW.
 Shift+Left          Previous compass direction; 50 -> 45 -> 0 -> 315 degrees.
@@ -72,6 +72,7 @@ Space               Cycle LIVE -> SIM/PAUSE -> SIM/PLAY -> LIVE.
 D                   Edit UTC date and time.
 L                   Edit latitude, longitude and height in metres AMSL.
 K                   Open Cities to select an observer location.
+F                   Open FIND for bodies, stars and constellations.
 Z                   Edit the IANA time zone, for example Europe/Warsaw.
 S                   Save all current settings to the configuration file.
 G                   Cycle grid modes: scale, crosses, dots, off.
@@ -102,6 +103,54 @@ In Cities, type a country code, country or city name; filtering starts at two
 characters. Use Up/Down, Page Up/Down or Home/End; Enter selects, Esc cancels.
 A selected city supplies its coordinates, height and time zone. Selection
 also chooses the local-hour viewing direction; press S to keep the settings.
+
+The 300 x 150 pixel upper-right world map highlights the continent of the city
+selected in the list, before Enter. Land contours are white; the selected
+continent is filled white with a red 5 x 5 pixel cross centered on the city.
+Full city and country
+names appear below the map. With no matches, only the contours remain.
+Europe and Asia are separate; Oceania includes Hawaii and New Guinea.
+This is a simplified geographic locator, independent of national borders.
+
+FIND uses the same full-width panel and 20-row pages as Cities. It contains
+the Sun, Moon, Mercury through Uranus, all 759 stars and 88 constellations.
+Type two or more characters of a name, designation or catalogue identifier,
+such as Sirius, Alpha CMa, HIP 32349 or HD 48915. Matching ignores case.
+Stars without a proper name still have catalogue identifiers. The first eight
+entries are Solar System bodies; stars follow alphabetically by display name.
+Constellations follow the stars. Search their Latin names or three-letter
+codes, for example Orion / Ori or Ursa Major / UMa. Exact names and constellation
+codes appear first, ahead of partial matches in stellar designations.
+Results use a narrow table on the left, with Type, HIP, HD, Designation and Name
+columns. Types are Sun, Moon, Pl (planet), St (star) and Con (constellation).
+Designation shows
+the Bayer name when available, otherwise the Flamsteed number, or the
+constellation code. Empty fields remain blank. Long fields end in "...";
+their full values and all aliases appear in the details on the right. All aliases
+remain searchable. The selected row has a continuous white background.
+Arrows move the highlight immediately. Position details update after a short
+pause in navigation; further arrows replace the pending selection. Enter skips
+this delay and waits only for the latest selected object's position.
+Up/Down, Page Up/Down and Home/End select a result. Details show AZ/ALT and
+Above/Below horizon for the selected object, including objects below ground.
+The displayed time stays fixed while FIND is open; LIVE resumes on closing.
+
+Enter locates and marks a single object without changing FOV. It enables
+planet display or C1 stars when needed. In C4, the chosen star is shown in
+addition to the navigation groups. The marker and name follow the object as
+time changes, but the camera does not track it. Arrow keys remain available.
+Turning its display layer off hides the marker. Selecting another object
+replaces it; Esc cancels FIND without removing the previous selection.
+The selection is not saved and ends when SIDERA exits. Enter during a search
+waits for the latest query to finish; Esc remains available during work.
+
+For a constellation, Enter centres its figure and adjusts FOV to fit its stars
+and lines with a margin, up to 160 degrees. A message indicates when this limit
+cannot contain the whole figure. Details describe the figure centre and whether
+the figure is above, below or crossing the horizon. Its stars, solid lines and
+inverse name remain visible independently of C, including C0 and C4; the C mode
+is preserved. The figure replaces the previous selection, moves with time and
+does not turn the camera. Selecting another object replaces the figure.
 
 The X panel shows a schematic Solar System from ecliptic north. Eight
 concentric circles separate the planet sprites; distances are not in AU

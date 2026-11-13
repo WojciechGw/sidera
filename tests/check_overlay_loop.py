@@ -16,7 +16,7 @@ with tempfile.TemporaryDirectory(prefix='sidera-loop-') as directory:
     for path in (app / 'rom').iterdir():
         shutil.copyfile(path, root / path.name)
     assets = {}
-    for name in ('init', 'cities', 'edit', 'cover', 'solar'):
+    for name in ('init', 'cities', 'edit', 'cover', 'solar', 'find'):
         filename = f'sidera-{name}.ovl'
         data = bytearray((Path(payload_dir) / filename).read_bytes())
         # The native host executable is not stamped by the 6502 packer.
@@ -43,4 +43,4 @@ with tempfile.TemporaryDirectory(prefix='sidera-loop-') as directory:
     extra = root / 'sidera-solar.dat'
     extra.write_bytes(extra.read_bytes()[:-1])
     subprocess.run(command + [extra.name], check=True)
-print('PASS: overlay-enabled application, cache/scratch and all five failure paths and solar assets')
+print('PASS: overlay-enabled application, cache/scratch and all six failure paths and solar assets')

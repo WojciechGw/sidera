@@ -39,6 +39,7 @@
 | Sky rendering and constellations | `src/graphics.c`, `src/constellations.c` |
 | Solar System panel | `src/solar.h`, `src/solar_*.c` |
 | Settings, resources, editors, cities | `src/files.c`, `src/overlays/init_files.inc`, `src/editor.c`, `src/cities.c` |
+| Object search and selected target | `src/find.c`, `src/target.c`, `src/figure.c`, `scripts/find_catalogue.py`, `src/data/find-names.json` |
 | Memory, loader, ROM packing | [Architecture](docs/architecture.md), `src/overlays/`, `scripts/pack_overlays.py`, `cmake/SideraOverlays.cmake` |
 | Build and validation | [README](README.md), [test guide](docs/tests.md), `CMakeLists.txt`, `cmake/SideraTests.cmake`, `tests/` |
 | User-visible behaviour | [English manual](src/rom/sidera-manual-en.txt), `src/help.txt` |
@@ -60,6 +61,38 @@
   footer, with no outer margin, a 1-pixel frame and 20 rows per page. Preserve
   the header and show only city controls. Closing clears the panel and
   invalidates axes and footer so the sky and its shortcuts are restored.
+  CITIES reserves x=334..633, y=77..226 for a 300x150 geographic locator;
+  the 20-row list stays left of x=328. Full city/country names sit below the map.
+  `world_map.c` streams three rows per `cities_step()` and moves only the sprite
+  when the continent is unchanged. Keep its state in CITIES and
+  call it only with that overlay loaded; rendering code resides in HIGH.
+  SIDCITY2 flags bits 4..6 carry geographic region 1..7; zero uses the map's
+  coarse lookup for older external catalogues. Preserve low role bits and format.
+  The city marker is a red 5x5 plus, one pixel thick and centered on the city,
+  without backing, in a transparent 8x8 Mode 5
+  sprite on plane 0, below the header Sun. Its descriptor occupies `$B0F0–$B0F9`
+  and image/palette `$E700–$E70B`; hide it on close and no matches. No results
+  shows contours alone. Natural Earth provenance is in sidera-map-license.txt.
+- F opens FIND with the same bounds as CITIES and 20 rows. The offline catalogue
+  includes Sun, Moon, six planets, all 759 HIP stars and 88 constellations.
+  The 312 px table on the left has Type/HIP/HD/Designation/Name columns and a
+  full-row highlight; complete names, aliases and positions appear on the right.
+  Types are Sun/Moon/Pl/St/Con. The generator prepares 52-character padded rows
+  in SIDFIND3 records; all aliases remain searchable. On a completed page, arrows
+  invert only the old/new row (800 bitmap bytes, no catalogue read). Accept
+  navigation during page painting and figure calculations. Defer details until
+  250 ms without navigation; Enter bypasses this delay for the latest selection.
+  Match constellation Latin names and abbreviations; prioritize exact matches.
+  Freeze the displayed time and sky jobs while the panel is open;
+  scan, clear and paint in bounded batches. Enter locates the object without
+  changing FOV for a single object, enables P or C1 if required, and keeps C4 plus
+  the chosen star. A constellation selection instead fits its figure with margin
+  at FOV 50..160; report when 160 is insufficient. Show its stars, solid lines and
+  inverse name independently of C, including C0/C4, without changing the C mode.
+  Refresh its cached angles at every displayed time, including LIVE.
+  A resident target marker follows the object's position, not the camera, until
+  another selection or exit; cancelling FIND preserves it. Selection is not saved.
+  View elevation, CLI and saved settings accept -90..+90 degrees.
 - SIM/PLAY uses exact 5-minute steps, a 42-tick minimum interval and waits for
   pending jobs; manual +/- stays 15 minutes. Prepare stars before redrawing.
   Manual navigation must bypass catalogue/projection preparation and update
@@ -68,6 +101,9 @@
   star calculations before drawing once. Repeated C presses replace the pending
   selection; preserve the immediate response of arrows and FOV.
   G/T/P/C update their footer highlights before calculation or chart drawing.
+  The second shortcut line uses two spaces between entries and 17 px side
+  margins; K/F/X/Q also have a space after the colon. Keep highlight coordinates
+  aligned with the text when changing this layout.
   Cache footer highlights and note text; unchanged content must cause no bitmap
   writes. Clear operations invalidate the affected rows; Ctrl+L and canvas setup
   invalidate the whole footer. Editors overwrite it and require restoration.
@@ -83,9 +119,13 @@
   Restore left ticks inside the cleared
   plot, and invalidate margins on full clears and Ctrl+L. Interrupted redraws
   must not mark partially cleared axes as complete.
-- Five overlays (INIT, CITIES, EDIT, COVER, SOLAR) share CPU `$C800–$DEFF`
+- Six overlays (INIT, CITIES, EDIT, COVER, SOLAR, FIND) share CPU `$C800–$DEFF`
   (5888 bytes for code, constants, data and BSS). Scratch is `$DF00–$DFFF`;
-  the C software stack is `$F700–$FEFF`.
+  the C software stack is `$F700–$FEFF`. Target code uses resident HIGH starting
+  at `$E000`, alongside shared figure geometry and rendering helpers. Package this
+  second RAM block, including initialized HIGH_DATA, in the build identity.
+  FIND packs 855 match indices into 1069 bytes of XRAM `$E200–$E62C` (10 bits each)
+  only while sky jobs are suspended.
 - Resident code controls overlay replacement. Do not keep pointers into an
   unloaded overlay or replace an overlay while executing its code. Build IDs,
   CRC validation and BSS initialization are required parts of loading.

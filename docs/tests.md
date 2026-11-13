@@ -3,7 +3,7 @@
 `ctest --preset cc65/Debug` and `ctest --preset cc65/Release` run:
 
 - `sidera_host_suite`: host and sim65 tests, plus pixel comparisons of six images
-  against their references (24 tests in total). They cover astronomy, catalogues,
+  against their references. They cover astronomy, catalogues,
   time zones, rise/set times, settings, graphics, labels, the loader and the full
   application loop with overlays, including error scenarios.
   Application-loop checks include the Space LIVE/PAUSE/PLAY cycle, immediate
@@ -43,8 +43,8 @@
   keyboard decoder (RIA sequences, physical LCtrl versus RCtrl/both modifiers,
   Esc and timeout), USB bitmap mapping, failure handling and unmapping.
   The test controls RIA registers and time; sim65 executes the code.
-- `sidera_rom`: checks the actual built ROM: only the core and reset vector in
-  initial memory, five overlays as resources, headers, CRC32, the shared build
+- `sidera_rom`: checks the actual built ROM: lower/HIGH resident code and reset
+  vector in initial memory, six overlays as resources, headers, CRC32, the shared build
   identifier, BSS, resident addresses and the stack. This check is also a required
   packing step.
 - `sidera_emu`: runs the actual ROM in RP6502-EMU with a fixed date and a fixed seed
@@ -55,13 +55,36 @@
   It checks application states, the absence of overlay errors and the existence
   of the saved file. The saved time must match the `/date` option, which also
   verifies monitor argument handling by the actual ROM.
-- `sidera_generated_assets`: reproduces the catalogue, tables, graphics, cities
+- `sidera_generated_assets`: reproduces the catalogues (including FIND), tables, graphics, cities
   and time zones offline and compares them with the supplied files. For text,
   only line endings are normalized.
+- `sidera_find`: exercises the actual ROM at 8 MHz: FIND, responsive cancellation,
+  name/HIP/constellation-code selection, C0/C4 figures, frozen simulation,
+  persistent targets and overlay swaps.
+  Host checks cover paging, query replacement, queued Enter, exact header/footer
+  restoration, moving targets without camera motion, and centring at both poles.
+  Figure tests cover all 88 fits at two sites and dates, the north seam, 8 px
+  margins, the 160-degree limit, exact abbreviation priority, inverse labels and
+  visibility at C0/C4. Actual-ROM screenshots include Orion and Ursa Major.
+  FIND checks also verify narrow column positions, blank cells, the continuous
+  selection background, full aliases on the right, and preservation of every
+  searchable identifier. Rapid arrows and page replacement followed by Enter
+  must use the last selection; finished-page arrows write exactly 800 bitmap
+  bytes without reading the catalogue or touching the right pane. The ROM test
+  measures six successive visible Down highlights at 8 MHz and limits them to
+  100 ms. The narrow-list implementation measured 2–3 frames (33–50 ms) at 60 Hz.
+  Host tests also replace a constellation preview during its pending calculation.
 - `sidera_startup`: loads a saved G/T/P/C preset in the actual ROM at 8 MHz,
   verifies the early header/footer and placeholders, then checks Sun/Moon header
   icons while the plot is still empty. It saves `startup-panels.png` and
   `startup-sun-moon.png` in `build/cc65/<debug|release>/test/sidera_startup/`.
+- `sidera_cities_map`: checks the real-ROM locator at 8 MHz for Poland, Hawaii
+  and western New Guinea, movement within a continent, no matches, frozen time,
+  and applying the selected city. Screenshots are in `test/sidera_cities_map/`.
+  Host tests compare all seven 300x150 map variants pixel-for-pixel, the 5x5 red cross
+  sprite and its visibility, map edges, interrupted repaint, legacy tags,
+  preserved surroundings and map I/O failures. `sidera_world_map` validates
+  geographic grouping (including transcontinental countries), tags and resources.
 - `sidera_daylight`: crosses sunrise in SIM/PLAY, then moves backward and forward
   with manual time keys in the actual ROM at 8 MHz. It checks exact band inversion
   and preservation of every other plot/compass pixel, including V.
@@ -117,7 +140,7 @@ directories. Do not mix Windows and WSL directories. The time-zone test copies
 its data file to a native temporary directory so that hundreds of thousands of
 small reads do not cross the Windows drive mount in WSL.
 
-When debugging, remember that all five overlays share execution addresses.
+When debugging, remember that all six overlays share execution addresses.
 Some symbols may be ambiguous, and a breakpoint at an overlay address refers
 to the currently loaded code. Loader and map checks do not replace verification
 of switching time and device behaviour on physical PICO hardware.

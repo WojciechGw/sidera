@@ -12,24 +12,26 @@ holds the active overlay's code, constants, initialized data and BSS.
 | `ROM:` resource | Contents | Bytes loaded into the window | BSS | Free within 5888 B |
 | --- | --- | ---: | ---: | ---: |
 | `sidera-init.ovl` | Options, settings and opening data files | 4517 B | 0 B | 1371 B |
-| `sidera-cities.ovl` | City search and selection | 3872 B | 307 B | 1709 B |
+| `sidera-cities.ovl` | City search, selection and map state | 4173 B | 431 B | 1284 B |
 | `sidera-edit.ovl` | Location, date and time-zone editors | 3106 B | 112 B | 2670 B |
 | `sidera-cover.ovl` | Splash screen and initial VGA assets | 829 B | 0 B | 5059 B |
 | `sidera-solar.ovl` | Orbits and the Solar System panel opened with X | 5672 B | 82 B | 134 B |
+| `sidera-find.ovl` | Object and constellation search/details | 5071 B | 455 B | 362 B |
 
 Sizes are from the current cc65 build. Each resource also has a 24-byte header,
 read outside the window. Build-time checks reject memory boundary violations.
 
-Resident code, constants and BSS end at `$C2E9` (exclusive).
-After reserving the entire window, **7191 B of unallocated RAM** remain below
-the C stack: 1303 B at `$C2E9–$C7FF` and 5888 B at `$E000–$F6FF`.
-The C stack retains `$F700–$FEFF`, 2048 B. The upper free area is currently neither
-a linker segment nor a heap; using it in future code requires a separate segment
-and corresponding changes to image packing.
+The lower resident code, constants and BSS end at `$C59E` (exclusive).
+Target selection, figure geometry, world map and rendering helpers occupy 4655 B
+in resident HIGH at `$E000–$F22E`, including 79 B of initialized workspace,
+packaged as a second RAM block. After reserving the entire overlay window,
+**1843 B of unallocated RAM** remain below the C stack: 610 B at `$C59E–$C7FF`
+and 1233 B at `$F22F–$F6FF`. The C stack retains `$F700–$FEFF`, 2048 B.
+Unused space is not an automatically available heap.
 
 In the original standalone build used for comparison, data ends at `$D5B1`,
 leaving 8527 B free. After adding X, removing the RMT layer and updating the
-controls, city panel, simulation scheduling, early panels and partial rendering, **1336 B**
+controls, city panel/map, FIND, simulation scheduling, early panels and partial rendering, **6684 B**
 less RAM is available than in the original, after accounting for the window,
 loader and panel code. Unused space inside
 overlays is not included in this result.
@@ -52,16 +54,38 @@ for FOV shortcuts; the mapping is released before returning to the monitor.
 
 ## Calls and data lifetime
 
-A single ld65 invocation links the program and five overlay files sharing the
+A single ld65 invocation links the program and six overlay files sharing the
 same execution address. Calls use ordinary addresses fixed by that build;
 `.ovl` files from different builds cannot be mixed. The packer assigns a shared
-build identifier to the core and headers and records each payload's CRC32.
+build identifier derived from both resident images and all overlays, and records
+each overlay payload's CRC32.
 
 Resident `main` selects an overlay through `ovl_select()` before calling its
 functions. An overlay cannot replace its own window or retain pointers into it
 after returning. Startup proceeds through INIT prepare, optional CITIES for
 `/location`, INIT apply, COVER and the sky view. During observation, overlays
-load when entering K, L/D/Z or X. Sky calculations and S saving are resident.
+load when entering K, L/D/Z, X or F. Sky calculations and S saving are resident.
+
+FIND holds a frozen date and a four-record scan budget. Its 855 match indices use
+1069 bytes of XRAM at `$E200–$E62C`, packed as 10-bit values, after label storage
+and before planet palettes.
+Sky jobs are suspended while this scratch list is in use. Closing FIND schedules
+a full plot clear through the existing incremental renderer and invalidates the
+footer, so Esc does not block on clearing the whole screen. Target identity,
+name, position and stellar vector stay resident across overlay replacements.
+The selected constellation index is resident too. Shared figure geometry uses
+initialized HIGH_DATA so its workspace is part of the second loaded RAM block;
+it does not rely on startup clearing the lower resident BSS. FIND computes
+preview endpoints incrementally, then selection fits the completed sky cache.
+The offline generator prepares 52-character table rows in five fixed columns;
+FIND reads them from SIDFIND3 records rather than parsing identifiers while
+drawing. The 312 px table occupies the left half; the right half holds full
+names, wrapped aliases and positions. Search uses the complete alias field.
+Changing rows on a finished page only inverts two 314-by-10 px rectangles,
+touching 800 bitmap bytes without file reads. Partial-byte masks preserve the
+outer frame. The detail delay uses the 125 Hz clock, starts after the highlight
+update and can be bypassed by Enter. Details clear and paint in bounded steps;
+new navigation cancels pending geometry and replaces the selected page/row.
 
 ## City panel
 
@@ -70,6 +94,20 @@ both compasses, side scales and footer, with no outer margin and a 1 px white fr
 The black-on-white ` CITIES ` label uses the Solar System title style. Search, 20 rows
 spaced 14 px apart, coordinates, result count, messages and help stay inside.
 Long text is clipped with an ellipsis before it reaches the frame.
+
+The list is clipped at 52 characters, with clears restricted to x=1..327.
+A 300x150 map occupies x=334..633, y=77..226, with five empty pixels to the top
+and right frame. Full city/country names are below it. `world_map.c` loads three
+pre-shifted 39-byte rows per event-loop pass. A new continent restarts this
+incremental paint; moving within it updates only four sprite-coordinate bytes.
+The marker is a red 5x5 plus, one pixel thick, centered on the city in a transparent
+8x8, 1bpp Mode 5 sprite with no backing. Plane 0 overlays the bitmap at y=75..228,
+allowing the arms to extend into the map margin at its edges, separately from the
+header Sun at y=0..70. The descriptor uses XRAM `$B0F0–$B0F9`, after the 16 sky/SOLAR
+descriptors; its eight bitmap rows and two palette entries use `$E700–$E70B`.
+Map code is resident HIGH, but its file descriptor, 117-byte buffer and flags
+belong to CITIES. Close the map and hide the sprite before unloading the overlay.
+No sky XRAM caches are borrowed. Missing map data leaves city selection available.
 
 Partial-byte masks preserve the frame during incremental row updates.
 Opening the selector keeps VGA planes and header configured; sky sprites

@@ -1,4 +1,4 @@
-"""Stamp one linked core and its five overlays, then embed them in its ROM.
+"""Stamp the linked resident regions and six overlays, then embed them in ROM.
 
 No relinking or address relocation: every file comes from the same ld65 run.
 """
@@ -9,7 +9,7 @@ import sys
 import zlib
 from pathlib import Path
 
-NAMES = ('init', 'cities', 'edit', 'cover', 'solar')
+NAMES = ('init', 'cities', 'edit', 'cover', 'solar', 'find')
 BASE, LIMIT = 0xC800, 0x1700
 
 
@@ -23,7 +23,9 @@ def package(work):
     symbols = labels(work / 'sidera.lbl')
     core = bytearray((work / 'sidera').read_bytes())
     payloads = [(work / f'sidera.linked.bin.{name}').read_bytes() for name in NAMES]
-    build = hashlib.sha256(bytes(core) + b''.join(payloads)).digest()[:8]
+    high = (work / 'sidera.linked.bin.high').read_bytes()
+    assert 0 < len(high) <= 0x1700
+    build = hashlib.sha256(bytes(core) + high + b''.join(payloads)).digest()[:8]
     stamp = symbols['_ovl_build_id'] - 0x200
     assert 0 <= stamp <= len(core) - 8
     core[stamp:stamp + 8] = build

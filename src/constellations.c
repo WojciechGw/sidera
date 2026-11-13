@@ -62,7 +62,7 @@ unsigned char cs_current(void)
     if(days< -1||days>1)return 0; /* Avoid overflow across the full 1900-2200 range. */
     seconds=days*86400L+((int32_t)moment.hour-computed_date.hour)*3600L+
         ((int)moment.minute-computed_date.minute)*60L+(int)moment.second-computed_date.second;
-    return live?(seconds>=0&&seconds<300):seconds==0;
+    return live&&target_figure==255?(seconds>=0&&seconds<300):seconds==0;
 }
 void cs_begin(void)
 {
@@ -119,6 +119,35 @@ static unsigned char outside(int x,int y)
 {
     return (x<VIEW_LEFT?1:x>=VIEW_RIGHT?2:0)|(y<VIEW_TOP?4:y>bottom?8:0);
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name ("HIGH_CODE")
+#endif
+unsigned char cs_enabled(void){return constellation_mode||target_figure!=255;}
+int cs_focus(Position *p,int *zoom)
+{
+    uint16_t edge[2];unsigned i;Position star;
+    if(!ready||!cache_valid||target_figure==255)return 0;
+    load_figure(target_figure);figure_reset();
+    for(i=0;i<figure.count;++i) {
+        gx_read(XR_EDGES+(figure.first+i)*4u,edge,4);
+        gx_read(positions+edge[0]*4u,&star,4);figure_add(&star);
+        gx_read(positions+edge[1]*4u,&star,4);figure_add(&star);
+    }
+    figure_finish();figure_result(p,zoom);return 1;
+}
+static void paint_star(unsigned j,int x,int y)
+{
+    unsigned char size;int dx,dy;
+    gx_read(XR_META+j,&size,1);size&=3;
+    for(dy=-1;dy<=1;++dy)for(dx=-1;dx<=1;++dx) {
+        if(size==1&&(dx||dy))continue;
+        if(size==2&&dx&&dy)continue;
+        if(!outside(x+dx,y+dy))gx_pixel(x+dx,y+dy);
+    }
+}
+#ifdef SIDERA_OVERLAYS
+#pragma code-name ("CODE")
+#endif
 /* Both ends may be outside: retain a segment crossing the visible window.
  * The horizon is a reference line, not a clipping boundary. */
 static int clip(int *x0,int *y0,int *x1,int *y1)
@@ -145,12 +174,12 @@ static void bounds(int x,int y)
     if(x<box.left)box.left=x;if(x>box.right)box.right=x;
     if(y<box.top)box.top=y;
 }
-static void segment(int x0,int y0,int x1,int y1)
+static void segment(int x0,int y0,int x1,int y1,unsigned char selected)
 {
     if(!clip(&x0,&y0,&x1,&y1))return;
     bounds(x0,y0);bounds(x1,y1);
-    if(constellation_mode==4)return;
-    gx_line(x0,y0,x1,y1,2);
+    if(constellation_mode==4&&!selected)return;
+    gx_line(x0,y0,x1,y1,selected?0:2);
 }
 static int free_label(unsigned char i)
 {
@@ -190,7 +219,7 @@ static void place_label(unsigned char i)
         if(free_label(i))break;
     }
     /* C4 gives star names priority; omit a label if no clear slot remains. */
-    if(attempt==80){if(constellation_mode==4)return;candidate.y=start;}
+    if(attempt==80){if(constellation_mode==4&&i!=target_figure+NAMED_COUNT)return;candidate.y=start;}
     gx_write(XR_LABELS+i*5u,&candidate,5);
 }
 static void mark_star(unsigned char i)
@@ -208,12 +237,12 @@ static void draw_one_label(unsigned char i,unsigned char repair)
 {
     gx_read(XR_LABELS+i*5u,&label,5);
     if(label.w&&(!repair||gx_label_damaged(label.x+1,label.y+1,label.w-2)))
-        gx_label(label.x+1,label.y+1,label_text(i),0);
+        gx_label(label.x+1,label.y+1,label_text(i),i==target_figure+NAMED_COUNT);
 }
 void cs_labels(unsigned char repair)
 {
     unsigned char i;
-    if(constellation_mode<3||!labels_valid)return;
+    if((constellation_mode<3&&target_figure==255)||!labels_valid)return;
     if(constellation_mode==4)for(i=0;i<NAMED_COUNT;++i)mark_star(i);
     for(i=0;i<LABEL_COUNT;++i)draw_one_label(i,repair);
 }
@@ -232,15 +261,15 @@ void cs_draw_begin(void)
     bottom=VIEW_BOTTOM-1;
     draw_edge=draw_star=draw_figure=draw_label=draw_named=0;
     if(constellation_mode==4)for(i=0;i<NAMED_COUNT;++i)
-        if(!ready||!project_star(named_stars[i],&markers[i].x,&markers[i].y))markers[i].x=-10000;
+        if(target_id==named_stars[i]+8u||!ready||!project_star(named_stars[i],&markers[i].x,&markers[i].y))markers[i].x=-10000;
 }
 /* One edge, one star or one label at a time; the caller supplies a budget. */
 unsigned char cs_draw_step(void)
 {
     uint16_t edge[2];unsigned j;
     unsigned char c,size;
-    int x,y,x1,y1,dx,dy;
-    if(!constellation_mode||!ready)return 1;
+    int x,y,x1,y1;
+    if(!cs_enabled()||!ready)return 1;
     if(constellation_mode==4&&draw_named<NAMED_COUNT) {
         c=draw_named++;
         if(markers[c].x>=0) {
@@ -256,30 +285,30 @@ unsigned char cs_draw_step(void)
             box.left=VIEW_RIGHT;box.right=VIEW_LEFT-1;
             box.top=VIEW_BOTTOM;
         }
-        if(constellation_mode<2 || (constellation_mode==4&&c!=CS_UMA&&c!=CS_UMI&&c!=CS_CRU&&c!=CS_CEN&&c!=CS_OCT) ||
-           draw_edge==figure.count){if(constellation_mode>=3)place_label(c+NAMED_COUNT);++draw_figure;draw_edge=0;continue;}
+        if((c!=target_figure&&(constellation_mode<2 || (constellation_mode==4&&c!=CS_UMA&&c!=CS_UMI&&c!=CS_CRU&&c!=CS_CEN&&c!=CS_OCT))) ||
+           draw_edge==figure.count){if(constellation_mode>=3||c==target_figure)place_label(c+NAMED_COUNT);++draw_figure;draw_edge=0;continue;}
         gx_read(XR_EDGES+(figure.first+draw_edge++)*4u,edge,4);
         project_star(edge[0],&x,&y);project_star(edge[1],&x1,&y1);
+        if(c==target_figure) {
+            paint_star(edge[0],x,y);paint_star(edge[1],x1,y1);
+            if(!outside(x,y))bounds(x,y);if(!outside(x1,y1))bounds(x1,y1);
+        }
         if(abs(x1-x)>gx_circle/2) {
             if(x<x1)x+=gx_circle;else x1+=gx_circle;
-            segment(x,y,x1,y1);segment(x-gx_circle,y,x1-gx_circle,y1);
-        } else segment(x,y,x1,y1);
+            segment(x,y,x1,y1,c==target_figure);segment(x-gx_circle,y,x1-gx_circle,y1,c==target_figure);
+        } else segment(x,y,x1,y1,c==target_figure);
         return 0;
     }
-    if(draw_star<STAR_COUNT) {
+    if(constellation_mode&&draw_star<STAR_COUNT) {
         j=draw_star++;
+        if(target_id==j+8u)return 0; /* Selected star uses its exact current position. */
         gx_read(XR_META+j,&size,1);
         if(constellation_mode==4&&!(size&128))return 0;
         if(!project_star(j,&x,&y))return 0;
-        size&=3;
-        for(dy=-1;dy<=1;++dy)for(dx=-1;dx<=1;++dx) {
-            if(size==1&&(dx||dy))continue;
-            if(size==2&&dx&&dy)continue;
-            if(!outside(x+dx,y+dy))gx_pixel(x+dx,y+dy);
-        }
+        paint_star(j,x,y);
         return 0;
     }
-    if(constellation_mode>=3&&draw_label<LABEL_COUNT) {
+    if((constellation_mode>=3||target_figure!=255)&&draw_label<LABEL_COUNT) {
         c=draw_label++;
         if(constellation_mode==4&&c<NAMED_COUNT)mark_star(c);
         draw_one_label(c,0);

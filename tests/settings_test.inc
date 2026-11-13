@@ -6,7 +6,7 @@ static void startup_settings(const char *asset)
         "/date","1945-09-01 02:45:00","/view","65,+14","/fov","160",
         "/grid","1","/paths","on","/planets","on","/constellations","4"};
     char *override[]={(char *)asset,"/config",config,"/view","330,9","/location","US/Los Angeles"};
-    static const char *bad[][2]={{"/view","360,0"},{"/view","0,-55"},{"/view","0,55"},
+    static const char *bad[][2]={{"/view","360,0"},{"/view","0,-91"},{"/view","0,91"},
         {"/view","0,0junk"},{"/view","0"},{"/fov","49"},{"/fov","161"},{"/fov","55"},
         {"/grid","4"},{"/grid","9"},{"/constellations","5"},{"/paths","1"},
         {"/planets","yes"},{"/date","1945-02-29 00:00:00"},{"/unknown","1"}};
@@ -60,8 +60,9 @@ static void startup_settings(const char *asset)
     /* Longest names/coordinates, numeric limits and the compact output buffer. */
     strcpy(saved_name,location_name);memset(location_name,'X',44);location_name[44]=0;
     observer.latitude=3240000L;observer.longitude=-6480000L;observer.altitude=10000;
-    bearing=359;elevation=-54;gx_zoom(160-fov);grid=3;trails=planets=0;constellation_mode=4;
-    assert(config_save());bearing=0;assert(config_load()==1&&bearing==359&&elevation==-54);
+    bearing=359;elevation=-90;gx_zoom(160-fov);grid=3;trails=planets=0;constellation_mode=4;
+    assert(config_save());bearing=0;assert(config_load()==1&&bearing==359&&elevation==-90);
+    assert(option_value(OPT_VIEW,"0,90",1)&&elevation==90);
     assert(strlen(location_name)==44&&observer.altitude==10000);
     observer=saved;moment=date;strcpy(location_name,saved_name);note[0]=0;remove(config);
     puts("PASS: startup settings, CLI precedence/ranges, complete save/reload, LIVE and paused simulation");

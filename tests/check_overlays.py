@@ -20,6 +20,9 @@ assert len(assets) == len(rom.assets)
 symbols = labels(work / 'sidera.lbl')
 binary = (work / 'sidera.bin').read_bytes()
 expected = dict(enumerate(binary, 0x200))
+high = (work / 'sidera.linked.bin.high').read_bytes()
+assert 0 < len(high) <= 0x1700
+expected.update(enumerate(high, 0xE000))
 expected.update({0xFFFC: 0, 0xFFFD: 2})
 assert rom.data == expected, 'Overlays must be assets, not initial CPU memory'
 end = max(0x200 + len(binary), symbols['__BSS_RUN__'] + symbols['__BSS_SIZE__'])
@@ -57,7 +60,11 @@ assert symbols['_solar_visible'] < BASE and symbols['_solar_date'] < BASE
 assert BASE <= symbols['_cities_key'] < BASE + LIMIT
 assert BASE <= symbols['_show_cover'] < BASE + LIMIT
 assert BASE <= symbols['_assets_base'] < BASE + LIMIT
-free = BASE - end + (0xF700 - 0xE000)
-print(f'PASS: SIDERA, five verified ROM overlays at $C800-$DEFF, scratch $DF00-$DFFF; '
+assert BASE <= symbols['_find_key'] < BASE + LIMIT
+assert symbols['_find_active'] < BASE and symbols['_target_id'] < BASE
+assert 0xE000 <= symbols['_target_draw'] < 0xF700
+assert 0xE000 <= symbols['_cities_step'] < 0xF700
+free = BASE - end + (0xF700 - 0xE000 - len(high))
+print(f'PASS: SIDERA, six verified ROM overlays at $C800-$DEFF, scratch $DF00-$DFFF; '
       f'core ends ${end:04X}; {free} bytes unallocated below the C stack '
-      f'({BASE - end} below the overlay, 5888 above it).')
+      f'({BASE - end} below the overlay, {5888-len(high)} above resident HIGH).')

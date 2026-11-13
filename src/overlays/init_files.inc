@@ -41,7 +41,7 @@ int option_value(unsigned char code,const char *value,unsigned char apply)
         if(code==OPT_VIEW) {
             if(*p++!=',')return 0;
             if(*p=='-'){sign=-1;++p;}else if(*p=='+')++p;
-            b=number(&p,54);if(b<0)return 0;
+            b=number(&p,90);if(b<0)return 0;
         }
         if(*p)return 0;
     }

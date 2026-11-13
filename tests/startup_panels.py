@@ -40,7 +40,7 @@ with rp6502.Emu() as emu:
     text_at(data,256,31,'Rio de Janeiro [BR]')
     text_at(data,226,43,'Sun AZ ... ALT ...')
     text_at(data,412,43,'Moon AZ ... ALT ... LIT ...')
-    for x,text in ((114,' grid '),(180,' paths '),(246,' Planets '),(330,' constellations ')):
+    for x,text in ((113,' grid '),(167,' paths '),(227,' Planets '),(299,' constellations ')):
         text_at(data,x,462,text,True)
     empty_plot(data)
     emu.cmd('peek _header_visible 0')

@@ -1,0 +1,6078 @@
+{
+  "source": "https://github.com/ofrohn/d3-celestial/blob/e4e84411d74bddf2e49af0655851d617f817593c/data/starnames.json",
+  "sha256": "19c84bc885f8a97c3b8e1f6a380084c575a9758dedfe35256e911a823ec3a695",
+  "stars": {
+    "9640": {
+      "name": "Almach",
+      "bayer": "Gamma1",
+      "flam": "57",
+      "var": "",
+      "hd": "HD 12533",
+      "c": "And"
+    },
+    "5447": {
+      "name": "Mirach",
+      "bayer": "Beta",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 6860",
+      "c": "And"
+    },
+    "3092": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "31",
+      "var": "",
+      "hd": "HD 3627",
+      "c": "And"
+    },
+    "677": {
+      "name": "Alpheratz",
+      "bayer": "Alpha",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 358",
+      "c": "And"
+    },
+    "4463": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "38",
+      "var": "",
+      "hd": "HD 5516",
+      "c": "And"
+    },
+    "3693": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 4502",
+      "c": "And"
+    },
+    "3031": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 3546",
+      "c": "And"
+    },
+    "2912": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "29",
+      "var": "",
+      "hd": "HD 3369",
+      "c": "And"
+    },
+    "116631": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "17",
+      "var": "",
+      "hd": "HD 222173",
+      "c": "And"
+    },
+    "113726": {
+      "name": "",
+      "bayer": "Omicron",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 217675",
+      "c": "And"
+    },
+    "116805": {
+      "name": "",
+      "bayer": "Kappa",
+      "flam": "19",
+      "var": "",
+      "hd": "HD 222439",
+      "c": "And"
+    },
+    "116584": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 222107",
+      "c": "And"
+    },
+    "4436": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "37",
+      "var": "",
+      "hd": "HD 5448",
+      "c": "And"
+    },
+    "3881": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 4727",
+      "c": "And"
+    },
+    "5434": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "42",
+      "var": "",
+      "hd": "HD 6811",
+      "c": "And"
+    },
+    "7607": {
+      "name": "Nembus",
+      "bayer": "",
+      "flam": "51",
+      "var": "",
+      "hd": "HD 9927",
+      "c": "And"
+    },
+    "117221": {
+      "name": "",
+      "bayer": "Psi",
+      "flam": "20",
+      "var": "",
+      "hd": "HD 223047",
+      "c": "And"
+    },
+    "46515": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 82150",
+      "c": "Ant"
+    },
+    "51172": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 90610",
+      "c": "Ant"
+    },
+    "53502": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 94890",
+      "c": "Ant"
+    },
+    "72370": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 129078",
+      "c": "Aps"
+    },
+    "80047": {
+      "name": "",
+      "bayer": "Delta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 145366",
+      "c": "Aps"
+    },
+    "81852": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 149324",
+      "c": "Aps"
+    },
+    "81065": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 147675",
+      "c": "Aps"
+    },
+    "102618": {
+      "name": "Albali",
+      "bayer": "Epsilon",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 198001",
+      "c": "Aqr"
+    },
+    "103045": {
+      "name": "Albulan",
+      "bayer": "Mu",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 198743",
+      "c": "Aqr"
+    },
+    "106278": {
+      "name": "Sadalsuud",
+      "bayer": "Beta",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 204867",
+      "c": "Aqr"
+    },
+    "109074": {
+      "name": "Sadalmelik",
+      "bayer": "Alpha",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 209750",
+      "c": "Aqr"
+    },
+    "110395": {
+      "name": "Sadachbia",
+      "bayer": "Gamma",
+      "flam": "48",
+      "var": "",
+      "hd": "HD 212061",
+      "c": "Aqr"
+    },
+    "110960": {
+      "name": "Sadaltager",
+      "bayer": "Zeta1",
+      "flam": "55",
+      "var": "",
+      "hd": "HD 213051",
+      "c": "Aqr"
+    },
+    "111497": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "62",
+      "var": "",
+      "hd": "HD 213998",
+      "c": "Aqr"
+    },
+    "112961": {
+      "name": "Hydor",
+      "bayer": "Lambda",
+      "flam": "73",
+      "var": "",
+      "hd": "HD 216386",
+      "c": "Aqr"
+    },
+    "115033": {
+      "name": "",
+      "bayer": "Psi2",
+      "flam": "93",
+      "var": "",
+      "hd": "HD 219688",
+      "c": "Aqr"
+    },
+    "114341": {
+      "name": "",
+      "bayer": "c2",
+      "flam": "88",
+      "var": "",
+      "hd": "HD 218594",
+      "c": "Aqr"
+    },
+    "109139": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "33",
+      "var": "",
+      "hd": "HD 209819",
+      "c": "Aqr"
+    },
+    "110003": {
+      "name": "Ancha",
+      "bayer": "Theta",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 211391",
+      "c": "Aqr"
+    },
+    "110672": {
+      "name": "Seat",
+      "bayer": "Pi",
+      "flam": "52",
+      "var": "",
+      "hd": "HD 212571",
+      "c": "Aqr"
+    },
+    "115438": {
+      "name": "",
+      "bayer": "b1",
+      "flam": "98",
+      "var": "",
+      "hd": "HD 220321",
+      "c": "Aqr"
+    },
+    "116901": {
+      "name": "",
+      "bayer": "A2",
+      "flam": "104",
+      "var": "",
+      "hd": "HD 222574",
+      "c": "Aqr"
+    },
+    "97278": {
+      "name": "Tarazed",
+      "bayer": "Gamma",
+      "flam": "50",
+      "var": "",
+      "hd": "HD 186791",
+      "c": "Aql"
+    },
+    "97649": {
+      "name": "Altair",
+      "bayer": "Alpha",
+      "flam": "53",
+      "var": "",
+      "hd": "HD 187642",
+      "c": "Aql"
+    },
+    "98036": {
+      "name": "Alshain",
+      "bayer": "Beta",
+      "flam": "60",
+      "var": "",
+      "hd": "HD 188512",
+      "c": "Aql"
+    },
+    "99473": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "65",
+      "var": "",
+      "hd": "HD 191692",
+      "c": "Aql"
+    },
+    "97804": {
+      "name": "Tarazed",
+      "bayer": "Eta",
+      "flam": "55",
+      "var": "",
+      "hd": "HD 187929",
+      "c": "Aql"
+    },
+    "95501": {
+      "name": "Almizan",
+      "bayer": "Delta",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 182640",
+      "c": "Aql"
+    },
+    "93747": {
+      "name": "Okab",
+      "bayer": "Zeta",
+      "flam": "17",
+      "var": "",
+      "hd": "HD 177724",
+      "c": "Aql"
+    },
+    "93805": {
+      "name": "Al Thalimain Prior",
+      "bayer": "Lambda",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 177756",
+      "c": "Aql"
+    },
+    "85267": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 157246",
+      "c": "Ara"
+    },
+    "85727": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 158094",
+      "c": "Ara"
+    },
+    "82363": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 151249",
+      "c": "Ara"
+    },
+    "83081": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 152786",
+      "c": "Ara"
+    },
+    "83153": {
+      "name": "",
+      "bayer": "Epsilon1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 152980",
+      "c": "Ara"
+    },
+    "85792": {
+      "name": "Choo",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 158427",
+      "c": "Ara"
+    },
+    "85258": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 157244",
+      "c": "Ara"
+    },
+    "13209": {
+      "name": "Bharani",
+      "bayer": "c",
+      "flam": "41",
+      "var": "",
+      "hd": "HD 17573",
+      "c": "Ari"
+    },
+    "9884": {
+      "name": "Hamal",
+      "bayer": "Alpha",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 12929",
+      "c": "Ari"
+    },
+    "8903": {
+      "name": "Sheratan",
+      "bayer": "Beta",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 11636",
+      "c": "Ari"
+    },
+    "8832": {
+      "name": "Mesarthim",
+      "bayer": "Gamma1",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 11502",
+      "c": "Ari"
+    },
+    "28360": {
+      "name": "Menkalinan",
+      "bayer": "Beta",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 40183",
+      "c": "Aur"
+    },
+    "24608": {
+      "name": "Capella",
+      "bayer": "Alpha",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 34029",
+      "c": "Aur"
+    },
+    "23767": {
+      "name": "Haedus",
+      "bayer": "Eta",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 32630",
+      "c": "Aur"
+    },
+    "23015": {
+      "name": "Hassaleh",
+      "bayer": "Iota",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 31398",
+      "c": "Aur"
+    },
+    "25428": {
+      "name": "Elnath",
+      "bayer": "Beta",
+      "flam": "112",
+      "var": "",
+      "hd": "HD 35497",
+      "c": "Tau"
+    },
+    "28380": {
+      "name": "Mahasim",
+      "bayer": "Theta",
+      "flam": "37",
+      "var": "",
+      "hd": "HD 40312",
+      "c": "Aur"
+    },
+    "28358": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "33",
+      "var": "",
+      "hd": "HD 40035",
+      "c": "Aur"
+    },
+    "23416": {
+      "name": "Almaaz",
+      "bayer": "Epsilon",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 31964",
+      "c": "Aur"
+    },
+    "23453": {
+      "name": "Saclateni",
+      "bayer": "Zeta",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 32068",
+      "c": "Aur"
+    },
+    "67275": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 120136",
+      "c": "Boo"
+    },
+    "67927": {
+      "name": "Muphrid",
+      "bayer": "Eta",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 121370",
+      "c": "Boo"
+    },
+    "69673": {
+      "name": "Arcturus",
+      "bayer": "Alpha",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 124897",
+      "c": "Boo"
+    },
+    "71053": {
+      "name": "",
+      "bayer": "Rho",
+      "flam": "25",
+      "var": "",
+      "hd": "HD 127665",
+      "c": "Boo"
+    },
+    "71075": {
+      "name": "Seginus",
+      "bayer": "Gamma",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 127762",
+      "c": "Boo"
+    },
+    "73555": {
+      "name": "Nekkar",
+      "bayer": "Beta",
+      "flam": "42",
+      "var": "",
+      "hd": "HD 133208",
+      "c": "Boo"
+    },
+    "74666": {
+      "name": "Thiba",
+      "bayer": "Delta",
+      "flam": "49",
+      "var": "",
+      "hd": "HD 135722",
+      "c": "Boo"
+    },
+    "72105": {
+      "name": "Izar",
+      "bayer": "Epsilon",
+      "flam": "36",
+      "var": "",
+      "hd": "HD 129988",
+      "c": "Boo"
+    },
+    "71795": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 129246",
+      "c": "Boo"
+    },
+    "69732": {
+      "name": "Xuange",
+      "bayer": "Lambda",
+      "flam": "19",
+      "var": "",
+      "hd": "HD 125162",
+      "c": "Boo"
+    },
+    "69481": {
+      "name": "",
+      "bayer": "Kappa1",
+      "flam": "17",
+      "var": "",
+      "hd": "HD 124674",
+      "c": "Boo"
+    },
+    "70497": {
+      "name": "Asellus Primus",
+      "bayer": "Theta",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 126660",
+      "c": "Boo"
+    },
+    "21060": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 28873",
+      "c": "Cae"
+    },
+    "21770": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 29875",
+      "c": "Cae"
+    },
+    "21861": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 29992",
+      "c": "Cae"
+    },
+    "23595": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 32831",
+      "c": "Cae"
+    },
+    "23040": {
+      "name": "",
+      "bayer": "",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 31278",
+      "c": "Cam"
+    },
+    "23522": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 31910",
+      "c": "Cam"
+    },
+    "22783": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 30614",
+      "c": "Cam"
+    },
+    "17959": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 23401",
+      "c": "Cam"
+    },
+    "17884": {
+      "name": "",
+      "bayer": "",
+      "flam": "",
+      "var": "BE",
+      "hd": "HD 23475",
+      "c": "Cam"
+    },
+    "16228": {
+      "name": "",
+      "bayer": "",
+      "flam": "",
+      "var": "CS",
+      "hd": "HD 21291",
+      "c": "Cam"
+    },
+    "29997": {
+      "name": "",
+      "bayer": "",
+      "flam": "",
+      "var": "",
+      "hd": "",
+      "c": ""
+    },
+    "33694": {
+      "name": "",
+      "bayer": "",
+      "flam": "",
+      "var": "",
+      "hd": "",
+      "c": ""
+    },
+    "44066": {
+      "name": "Acubens",
+      "bayer": "Alpha",
+      "flam": "65",
+      "var": "",
+      "hd": "HD 76756",
+      "c": "Cnc"
+    },
+    "42911": {
+      "name": "Asellus Australis",
+      "bayer": "Delta",
+      "flam": "47",
+      "var": "",
+      "hd": "HD 74442",
+      "c": "Cnc"
+    },
+    "42806": {
+      "name": "Asellus Borealis",
+      "bayer": "Gamma",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 74198",
+      "c": "Cnc"
+    },
+    "43100": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "48",
+      "var": "",
+      "hd": "HD 74738",
+      "c": "Cnc"
+    },
+    "40526": {
+      "name": "Tarf",
+      "bayer": "Beta",
+      "flam": "17",
+      "var": "",
+      "hd": "HD 69267",
+      "c": "Cnc"
+    },
+    "63121": {
+      "name": "",
+      "bayer": "Alpha1",
+      "flam": "12",
+      "var": "",
+      "hd": "HD 112412",
+      "c": "CVn"
+    },
+    "61317": {
+      "name": "Chara",
+      "bayer": "Beta",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 109358",
+      "c": "CVn"
+    },
+    "30324": {
+      "name": "Mirzam",
+      "bayer": "Beta",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 44743",
+      "c": "CMa"
+    },
+    "32349": {
+      "name": "Sirius",
+      "bayer": "Alpha",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 48915",
+      "c": "CMa"
+    },
+    "33977": {
+      "name": "Al Zara",
+      "bayer": "Omicron2",
+      "flam": "24",
+      "var": "",
+      "hd": "HD 53138",
+      "c": "CMa"
+    },
+    "34444": {
+      "name": "Wezen",
+      "bayer": "Delta",
+      "flam": "25",
+      "var": "",
+      "hd": "HD 54605",
+      "c": "CMa"
+    },
+    "33856": {
+      "name": "Unurgunite",
+      "bayer": "Sigma",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 52877",
+      "c": "CMa"
+    },
+    "33579": {
+      "name": "Adhara",
+      "bayer": "Epsilon",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 52089",
+      "c": "CMa"
+    },
+    "30122": {
+      "name": "Furud",
+      "bayer": "Zeta",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 44402",
+      "c": "CMa"
+    },
+    "35904": {
+      "name": "Aludra",
+      "bayer": "Eta",
+      "flam": "31",
+      "var": "",
+      "hd": "HD 58350",
+      "c": "CMa"
+    },
+    "33347": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "20",
+      "var": "",
+      "hd": "HD 51309",
+      "c": "CMa"
+    },
+    "34045": {
+      "name": "Muliphein",
+      "bayer": "Gamma",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 53244",
+      "c": "CMa"
+    },
+    "33160": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "14",
+      "var": "",
+      "hd": "HD 50778",
+      "c": "CMa"
+    },
+    "37279": {
+      "name": "Procyon",
+      "bayer": "Alpha",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 61421",
+      "c": "CMi"
+    },
+    "36188": {
+      "name": "Gomeisa",
+      "bayer": "Beta",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 58715",
+      "c": "CMi"
+    },
+    "100027": {
+      "name": "Prima Giedi",
+      "bayer": "Alpha1",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 192876",
+      "c": "Cap"
+    },
+    "100345": {
+      "name": "Dabih",
+      "bayer": "Beta",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 193495",
+      "c": "Cap"
+    },
+    "101027": {
+      "name": "",
+      "bayer": "Rho",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 194943",
+      "c": "Cap"
+    },
+    "102485": {
+      "name": "Wei",
+      "bayer": "Psi",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 197692",
+      "c": "Cap"
+    },
+    "102978": {
+      "name": "",
+      "bayer": "Omega",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 198542",
+      "c": "Cap"
+    },
+    "105881": {
+      "name": "Yen",
+      "bayer": "Zeta",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 204075",
+      "c": "Cap"
+    },
+    "107556": {
+      "name": "Deneb Algedi",
+      "bayer": "Delta",
+      "flam": "49",
+      "var": "",
+      "hd": "HD 207098",
+      "c": "Cap"
+    },
+    "106985": {
+      "name": "Nashira",
+      "bayer": "Gamma",
+      "flam": "40",
+      "var": "",
+      "hd": "HD 206088",
+      "c": "Cap"
+    },
+    "105515": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "32",
+      "var": "",
+      "hd": "HD 203387",
+      "c": "Cap"
+    },
+    "104139": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 200761",
+      "c": "Cap"
+    },
+    "31685": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 47670",
+      "c": "Pup"
+    },
+    "30438": {
+      "name": "Canopus",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 45348",
+      "c": "Car"
+    },
+    "45238": {
+      "name": "Miaplacidus",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 80007",
+      "c": "Car"
+    },
+    "50099": {
+      "name": "",
+      "bayer": "Omega",
+      "flam": "",
+      "var": "",
+      "hd": "HD 89080",
+      "c": "Car"
+    },
+    "52419": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 93030",
+      "c": "Car"
+    },
+    "51576": {
+      "name": "",
+      "bayer": "p",
+      "flam": "",
+      "var": "PP",
+      "hd": "HD 91465",
+      "c": "Car"
+    },
+    "50371": {
+      "name": "",
+      "bayer": "q",
+      "flam": "",
+      "var": "V0337",
+      "hd": "HD 89388",
+      "c": "Car"
+    },
+    "45556": {
+      "name": "Aspidiske",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 80404",
+      "c": "Car"
+    },
+    "41037": {
+      "name": "Avior",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 71129",
+      "c": "Car"
+    },
+    "38827": {
+      "name": "",
+      "bayer": "Chi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 65575",
+      "c": "Car"
+    },
+    "39953": {
+      "name": "Regor",
+      "bayer": "Gamma2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 68273",
+      "c": "Vel"
+    },
+    "42913": {
+      "name": "Alsephina",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 74956",
+      "c": "Vel"
+    },
+    "54301": {
+      "name": "",
+      "bayer": "z",
+      "flam": "",
+      "var": "",
+      "hd": "HD 96566",
+      "c": "Car"
+    },
+    "54461": {
+      "name": "",
+      "bayer": "z2",
+      "flam": "",
+      "var": "V0371",
+      "hd": "HD 96919",
+      "c": "Car"
+    },
+    "54751": {
+      "name": "",
+      "bayer": "y",
+      "flam": "",
+      "var": "V0533",
+      "hd": "HD 97534",
+      "c": "Car"
+    },
+    "54463": {
+      "name": "",
+      "bayer": "x",
+      "flam": "",
+      "var": "V0382",
+      "hd": "HD 96918",
+      "c": "Car"
+    },
+    "53253": {
+      "name": "",
+      "bayer": "u",
+      "flam": "",
+      "var": "",
+      "hd": "HD 94510",
+      "c": "Car"
+    },
+    "8886": {
+      "name": "Segin",
+      "bayer": "Epsilon",
+      "flam": "45",
+      "var": "",
+      "hd": "HD 11415",
+      "c": "Cas"
+    },
+    "6686": {
+      "name": "Ruchbah",
+      "bayer": "Delta",
+      "flam": "37",
+      "var": "",
+      "hd": "HD 8538",
+      "c": "Cas"
+    },
+    "4427": {
+      "name": "Navi",
+      "bayer": "Gamma",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 5394",
+      "c": "Cas"
+    },
+    "3179": {
+      "name": "Shedar",
+      "bayer": "Alpha",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 3712",
+      "c": "Cas"
+    },
+    "746": {
+      "name": "Caph",
+      "bayer": "Beta",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 432",
+      "c": "Cas"
+    },
+    "55425": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 98718",
+      "c": "Cen"
+    },
+    "59196": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 105435",
+      "c": "Cen"
+    },
+    "60823": {
+      "name": "",
+      "bayer": "Sigma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 108483",
+      "c": "Cen"
+    },
+    "61932": {
+      "name": "Muhlifain",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 110304",
+      "c": "Cen"
+    },
+    "66657": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 118716",
+      "c": "Cen"
+    },
+    "68002": {
+      "name": "Alnair",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 121263",
+      "c": "Cen"
+    },
+    "67472": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 120324",
+      "c": "Cen"
+    },
+    "67464": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 120307",
+      "c": "Cen"
+    },
+    "68933": {
+      "name": "Menkent",
+      "bayer": "Theta",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 123139",
+      "c": "Cen"
+    },
+    "71352": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 127972",
+      "c": "Cen"
+    },
+    "73334": {
+      "name": "Ke Kwan",
+      "bayer": "Kappa",
+      "flam": "",
+      "var": "",
+      "hd": "HD 132200",
+      "c": "Cen"
+    },
+    "65109": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 115892",
+      "c": "Cen"
+    },
+    "71681": {
+      "name": "Toliman",
+      "bayer": "Alpha2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 128621",
+      "c": "Cen"
+    },
+    "68702": {
+      "name": "Hadar",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 122451",
+      "c": "Cen"
+    },
+    "59449": {
+      "name": "",
+      "bayer": "Rho",
+      "flam": "",
+      "var": "",
+      "hd": "HD 105937",
+      "c": "Cen"
+    },
+    "56243": {
+      "name": "",
+      "bayer": "Omicron1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 100261",
+      "c": "Cen"
+    },
+    "101093": {
+      "name": "Al Kidr",
+      "bayer": "Theta",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 195725",
+      "c": "Cep"
+    },
+    "102422": {
+      "name": "Kabalfird",
+      "bayer": "Eta",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 198149",
+      "c": "Cep"
+    },
+    "105199": {
+      "name": "Alderamin",
+      "bayer": "Alpha",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 203280",
+      "c": "Cep"
+    },
+    "107259": {
+      "name": "The Garnet Star",
+      "bayer": "Mu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 206936",
+      "c": "Cep"
+    },
+    "109857": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 211336",
+      "c": "Cep"
+    },
+    "109492": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 210745",
+      "c": "Cep"
+    },
+    "110991": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 213306",
+      "c": "Cep"
+    },
+    "112724": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "32",
+      "var": "",
+      "hd": "HD 216228",
+      "c": "Cep"
+    },
+    "116727": {
+      "name": "Errai",
+      "bayer": "Gamma",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 222404",
+      "c": "Cep"
+    },
+    "106032": {
+      "name": "Alfirk",
+      "bayer": "Beta",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 205021",
+      "c": "Cep"
+    },
+    "12706": {
+      "name": "Kaffaljidhma",
+      "bayer": "Gamma",
+      "flam": "86",
+      "var": "",
+      "hd": "HD 16970",
+      "c": "Cet"
+    },
+    "12093": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "78",
+      "var": "",
+      "hd": "HD 16161",
+      "c": "Cet"
+    },
+    "11484": {
+      "name": "",
+      "bayer": "Xi2",
+      "flam": "73",
+      "var": "",
+      "hd": "HD 15318",
+      "c": "Cet"
+    },
+    "12828": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "87",
+      "var": "",
+      "hd": "HD 17094",
+      "c": "Cet"
+    },
+    "13954": {
+      "name": "Menkar",
+      "bayer": "Lambda",
+      "flam": "91",
+      "var": "",
+      "hd": "HD 18604",
+      "c": "Cet"
+    },
+    "14135": {
+      "name": "Menkar",
+      "bayer": "Alpha",
+      "flam": "92",
+      "var": "",
+      "hd": "HD 18884",
+      "c": "Cet"
+    },
+    "12387": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "82",
+      "var": "",
+      "hd": "HD 16582",
+      "c": "Cet"
+    },
+    "10826": {
+      "name": "Mira",
+      "bayer": "Omicron",
+      "flam": "68",
+      "var": "",
+      "hd": "HD 14386",
+      "c": "Cet"
+    },
+    "8645": {
+      "name": "Baten Kaitos",
+      "bayer": "Zeta",
+      "flam": "55",
+      "var": "",
+      "hd": "HD 11353",
+      "c": "Cet"
+    },
+    "8102": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "52",
+      "var": "",
+      "hd": "HD 10700",
+      "c": "Cet"
+    },
+    "3419": {
+      "name": "Diphda",
+      "bayer": "Beta",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 4128",
+      "c": "Cet"
+    },
+    "1562": {
+      "name": "Deneb Kaitos Shemali",
+      "bayer": "Iota",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 1522",
+      "c": "Cet"
+    },
+    "5364": {
+      "name": "Dheneb",
+      "bayer": "Eta",
+      "flam": "31",
+      "var": "",
+      "hd": "HD 6805",
+      "c": "Cet"
+    },
+    "6537": {
+      "name": "Al Naymat",
+      "bayer": "Theta",
+      "flam": "45",
+      "var": "",
+      "hd": "HD 8512",
+      "c": "Cet"
+    },
+    "40702": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 71243",
+      "c": "Cha"
+    },
+    "51839": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 92305",
+      "c": "Cha"
+    },
+    "52595": {
+      "name": "",
+      "bayer": "Delta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 93779",
+      "c": "Cha"
+    },
+    "60000": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 106911",
+      "c": "Cha"
+    },
+    "58484": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 104174",
+      "c": "Cha"
+    },
+    "74824": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 135379",
+      "c": "Cir"
+    },
+    "71908": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 128898",
+      "c": "Cir"
+    },
+    "75323": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 136415",
+      "c": "Cir"
+    },
+    "30277": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 44762",
+      "c": "Col"
+    },
+    "27628": {
+      "name": "Wazn",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 39425",
+      "c": "Col"
+    },
+    "26634": {
+      "name": "Phact",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 37795",
+      "c": "Col"
+    },
+    "25859": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 36597",
+      "c": "Col"
+    },
+    "28328": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 40808",
+      "c": "Col"
+    },
+    "64241": {
+      "name": "Diadem",
+      "bayer": "Alpha",
+      "flam": "42",
+      "var": "",
+      "hd": "HD 114378",
+      "c": "Com"
+    },
+    "64394": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 114710",
+      "c": "Com"
+    },
+    "60742": {
+      "name": "Al Dafirah",
+      "bayer": "Gamma",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 108381",
+      "c": "Com"
+    },
+    "93174": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 175813",
+      "c": "CrA"
+    },
+    "93825": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 177474",
+      "c": "CrA"
+    },
+    "94114": {
+      "name": "Meridiana",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 178253",
+      "c": "CrA"
+    },
+    "94160": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 178345",
+      "c": "CrA"
+    },
+    "94005": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 177873",
+      "c": "CrA"
+    },
+    "93542": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 176638",
+      "c": "CrA"
+    },
+    "92382": {
+      "name": "",
+      "bayer": "Eta2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 173861",
+      "c": "CrA"
+    },
+    "90982": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 170845",
+      "c": "CrA"
+    },
+    "76127": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 138749",
+      "c": "CrB"
+    },
+    "75695": {
+      "name": "Nusakan",
+      "bayer": "Beta",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 137909",
+      "c": "CrB"
+    },
+    "76267": {
+      "name": "Alphecca",
+      "bayer": "Alpha",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 139006",
+      "c": "CrB"
+    },
+    "76952": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 140436",
+      "c": "CrB"
+    },
+    "77512": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 141714",
+      "c": "CrB"
+    },
+    "78159": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 143107",
+      "c": "CrB"
+    },
+    "78493": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "14",
+      "var": "",
+      "hd": "HD 143807",
+      "c": "CrB"
+    },
+    "59199": {
+      "name": "Alchiba",
+      "bayer": "Alpha",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 105452",
+      "c": "Crv"
+    },
+    "59316": {
+      "name": "Minkar",
+      "bayer": "Epsilon",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 105707",
+      "c": "Crv"
+    },
+    "59803": {
+      "name": "Gienah",
+      "bayer": "Gamma",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 106625",
+      "c": "Crv"
+    },
+    "60965": {
+      "name": "Algorab",
+      "bayer": "Delta",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 108767",
+      "c": "Crv"
+    },
+    "61359": {
+      "name": "Kraz",
+      "bayer": "Beta",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 109379",
+      "c": "Crv"
+    },
+    "56633": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 100889",
+      "c": "Crt"
+    },
+    "55687": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "14",
+      "var": "",
+      "hd": "HD 99167",
+      "c": "Crt"
+    },
+    "55282": {
+      "name": "Labr",
+      "bayer": "Delta",
+      "flam": "12",
+      "var": "",
+      "hd": "HD 98430",
+      "c": "Crt"
+    },
+    "53740": {
+      "name": "Alkes",
+      "bayer": "Alpha",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 95272",
+      "c": "Crt"
+    },
+    "54682": {
+      "name": "Al Sharasif",
+      "bayer": "Beta",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 97277",
+      "c": "Crt"
+    },
+    "55598": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 98991",
+      "c": "Crt"
+    },
+    "55705": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 99211",
+      "c": "Crt"
+    },
+    "57283": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 102070",
+      "c": "Crt"
+    },
+    "58188": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 103632",
+      "c": "Crt"
+    },
+    "62434": {
+      "name": "Mimosa",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 111123",
+      "c": "Cru"
+    },
+    "59747": {
+      "name": "Imai",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 106490",
+      "c": "Cru"
+    },
+    "60718": {
+      "name": "Acrux",
+      "bayer": "Alpha1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 108248",
+      "c": "Cru"
+    },
+    "61084": {
+      "name": "Gacrux",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 108903",
+      "c": "Cru"
+    },
+    "104732": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "64",
+      "var": "",
+      "hd": "HD 202109",
+      "c": "Cyg"
+    },
+    "102488": {
+      "name": "Aljanah",
+      "bayer": "Epsilon",
+      "flam": "53",
+      "var": "",
+      "hd": "HD 197989",
+      "c": "Cyg"
+    },
+    "100453": {
+      "name": "Sadr",
+      "bayer": "Gamma",
+      "flam": "37",
+      "var": "",
+      "hd": "HD 194093",
+      "c": "Cyg"
+    },
+    "97165": {
+      "name": "Fawaris",
+      "bayer": "Delta",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 186882",
+      "c": "Cyg"
+    },
+    "95853": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 184006",
+      "c": "Cyg"
+    },
+    "94779": {
+      "name": "Fawaris",
+      "bayer": "Kappa",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 181276",
+      "c": "Cyg"
+    },
+    "102098": {
+      "name": "Deneb",
+      "bayer": "Alpha",
+      "flam": "50",
+      "var": "",
+      "hd": "HD 197345",
+      "c": "Cyg"
+    },
+    "98110": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 188947",
+      "c": "Cyg"
+    },
+    "95947": {
+      "name": "Albireo",
+      "bayer": "Beta1",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 183912",
+      "c": "Cyg"
+    },
+    "101421": {
+      "name": "Aldulfin",
+      "bayer": "Epsilon",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 195810",
+      "c": "Del"
+    },
+    "101769": {
+      "name": "Rotanev",
+      "bayer": "Beta",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 196524",
+      "c": "Del"
+    },
+    "101958": {
+      "name": "Sualocin",
+      "bayer": "Alpha",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 196867",
+      "c": "Del"
+    },
+    "102531": {
+      "name": "",
+      "bayer": "Gamma1",
+      "flam": "12",
+      "var": "",
+      "hd": "HD 197963",
+      "c": "Del"
+    },
+    "102281": {
+      "name": "Al Ukud",
+      "bayer": "Delta",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 197461",
+      "c": "Del"
+    },
+    "19893": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 27290",
+      "c": "Dor"
+    },
+    "21281": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 29305",
+      "c": "Dor"
+    },
+    "26069": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 37350",
+      "c": "Dor"
+    },
+    "27100": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 39014",
+      "c": "Dor"
+    },
+    "27890": {
+      "name": "",
+      "bayer": "",
+      "flam": "36",
+      "var": "",
+      "hd": "HD 40409",
+      "c": "Dor"
+    },
+    "23693": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 33262",
+      "c": "Dor"
+    },
+    "87585": {
+      "name": "Grumium",
+      "bayer": "Xi",
+      "flam": "32",
+      "var": "",
+      "hd": "HD 163588",
+      "c": "Dra"
+    },
+    "87833": {
+      "name": "Eltanin",
+      "bayer": "Gamma",
+      "flam": "33",
+      "var": "",
+      "hd": "HD 164058",
+      "c": "Dra"
+    },
+    "85670": {
+      "name": "Rastaban",
+      "bayer": "Beta",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 159181",
+      "c": "Dra"
+    },
+    "85829": {
+      "name": "Kuma",
+      "bayer": "Nu2",
+      "flam": "25",
+      "var": "",
+      "hd": "HD 159560",
+      "c": "Dra"
+    },
+    "94376": {
+      "name": "Altais",
+      "bayer": "Delta",
+      "flam": "57",
+      "var": "",
+      "hd": "HD 180711",
+      "c": "Dra"
+    },
+    "89908": {
+      "name": "Aldhiba",
+      "bayer": "Phi",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 170000",
+      "c": "Dra"
+    },
+    "83895": {
+      "name": "Aldhibah",
+      "bayer": "Zeta",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 155763",
+      "c": "Dra"
+    },
+    "80331": {
+      "name": "Athebyne",
+      "bayer": "Eta",
+      "flam": "14",
+      "var": "",
+      "hd": "HD 148387",
+      "c": "Dra"
+    },
+    "78527": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 144284",
+      "c": "Dra"
+    },
+    "75458": {
+      "name": "Edasich",
+      "bayer": "Iota",
+      "flam": "12",
+      "var": "",
+      "hd": "HD 137759",
+      "c": "Dra"
+    },
+    "68756": {
+      "name": "Thuban",
+      "bayer": "Alpha",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 123299",
+      "c": "Dra"
+    },
+    "61281": {
+      "name": "",
+      "bayer": "Kappa",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 109387",
+      "c": "Dra"
+    },
+    "56211": {
+      "name": "Giausar",
+      "bayer": "Lambda",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 100029",
+      "c": "Dra"
+    },
+    "89937": {
+      "name": "Alahakan",
+      "bayer": "Chi",
+      "flam": "44",
+      "var": "",
+      "hd": "HD 170153",
+      "c": "Dra"
+    },
+    "97433": {
+      "name": "Tyl",
+      "bayer": "Epsilon",
+      "flam": "63",
+      "var": "",
+      "hd": "HD 188119",
+      "c": "Dra"
+    },
+    "104987": {
+      "name": "Kitalpha",
+      "bayer": "Alpha",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 202447",
+      "c": "Equ"
+    },
+    "104858": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 202275",
+      "c": "Equ"
+    },
+    "104521": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 201601",
+      "c": "Equ"
+    },
+    "23875": {
+      "name": "Cursa",
+      "bayer": "Beta",
+      "flam": "67",
+      "var": "",
+      "hd": "HD 33111",
+      "c": "Eri"
+    },
+    "22109": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "57",
+      "var": "",
+      "hd": "HD 30211",
+      "c": "Eri"
+    },
+    "21444": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "48",
+      "var": "",
+      "hd": "HD 29248",
+      "c": "Eri"
+    },
+    "19587": {
+      "name": "Beid",
+      "bayer": "Omicron1",
+      "flam": "38",
+      "var": "",
+      "hd": "HD 26574",
+      "c": "Eri"
+    },
+    "18543": {
+      "name": "Zaurak",
+      "bayer": "Gamma",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 25025",
+      "c": "Eri"
+    },
+    "17593": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "26",
+      "var": "",
+      "hd": "HD 23614",
+      "c": "Eri"
+    },
+    "17378": {
+      "name": "Rana",
+      "bayer": "Delta",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 23249",
+      "c": "Eri"
+    },
+    "16537": {
+      "name": "Ran",
+      "bayer": "Epsilon",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 22049",
+      "c": "Eri"
+    },
+    "13701": {
+      "name": "Azha",
+      "bayer": "Eta",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 18322",
+      "c": "Eri"
+    },
+    "12770": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "89",
+      "var": "",
+      "hd": "HD 17081",
+      "c": "Cet"
+    },
+    "12843": {
+      "name": "",
+      "bayer": "Tau1",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 17206",
+      "c": "Eri"
+    },
+    "14146": {
+      "name": "",
+      "bayer": "Tau3",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 18978",
+      "c": "Eri"
+    },
+    "15474": {
+      "name": "Angetenar",
+      "bayer": "Tau4",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 20720",
+      "c": "Eri"
+    },
+    "16611": {
+      "name": "",
+      "bayer": "Tau5",
+      "flam": "19",
+      "var": "",
+      "hd": "HD 22203",
+      "c": "Eri"
+    },
+    "17651": {
+      "name": "",
+      "bayer": "Tau6",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 23754",
+      "c": "Eri"
+    },
+    "21393": {
+      "name": "Theemin",
+      "bayer": "Upsilon2",
+      "flam": "52",
+      "var": "",
+      "hd": "HD 29291",
+      "c": "Eri"
+    },
+    "20535": {
+      "name": "Beemim",
+      "bayer": "undefined3",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 28028",
+      "c": "Eri"
+    },
+    "20042": {
+      "name": "Beemim",
+      "bayer": "Upsilon4",
+      "flam": "41",
+      "var": "",
+      "hd": "HD 27376",
+      "c": "Eri"
+    },
+    "17874": {
+      "name": "",
+      "bayer": "g",
+      "flam": "",
+      "var": "",
+      "hd": "HD 24160",
+      "c": "Eri"
+    },
+    "16870": {
+      "name": "",
+      "bayer": "y",
+      "flam": "",
+      "var": "",
+      "hd": "HD 22663",
+      "c": "Eri"
+    },
+    "15510": {
+      "name": "",
+      "bayer": "e",
+      "flam": "82",
+      "var": "",
+      "hd": "HD 20794",
+      "c": "Eri"
+    },
+    "13847": {
+      "name": "Acamar",
+      "bayer": "Theta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 18622",
+      "c": "Eri"
+    },
+    "12486": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 16815",
+      "c": "Eri"
+    },
+    "11407": {
+      "name": "",
+      "bayer": "Kappa",
+      "flam": "",
+      "var": "",
+      "hd": "HD 15371",
+      "c": "Eri"
+    },
+    "10602": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 14228",
+      "c": "Eri"
+    },
+    "9007": {
+      "name": "",
+      "bayer": "Chi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 11937",
+      "c": "Eri"
+    },
+    "7588": {
+      "name": "Achernar",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 10144",
+      "c": "Eri"
+    },
+    "14879": {
+      "name": "Dalim",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 20010",
+      "c": "For"
+    },
+    "13147": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 17652",
+      "c": "For"
+    },
+    "9677": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 12767",
+      "c": "For"
+    },
+    "29655": {
+      "name": "Propus",
+      "bayer": "Eta",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 42995",
+      "c": "Gem"
+    },
+    "30343": {
+      "name": "Tejat",
+      "bayer": "Mu",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 44478",
+      "c": "Gem"
+    },
+    "32246": {
+      "name": "Mebsuta",
+      "bayer": "Epsilon",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 48329",
+      "c": "Gem"
+    },
+    "34693": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "46",
+      "var": "",
+      "hd": "HD 54719",
+      "c": "Gem"
+    },
+    "36850": {
+      "name": "Castor",
+      "bayer": "Alpha",
+      "flam": "66",
+      "var": "",
+      "hd": "HD 60179",
+      "c": "Gem"
+    },
+    "37826": {
+      "name": "Pollux",
+      "bayer": "Beta",
+      "flam": "78",
+      "var": "",
+      "hd": "HD 62509",
+      "c": "Gem"
+    },
+    "36962": {
+      "name": "",
+      "bayer": "Upsilon",
+      "flam": "69",
+      "var": "",
+      "hd": "HD 60522",
+      "c": "Gem"
+    },
+    "35550": {
+      "name": "Wasat",
+      "bayer": "Delta",
+      "flam": "55",
+      "var": "",
+      "hd": "HD 56986",
+      "c": "Gem"
+    },
+    "34088": {
+      "name": "Mekbuda",
+      "bayer": "Zeta",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 52973",
+      "c": "Gem"
+    },
+    "31681": {
+      "name": "Alhena",
+      "bayer": "Gamma",
+      "flam": "24",
+      "var": "",
+      "hd": "HD 47105",
+      "c": "Gem"
+    },
+    "32362": {
+      "name": "Alzirr",
+      "bayer": "Xi",
+      "flam": "31",
+      "var": "",
+      "hd": "HD 48737",
+      "c": "Gem"
+    },
+    "35350": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "54",
+      "var": "",
+      "hd": "HD 56537",
+      "c": "Gem"
+    },
+    "113638": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 217364",
+      "c": "Gru"
+    },
+    "112623": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 215789",
+      "c": "Gru"
+    },
+    "112122": {
+      "name": "Tiaki",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 214952",
+      "c": "Gru"
+    },
+    "111043": {
+      "name": "",
+      "bayer": "Delta2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 213080",
+      "c": "Gru"
+    },
+    "109268": {
+      "name": "Alnair",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 209952",
+      "c": "Gru"
+    },
+    "110997": {
+      "name": "",
+      "bayer": "Delta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 213009",
+      "c": "Gru"
+    },
+    "109908": {
+      "name": "",
+      "bayer": "Mu1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 211088",
+      "c": "Gru"
+    },
+    "109111": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "",
+      "var": "",
+      "hd": "HD 209688",
+      "c": "Gru"
+    },
+    "108085": {
+      "name": "Aldhanab",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 207971",
+      "c": "Gru"
+    },
+    "80170": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "20",
+      "var": "",
+      "hd": "HD 147547",
+      "c": "Her"
+    },
+    "80816": {
+      "name": "Kornephoros",
+      "bayer": "Beta",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 148856",
+      "c": "Her"
+    },
+    "81693": {
+      "name": "Rutilicus",
+      "bayer": "Zeta",
+      "flam": "40",
+      "var": "",
+      "hd": "HD 150680",
+      "c": "Her"
+    },
+    "81833": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "44",
+      "var": "",
+      "hd": "HD 150997",
+      "c": "Her"
+    },
+    "81126": {
+      "name": "",
+      "bayer": "Sigma",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 149630",
+      "c": "Her"
+    },
+    "79992": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 147394",
+      "c": "Her"
+    },
+    "79101": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 145389",
+      "c": "Her"
+    },
+    "77760": {
+      "name": "",
+      "bayer": "Chi",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 142373",
+      "c": "Her"
+    },
+    "83207": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "58",
+      "var": "",
+      "hd": "HD 153808",
+      "c": "Her"
+    },
+    "84380": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "67",
+      "var": "",
+      "hd": "HD 156283",
+      "c": "Her"
+    },
+    "87808": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "91",
+      "var": "",
+      "hd": "HD 163770",
+      "c": "Her"
+    },
+    "85112": {
+      "name": "",
+      "bayer": "Rho",
+      "flam": "75",
+      "var": "",
+      "hd": "HD 157778",
+      "c": "Her"
+    },
+    "84379": {
+      "name": "Sarin",
+      "bayer": "Delta",
+      "flam": "65",
+      "var": "",
+      "hd": "HD 156164",
+      "c": "Her"
+    },
+    "86974": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "86",
+      "var": "",
+      "hd": "HD 161797",
+      "c": "Her"
+    },
+    "87933": {
+      "name": "",
+      "bayer": "Xi",
+      "flam": "92",
+      "var": "",
+      "hd": "HD 163993",
+      "c": "Her"
+    },
+    "88794": {
+      "name": "",
+      "bayer": "Omicron",
+      "flam": "103",
+      "var": "",
+      "hd": "HD 166014",
+      "c": "Her"
+    },
+    "84345": {
+      "name": "Rasalgethi",
+      "bayer": "Alpha1",
+      "flam": "64",
+      "var": "",
+      "hd": "HD 156014",
+      "c": "Her"
+    },
+    "19747": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 26967",
+      "c": "Hor"
+    },
+    "12653": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 17051",
+      "c": "Hor"
+    },
+    "12225": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 16555",
+      "c": "Hor"
+    },
+    "12484": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 16920",
+      "c": "Hor"
+    },
+    "14240": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 19319",
+      "c": "Hor"
+    },
+    "13884": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 18866",
+      "c": "Hor"
+    },
+    "43109": {
+      "name": "Ashlesha",
+      "bayer": "Epsilon",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 74874",
+      "c": "Hya"
+    },
+    "43234": {
+      "name": "",
+      "bayer": "Rho",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 75137",
+      "c": "Hya"
+    },
+    "42799": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 74280",
+      "c": "Hya"
+    },
+    "42402": {
+      "name": "Minchir",
+      "bayer": "Sigma",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 73471",
+      "c": "Hya"
+    },
+    "42313": {
+      "name": "Minazal",
+      "bayer": "Delta",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 73262",
+      "c": "Hya"
+    },
+    "43813": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 76294",
+      "c": "Hya"
+    },
+    "45336": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 79469",
+      "c": "Hya"
+    },
+    "47431": {
+      "name": "Ukdah",
+      "bayer": "Iota",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 83618",
+      "c": "Hya"
+    },
+    "46390": {
+      "name": "Alphard",
+      "bayer": "Alpha",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 81797",
+      "c": "Hya"
+    },
+    "48356": {
+      "name": "Zhang",
+      "bayer": "Upsilon1",
+      "flam": "39",
+      "var": "",
+      "hd": "HD 85444",
+      "c": "Hya"
+    },
+    "49841": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "41",
+      "var": "",
+      "hd": "HD 88284",
+      "c": "Hya"
+    },
+    "51069": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "42",
+      "var": "",
+      "hd": "HD 90432",
+      "c": "Hya"
+    },
+    "52943": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 93813",
+      "c": "Hya"
+    },
+    "56343": {
+      "name": "",
+      "bayer": "Xi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 100407",
+      "c": "Hya"
+    },
+    "57936": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 103192",
+      "c": "Hya"
+    },
+    "64962": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "46",
+      "var": "",
+      "hd": "HD 115659",
+      "c": "Hya"
+    },
+    "68895": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "49",
+      "var": "",
+      "hd": "HD 123123",
+      "c": "Hya"
+    },
+    "72571": {
+      "name": "",
+      "bayer": "E",
+      "flam": "58",
+      "var": "",
+      "hd": "HD 130694",
+      "c": "Hya"
+    },
+    "2021": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 2151",
+      "c": "Hyi"
+    },
+    "17678": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 24512",
+      "c": "Hyi"
+    },
+    "12394": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 16978",
+      "c": "Hyi"
+    },
+    "11001": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 15008",
+      "c": "Hyi"
+    },
+    "8928": {
+      "name": "",
+      "bayer": "Eta2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 11977",
+      "c": "Hyi"
+    },
+    "9236": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 12311",
+      "c": "Hyi"
+    },
+    "101772": {
+      "name": "Persian",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 196171",
+      "c": "Ind"
+    },
+    "102333": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 197157",
+      "c": "Ind"
+    },
+    "103227": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 198700",
+      "c": "Ind"
+    },
+    "108431": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 208450",
+      "c": "Ind"
+    },
+    "105319": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 202730",
+      "c": "Ind"
+    },
+    "110538": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 212496",
+      "c": "Lac"
+    },
+    "111169": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 213558",
+      "c": "Lac"
+    },
+    "111022": {
+      "name": "",
+      "bayer": "",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 213310",
+      "c": "Lac"
+    },
+    "110351": {
+      "name": "",
+      "bayer": "",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 212120",
+      "c": "Lac"
+    },
+    "111104": {
+      "name": "",
+      "bayer": "",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 213420",
+      "c": "Lac"
+    },
+    "111944": {
+      "name": "",
+      "bayer": "",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 214868",
+      "c": "Lac"
+    },
+    "110609": {
+      "name": "",
+      "bayer": "",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 212593",
+      "c": "Lac"
+    },
+    "109754": {
+      "name": "",
+      "bayer": "",
+      "flam": "",
+      "var": "",
+      "hd": "",
+      "c": ""
+    },
+    "109937": {
+      "name": "",
+      "bayer": "",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 211388",
+      "c": "Lac"
+    },
+    "49669": {
+      "name": "Regulus",
+      "bayer": "Alpha",
+      "flam": "32",
+      "var": "",
+      "hd": "HD 87901",
+      "c": "Leo"
+    },
+    "49583": {
+      "name": "Al Jabhah",
+      "bayer": "Eta",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 87737",
+      "c": "Leo"
+    },
+    "50583": {
+      "name": "Algieba",
+      "bayer": "Gamma1",
+      "flam": "41",
+      "var": "",
+      "hd": "HD 89484",
+      "c": "Leo"
+    },
+    "54872": {
+      "name": "Zosma",
+      "bayer": "Delta",
+      "flam": "68",
+      "var": "",
+      "hd": "HD 97603",
+      "c": "Leo"
+    },
+    "57632": {
+      "name": "Denebola",
+      "bayer": "Beta",
+      "flam": "94",
+      "var": "",
+      "hd": "HD 102647",
+      "c": "Leo"
+    },
+    "54879": {
+      "name": "Chertan",
+      "bayer": "Theta",
+      "flam": "70",
+      "var": "",
+      "hd": "HD 97633",
+      "c": "Leo"
+    },
+    "50335": {
+      "name": "Adhafera",
+      "bayer": "Zeta",
+      "flam": "36",
+      "var": "",
+      "hd": "HD 89025",
+      "c": "Leo"
+    },
+    "48455": {
+      "name": "Rasalas",
+      "bayer": "Mu",
+      "flam": "24",
+      "var": "",
+      "hd": "HD 85503",
+      "c": "Leo"
+    },
+    "47908": {
+      "name": "Algenubi",
+      "bayer": "Epsilon",
+      "flam": "17",
+      "var": "",
+      "hd": "HD 84441",
+      "c": "Leo"
+    },
+    "49593": {
+      "name": "",
+      "bayer": "",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 87696",
+      "c": "LMi"
+    },
+    "51056": {
+      "name": "",
+      "bayer": "",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 90277",
+      "c": "LMi"
+    },
+    "53229": {
+      "name": "Praecipua",
+      "bayer": "",
+      "flam": "46",
+      "var": "",
+      "hd": "HD 94264",
+      "c": "LMi"
+    },
+    "51233": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "31",
+      "var": "",
+      "hd": "HD 90537",
+      "c": "LMi"
+    },
+    "46952": {
+      "name": "",
+      "bayer": "",
+      "flam": "10",
+      "var": "SU",
+      "hd": "HD 82635",
+      "c": "LMi"
+    },
+    "28910": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 41695",
+      "c": "Lep"
+    },
+    "28103": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 40136",
+      "c": "Lep"
+    },
+    "27288": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "14",
+      "var": "",
+      "hd": "HD 38678",
+      "c": "Lep"
+    },
+    "25985": {
+      "name": "Arneb",
+      "bayer": "Alpha",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 36673",
+      "c": "Lep"
+    },
+    "24305": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 33904",
+      "c": "Lep"
+    },
+    "23685": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 32887",
+      "c": "Lep"
+    },
+    "25606": {
+      "name": "Nihal",
+      "bayer": "Beta",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 36079",
+      "c": "Lep"
+    },
+    "27072": {
+      "name": "Kursi al Jabbar",
+      "bayer": "Gamma",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 38393",
+      "c": "Lep"
+    },
+    "27654": {
+      "name": "Arsh al Jauzah",
+      "bayer": "Delta",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 39364",
+      "c": "Lep"
+    },
+    "24327": {
+      "name": "",
+      "bayer": "Kappa",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 33949",
+      "c": "Lep"
+    },
+    "24845": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 34816",
+      "c": "Lep"
+    },
+    "73714": {
+      "name": "Brachium",
+      "bayer": "Sigma",
+      "flam": "20",
+      "var": "",
+      "hd": "HD 133216",
+      "c": "Lib"
+    },
+    "72622": {
+      "name": "Zubenelgenubi",
+      "bayer": "Alpha2",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 130841",
+      "c": "Lib"
+    },
+    "74785": {
+      "name": "Zubeneschamali",
+      "bayer": "Beta",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 135742",
+      "c": "Lib"
+    },
+    "76333": {
+      "name": "Zubenelhakrabi",
+      "bayer": "Gamma",
+      "flam": "38",
+      "var": "",
+      "hd": "HD 138905",
+      "c": "Lib"
+    },
+    "76470": {
+      "name": "",
+      "bayer": "Upsilon",
+      "flam": "39",
+      "var": "",
+      "hd": "HD 139063",
+      "c": "Lib"
+    },
+    "76600": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "40",
+      "var": "",
+      "hd": "HD 139365",
+      "c": "Lib"
+    },
+    "77634": {
+      "name": "",
+      "bayer": "Chi",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 141556",
+      "c": "Lup"
+    },
+    "76705": {
+      "name": "",
+      "bayer": "Psi1",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 139521",
+      "c": "Lup"
+    },
+    "75177": {
+      "name": "",
+      "bayer": "Phi1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 136422",
+      "c": "Lup"
+    },
+    "75141": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 136298",
+      "c": "Lup"
+    },
+    "73273": {
+      "name": "KeKouan",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 132058",
+      "c": "Lup"
+    },
+    "71860": {
+      "name": "Men",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 129056",
+      "c": "Lup"
+    },
+    "74395": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 134505",
+      "c": "Lup"
+    },
+    "74911": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 135734",
+      "c": "Lup"
+    },
+    "75264": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 136504",
+      "c": "Lup"
+    },
+    "76297": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 138690",
+      "c": "Lup"
+    },
+    "78384": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 143118",
+      "c": "Lup"
+    },
+    "78918": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 144294",
+      "c": "Lup"
+    },
+    "30060": {
+      "name": "",
+      "bayer": "",
+      "flam": "2",
+      "var": "UZ",
+      "hd": "HD 43378",
+      "c": "Lyn"
+    },
+    "33449": {
+      "name": "",
+      "bayer": "",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 50522",
+      "c": "Lyn"
+    },
+    "36145": {
+      "name": "",
+      "bayer": "",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 58142",
+      "c": "Lyn"
+    },
+    "41075": {
+      "name": "Alsciaukat",
+      "bayer": "",
+      "flam": "31",
+      "var": "BN",
+      "hd": "HD 70272",
+      "c": "Lyn"
+    },
+    "44248": {
+      "name": "",
+      "bayer": "",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 76943",
+      "c": "UMa"
+    },
+    "45688": {
+      "name": "",
+      "bayer": "",
+      "flam": "38",
+      "var": "",
+      "hd": "HD 80081",
+      "c": "Lyn"
+    },
+    "45860": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "40",
+      "var": "",
+      "hd": "HD 80493",
+      "c": "Lyn"
+    },
+    "91971": {
+      "name": "Nasr Alwaki",
+      "bayer": "Zeta1",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 173648",
+      "c": "Lyr"
+    },
+    "91926": {
+      "name": "",
+      "bayer": "Epsilon2",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 173607",
+      "c": "Lyr"
+    },
+    "91262": {
+      "name": "Vega",
+      "bayer": "Alpha",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 172167",
+      "c": "Lyr"
+    },
+    "92791": {
+      "name": "",
+      "bayer": "Delta2",
+      "flam": "12",
+      "var": "",
+      "hd": "HD 175588",
+      "c": "Lyr"
+    },
+    "93194": {
+      "name": "Sulafat",
+      "bayer": "Gamma",
+      "flam": "14",
+      "var": "",
+      "hd": "HD 176437",
+      "c": "Lyr"
+    },
+    "92420": {
+      "name": "Sheliak",
+      "bayer": "Beta",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 174638",
+      "c": "Lyr"
+    },
+    "29271": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 43834",
+      "c": "Men"
+    },
+    "25918": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 37763",
+      "c": "Men"
+    },
+    "22871": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 32440",
+      "c": "Men"
+    },
+    "23467": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 33285",
+      "c": "Men"
+    },
+    "102831": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 198232",
+      "c": "Mic"
+    },
+    "102693": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 197937",
+      "c": "Mic"
+    },
+    "105382": {
+      "name": "",
+      "bayer": "Theta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 203006",
+      "c": "Mic"
+    },
+    "105140": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 202627",
+      "c": "Mic"
+    },
+    "103738": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 199951",
+      "c": "Mic"
+    },
+    "37447": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "26",
+      "var": "",
+      "hd": "HD 61935",
+      "c": "Mon"
+    },
+    "39863": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "29",
+      "var": "",
+      "hd": "HD 67594",
+      "c": "Mon"
+    },
+    "34769": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 55185",
+      "c": "Mon"
+    },
+    "30867": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 45725",
+      "c": "Mon"
+    },
+    "29651": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 43232",
+      "c": "Mon"
+    },
+    "32578": {
+      "name": "",
+      "bayer": "",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 49293",
+      "c": "Mon"
+    },
+    "30419": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 44769",
+      "c": "Mon"
+    },
+    "31216": {
+      "name": "",
+      "bayer": "",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 46300",
+      "c": "Mon"
+    },
+    "31978": {
+      "name": "",
+      "bayer": "",
+      "flam": "15",
+      "var": "S",
+      "hd": "HD 47839",
+      "c": "Mon"
+    },
+    "57363": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "",
+      "var": "",
+      "hd": "HD 102249",
+      "c": "Mus"
+    },
+    "59929": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 106849",
+      "c": "Mus"
+    },
+    "61585": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 109668",
+      "c": "Mus"
+    },
+    "62322": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 110879",
+      "c": "Mus"
+    },
+    "63613": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 112985",
+      "c": "Mus"
+    },
+    "61199": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 109026",
+      "c": "Mus"
+    },
+    "78914": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 144197",
+      "c": "Nor"
+    },
+    "80582": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 147971",
+      "c": "Nor"
+    },
+    "80000": {
+      "name": "",
+      "bayer": "Gamma2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 146686",
+      "c": "Nor"
+    },
+    "78639": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 143546",
+      "c": "Nor"
+    },
+    "70638": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 124882",
+      "c": "Oct"
+    },
+    "112405": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 214846",
+      "c": "Oct"
+    },
+    "107089": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 205478",
+      "c": "Oct"
+    },
+    "88048": {
+      "name": "Sinistra",
+      "bayer": "Nu",
+      "flam": "64",
+      "var": "",
+      "hd": "HD 163917",
+      "c": "Oph"
+    },
+    "87108": {
+      "name": "Muliphen",
+      "bayer": "Gamma",
+      "flam": "62",
+      "var": "",
+      "hd": "HD 161868",
+      "c": "Oph"
+    },
+    "86742": {
+      "name": "Cebalrai",
+      "bayer": "Beta",
+      "flam": "60",
+      "var": "",
+      "hd": "HD 161096",
+      "c": "Oph"
+    },
+    "86032": {
+      "name": "Rasalhague",
+      "bayer": "Alpha",
+      "flam": "55",
+      "var": "",
+      "hd": "HD 159561",
+      "c": "Oph"
+    },
+    "83000": {
+      "name": "",
+      "bayer": "Kappa",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 153210",
+      "c": "Oph"
+    },
+    "80883": {
+      "name": "Marfik",
+      "bayer": "Lambda",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 148857",
+      "c": "Oph"
+    },
+    "79593": {
+      "name": "Yed Prior",
+      "bayer": "Delta",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 146051",
+      "c": "Oph"
+    },
+    "79882": {
+      "name": "Yed Posterior",
+      "bayer": "Epsilon",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 146791",
+      "c": "Oph"
+    },
+    "81377": {
+      "name": "Saik",
+      "bayer": "Zeta",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 149757",
+      "c": "Oph"
+    },
+    "84012": {
+      "name": "Sabik",
+      "bayer": "Eta",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 155125",
+      "c": "Oph"
+    },
+    "80894": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 148786",
+      "c": "Oph"
+    },
+    "80569": {
+      "name": "",
+      "bayer": "Chi",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 148184",
+      "c": "Oph"
+    },
+    "80343": {
+      "name": "",
+      "bayer": "Psi",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 147700",
+      "c": "Oph"
+    },
+    "80473": {
+      "name": "",
+      "bayer": "Rho",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 147933",
+      "c": "Oph"
+    },
+    "84970": {
+      "name": "Garafsa",
+      "bayer": "Theta",
+      "flam": "42",
+      "var": "",
+      "hd": "HD 157056",
+      "c": "Oph"
+    },
+    "85423": {
+      "name": "",
+      "bayer": "d",
+      "flam": "45",
+      "var": "",
+      "hd": "HD 157919",
+      "c": "Oph"
+    },
+    "29038": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "67",
+      "var": "",
+      "hd": "HD 41753",
+      "c": "Ori"
+    },
+    "27913": {
+      "name": "",
+      "bayer": "Chi1",
+      "flam": "54",
+      "var": "",
+      "hd": "HD 39587",
+      "c": "Ori"
+    },
+    "28716": {
+      "name": "",
+      "bayer": "Chi2",
+      "flam": "62",
+      "var": "",
+      "hd": "HD 41117",
+      "c": "Ori"
+    },
+    "29426": {
+      "name": "",
+      "bayer": "Xi",
+      "flam": "70",
+      "var": "",
+      "hd": "HD 42560",
+      "c": "Ori"
+    },
+    "28614": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "61",
+      "var": "",
+      "hd": "HD 40932",
+      "c": "Ori"
+    },
+    "27989": {
+      "name": "Betelgeuse",
+      "bayer": "Alpha",
+      "flam": "58",
+      "var": "",
+      "hd": "HD 39801",
+      "c": "Ori"
+    },
+    "25336": {
+      "name": "Bellatrix",
+      "bayer": "Gamma",
+      "flam": "24",
+      "var": "",
+      "hd": "HD 35468",
+      "c": "Ori"
+    },
+    "22845": {
+      "name": "",
+      "bayer": "Pi1",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 31295",
+      "c": "Ori"
+    },
+    "23123": {
+      "name": "",
+      "bayer": "Pi6",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 31767",
+      "c": "Ori"
+    },
+    "22797": {
+      "name": "",
+      "bayer": "Pi5",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 31237",
+      "c": "Ori"
+    },
+    "22549": {
+      "name": "",
+      "bayer": "Pi4",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 30836",
+      "c": "Ori"
+    },
+    "22449": {
+      "name": "Tabit",
+      "bayer": "Pi3",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 30652",
+      "c": "Ori"
+    },
+    "22509": {
+      "name": "Al Taj",
+      "bayer": "Pi2",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 30739",
+      "c": "Ori"
+    },
+    "22957": {
+      "name": "",
+      "bayer": "Omicron2",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 31421",
+      "c": "Ori"
+    },
+    "23607": {
+      "name": "",
+      "bayer": "",
+      "flam": "11",
+      "var": "V1032",
+      "hd": "HD 32549",
+      "c": "Ori"
+    },
+    "24010": {
+      "name": "",
+      "bayer": "",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 33276",
+      "c": "Ori"
+    },
+    "24436": {
+      "name": "Rigel",
+      "bayer": "Beta",
+      "flam": "19",
+      "var": "",
+      "hd": "HD 34085",
+      "c": "Ori"
+    },
+    "25281": {
+      "name": "Saif al Jabbar",
+      "bayer": "Eta",
+      "flam": "28",
+      "var": "",
+      "hd": "HD 35411",
+      "c": "Ori"
+    },
+    "25930": {
+      "name": "Mintaka",
+      "bayer": "Delta",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 36486",
+      "c": "Ori"
+    },
+    "26207": {
+      "name": "Meissa",
+      "bayer": "Lambda",
+      "flam": "39",
+      "var": "",
+      "hd": "HD 36861",
+      "c": "Ori"
+    },
+    "26727": {
+      "name": "Alnitak",
+      "bayer": "Zeta",
+      "flam": "50",
+      "var": "",
+      "hd": "HD 37742",
+      "c": "Ori"
+    },
+    "27366": {
+      "name": "Saiph",
+      "bayer": "Kappa",
+      "flam": "53",
+      "var": "",
+      "hd": "HD 38771",
+      "c": "Ori"
+    },
+    "26311": {
+      "name": "Alnilam",
+      "bayer": "Epsilon",
+      "flam": "46",
+      "var": "",
+      "hd": "HD 37128",
+      "c": "Ori"
+    },
+    "100751": {
+      "name": "Peacock",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 193924",
+      "c": "Pav"
+    },
+    "102395": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 197051",
+      "c": "Pav"
+    },
+    "99240": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 190248",
+      "c": "Pav"
+    },
+    "92609": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "",
+      "var": "",
+      "hd": "HD 173948",
+      "c": "Pav"
+    },
+    "90098": {
+      "name": "",
+      "bayer": "Xi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 168339",
+      "c": "Pav"
+    },
+    "88866": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 165040",
+      "c": "Pav"
+    },
+    "86929": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 160635",
+      "c": "Pav"
+    },
+    "91792": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 171759",
+      "c": "Pav"
+    },
+    "98495": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 188228",
+      "c": "Pav"
+    },
+    "105858": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 203608",
+      "c": "Pav"
+    },
+    "109410": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "29",
+      "var": "",
+      "hd": "HD 210459",
+      "c": "Peg"
+    },
+    "112158": {
+      "name": "Matar",
+      "bayer": "Eta",
+      "flam": "44",
+      "var": "",
+      "hd": "HD 215182",
+      "c": "Peg"
+    },
+    "113881": {
+      "name": "Scheat",
+      "bayer": "Beta",
+      "flam": "53",
+      "var": "",
+      "hd": "HD 217906",
+      "c": "Peg"
+    },
+    "1067": {
+      "name": "Algenib",
+      "bayer": "Gamma",
+      "flam": "88",
+      "var": "",
+      "hd": "HD 886",
+      "c": "Peg"
+    },
+    "113963": {
+      "name": "Markab",
+      "bayer": "Alpha",
+      "flam": "54",
+      "var": "",
+      "hd": "HD 218045",
+      "c": "Peg"
+    },
+    "112447": {
+      "name": "Suudalnujum",
+      "bayer": "Xi",
+      "flam": "46",
+      "var": "",
+      "hd": "HD 215648",
+      "c": "Peg"
+    },
+    "112029": {
+      "name": "Homam",
+      "bayer": "Zeta",
+      "flam": "42",
+      "var": "",
+      "hd": "HD 214923",
+      "c": "Peg"
+    },
+    "109427": {
+      "name": "Biham",
+      "bayer": "Theta",
+      "flam": "26",
+      "var": "",
+      "hd": "HD 210418",
+      "c": "Peg"
+    },
+    "107315": {
+      "name": "Enif",
+      "bayer": "Epsilon",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 206778",
+      "c": "Peg"
+    },
+    "112748": {
+      "name": "Sadalbari",
+      "bayer": "Mu",
+      "flam": "48",
+      "var": "",
+      "hd": "HD 216131",
+      "c": "Peg"
+    },
+    "112440": {
+      "name": "Sadalnazi",
+      "bayer": "Lambda",
+      "flam": "47",
+      "var": "",
+      "hd": "HD 215665",
+      "c": "Peg"
+    },
+    "109176": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "24",
+      "var": "",
+      "hd": "HD 210027",
+      "c": "Peg"
+    },
+    "107354": {
+      "name": "",
+      "bayer": "Kappa",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 206901",
+      "c": "Peg"
+    },
+    "17448": {
+      "name": "Atik",
+      "bayer": "Omicron",
+      "flam": "38",
+      "var": "",
+      "hd": "HD 23180",
+      "c": "Per"
+    },
+    "18246": {
+      "name": "Atik",
+      "bayer": "Zeta",
+      "flam": "44",
+      "var": "",
+      "hd": "HD 24398",
+      "c": "Per"
+    },
+    "18614": {
+      "name": "Menkib",
+      "bayer": "Xi",
+      "flam": "46",
+      "var": "",
+      "hd": "HD 24912",
+      "c": "Per"
+    },
+    "18532": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "45",
+      "var": "",
+      "hd": "HD 24760",
+      "c": "Per"
+    },
+    "17529": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "41",
+      "var": "",
+      "hd": "HD 23230",
+      "c": "Per"
+    },
+    "17358": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "39",
+      "var": "",
+      "hd": "HD 22928",
+      "c": "Per"
+    },
+    "16826": {
+      "name": "",
+      "bayer": "Psi",
+      "flam": "37",
+      "var": "",
+      "hd": "HD 22192",
+      "c": "Per"
+    },
+    "15863": {
+      "name": "Mirfak",
+      "bayer": "Alpha",
+      "flam": "33",
+      "var": "",
+      "hd": "HD 20902",
+      "c": "Per"
+    },
+    "14328": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 18925",
+      "c": "Per"
+    },
+    "13268": {
+      "name": "Miram",
+      "bayer": "Eta",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 17506",
+      "c": "Per"
+    },
+    "13531": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 17878",
+      "c": "Per"
+    },
+    "14632": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 19373",
+      "c": "Per"
+    },
+    "14668": {
+      "name": "Misam",
+      "bayer": "Kappa",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 19476",
+      "c": "Per"
+    },
+    "14576": {
+      "name": "Algol",
+      "bayer": "Beta",
+      "flam": "26",
+      "var": "",
+      "hd": "HD 19356",
+      "c": "Per"
+    },
+    "14817": {
+      "name": "Gorgonea Quarta",
+      "bayer": "Omega",
+      "flam": "28",
+      "var": "",
+      "hd": "HD 19656",
+      "c": "Per"
+    },
+    "14354": {
+      "name": "Gorgonea Tertia",
+      "bayer": "Rho",
+      "flam": "25",
+      "var": "",
+      "hd": "HD 19058",
+      "c": "Per"
+    },
+    "13879": {
+      "name": "Gorgonea Secunda",
+      "bayer": "Pi",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 18411",
+      "c": "Per"
+    },
+    "13949": {
+      "name": "",
+      "bayer": "",
+      "flam": "",
+      "var": "",
+      "hd": "",
+      "c": ""
+    },
+    "19167": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "47",
+      "var": "",
+      "hd": "HD 25642",
+      "c": "Per"
+    },
+    "19812": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "51",
+      "var": "",
+      "hd": "HD 26630",
+      "c": "Per"
+    },
+    "19343": {
+      "name": "Nembus",
+      "bayer": "c",
+      "flam": "48",
+      "var": "MX",
+      "hd": "HD 25940",
+      "c": "Per"
+    },
+    "12777": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 16895",
+      "c": "Per"
+    },
+    "8068": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 10516",
+      "c": "Per"
+    },
+    "2081": {
+      "name": "Ankaa",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 2261",
+      "c": "Phe"
+    },
+    "5165": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 6595",
+      "c": "Phe"
+    },
+    "6867": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 9053",
+      "c": "Phe"
+    },
+    "7083": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 9362",
+      "c": "Phe"
+    },
+    "5348": {
+      "name": "Wurren",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 6882",
+      "c": "Phe"
+    },
+    "765": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 496",
+      "c": "Phe"
+    },
+    "32607": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 50241",
+      "c": "Pic"
+    },
+    "27530": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 39523",
+      "c": "Pic"
+    },
+    "27321": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 39060",
+      "c": "Pic"
+    },
+    "5742": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "85",
+      "var": "",
+      "hd": "HD 7318",
+      "c": "Psc"
+    },
+    "5586": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "83",
+      "var": "",
+      "hd": "HD 7106",
+      "c": "Psc"
+    },
+    "6193": {
+      "name": "",
+      "bayer": "Upsilon",
+      "flam": "90",
+      "var": "",
+      "hd": "HD 7964",
+      "c": "Psc"
+    },
+    "5571": {
+      "name": "",
+      "bayer": "Chi",
+      "flam": "84",
+      "var": "",
+      "hd": "HD 7087",
+      "c": "Psc"
+    },
+    "7097": {
+      "name": "Alpherg",
+      "bayer": "Eta",
+      "flam": "99",
+      "var": "",
+      "hd": "HD 9270",
+      "c": "Psc"
+    },
+    "8198": {
+      "name": "Torcular",
+      "bayer": "Omicron",
+      "flam": "110",
+      "var": "",
+      "hd": "HD 10761",
+      "c": "Psc"
+    },
+    "9487": {
+      "name": "Alrescha",
+      "bayer": "Alpha",
+      "flam": "113",
+      "var": "",
+      "hd": "HD 12446",
+      "c": "Psc"
+    },
+    "8833": {
+      "name": "",
+      "bayer": "Xi",
+      "flam": "111",
+      "var": "",
+      "hd": "HD 11559",
+      "c": "Psc"
+    },
+    "7884": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "106",
+      "var": "",
+      "hd": "HD 10380",
+      "c": "Psc"
+    },
+    "7007": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "98",
+      "var": "",
+      "hd": "HD 9138",
+      "c": "Psc"
+    },
+    "5737": {
+      "name": "Revati",
+      "bayer": "Zeta",
+      "flam": "86",
+      "var": "",
+      "hd": "HD 7344",
+      "c": "Psc"
+    },
+    "4906": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "71",
+      "var": "",
+      "hd": "HD 6186",
+      "c": "Psc"
+    },
+    "3786": {
+      "name": "Kuton",
+      "bayer": "Delta",
+      "flam": "63",
+      "var": "",
+      "hd": "HD 4656",
+      "c": "Psc"
+    },
+    "118268": {
+      "name": "",
+      "bayer": "Omega",
+      "flam": "28",
+      "var": "",
+      "hd": "HD 224617",
+      "c": "Psc"
+    },
+    "116771": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "17",
+      "var": "",
+      "hd": "HD 222368",
+      "c": "Psc"
+    },
+    "115830": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 220954",
+      "c": "Psc"
+    },
+    "115227": {
+      "name": "",
+      "bayer": "b",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 220009",
+      "c": "Psc"
+    },
+    "114971": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 219615",
+      "c": "Psc"
+    },
+    "115738": {
+      "name": "",
+      "bayer": "Kappa",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 220825",
+      "c": "Psc"
+    },
+    "116928": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 222603",
+      "c": "Psc"
+    },
+    "117245": {
+      "name": "",
+      "bayer": "",
+      "flam": "19",
+      "var": "TX",
+      "hd": "HD 223075",
+      "c": "Psc"
+    },
+    "113889": {
+      "name": "Fumalsamakah",
+      "bayer": "Beta",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 217891",
+      "c": "Psc"
+    },
+    "111954": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "18",
+      "var": "",
+      "hd": "HD 214748",
+      "c": "PsA"
+    },
+    "113368": {
+      "name": "Fomalhaut",
+      "bayer": "Alpha",
+      "flam": "24",
+      "var": "",
+      "hd": "HD 216956",
+      "c": "PsA"
+    },
+    "113246": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 216763",
+      "c": "PsA"
+    },
+    "112948": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 216336",
+      "c": "PsA"
+    },
+    "111188": {
+      "name": "Fum al Hui",
+      "bayer": "Beta",
+      "flam": "17",
+      "var": "",
+      "hd": "HD 213398",
+      "c": "PsA"
+    },
+    "109285": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "14",
+      "var": "",
+      "hd": "HD 210049",
+      "c": "PsA"
+    },
+    "107380": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 206742",
+      "c": "PsA"
+    },
+    "107608": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 207155",
+      "c": "PsA"
+    },
+    "35264": {
+      "name": "",
+      "bayer": "Pi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 56855",
+      "c": "Pup"
+    },
+    "36917": {
+      "name": "",
+      "bayer": "p",
+      "flam": "",
+      "var": "",
+      "hd": "HD 60863",
+      "c": "Pup"
+    },
+    "37229": {
+      "name": "Markab",
+      "bayer": "Kappa1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 61555",
+      "c": "Pup"
+    },
+    "38170": {
+      "name": "Azmidi",
+      "bayer": "Xi",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 63700",
+      "c": "Pup"
+    },
+    "38835": {
+      "name": "",
+      "bayer": "j",
+      "flam": "11",
+      "var": "",
+      "hd": "HD 65228",
+      "c": "Pup"
+    },
+    "39757": {
+      "name": "Tureis",
+      "bayer": "Rho",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 67523",
+      "c": "Pup"
+    },
+    "39429": {
+      "name": "Naos",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 66811",
+      "c": "Pup"
+    },
+    "38070": {
+      "name": "",
+      "bayer": "Omicron",
+      "flam": "",
+      "var": "",
+      "hd": "HD 63462",
+      "c": "Pup"
+    },
+    "37677": {
+      "name": "",
+      "bayer": "l",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 62623",
+      "c": "Pup"
+    },
+    "42515": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 74006",
+      "c": "Pyx"
+    },
+    "42828": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 74575",
+      "c": "Pyx"
+    },
+    "43409": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 75691",
+      "c": "Pyx"
+    },
+    "19780": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 27256",
+      "c": "Ret"
+    },
+    "19921": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 27442",
+      "c": "Ret"
+    },
+    "18597": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 25422",
+      "c": "Ret"
+    },
+    "17440": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 23817",
+      "c": "Ret"
+    },
+    "96757": {
+      "name": "Sham",
+      "bayer": "Alpha",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 185758",
+      "c": "Sge"
+    },
+    "97365": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 187076",
+      "c": "Sge"
+    },
+    "98337": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "12",
+      "var": "",
+      "hd": "HD 189319",
+      "c": "Sge"
+    },
+    "96837": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 185958",
+      "c": "Sge"
+    },
+    "89642": {
+      "name": "Hamalwarid",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 167618",
+      "c": "Sgr"
+    },
+    "90185": {
+      "name": "Kaus Australis",
+      "bayer": "Epsilon",
+      "flam": "20",
+      "var": "",
+      "hd": "HD 169022",
+      "c": "Sgr"
+    },
+    "89931": {
+      "name": "Kaus Media",
+      "bayer": "Delta",
+      "flam": "19",
+      "var": "",
+      "hd": "HD 168454",
+      "c": "Sgr"
+    },
+    "90496": {
+      "name": "Kaus Borealis",
+      "bayer": "Lambda",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 169916",
+      "c": "Sgr"
+    },
+    "89341": {
+      "name": "Polis",
+      "bayer": "Mu",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 166937",
+      "c": "Sgr"
+    },
+    "95241": {
+      "name": "Arkab Prior",
+      "bayer": "Beta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 181454",
+      "c": "Sgr"
+    },
+    "95347": {
+      "name": "Rukbat",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 181869",
+      "c": "Sgr"
+    },
+    "93506": {
+      "name": "Ascella",
+      "bayer": "Zeta",
+      "flam": "38",
+      "var": "",
+      "hd": "HD 176687",
+      "c": "Sgr"
+    },
+    "92041": {
+      "name": "Namalsadirah",
+      "bayer": "Phi",
+      "flam": "27",
+      "var": "",
+      "hd": "HD 173300",
+      "c": "Sgr"
+    },
+    "98032": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "",
+      "var": "",
+      "hd": "HD 188114",
+      "c": "Sgr"
+    },
+    "98412": {
+      "name": "",
+      "bayer": "Theta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 189103",
+      "c": "Sgr"
+    },
+    "98066": {
+      "name": "Terebellum",
+      "bayer": "Omega",
+      "flam": "58",
+      "var": "",
+      "hd": "HD 188376",
+      "c": "Sgr"
+    },
+    "96465": {
+      "name": "",
+      "bayer": "h2",
+      "flam": "52",
+      "var": "",
+      "hd": "HD 184707",
+      "c": "Sgr"
+    },
+    "95477": {
+      "name": "",
+      "bayer": "Chi1",
+      "flam": "47",
+      "var": "",
+      "hd": "HD 182369",
+      "c": "Sgr"
+    },
+    "94643": {
+      "name": "Al Kiladah",
+      "bayer": "Psi",
+      "flam": "42",
+      "var": "",
+      "hd": "HD 179950",
+      "c": "Sgr"
+    },
+    "92855": {
+      "name": "Nunki",
+      "bayer": "Sigma",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 175191",
+      "c": "Sgr"
+    },
+    "88635": {
+      "name": "Alnasl",
+      "bayer": "Gamma2",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 165135",
+      "c": "Sgr"
+    },
+    "93864": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "40",
+      "var": "",
+      "hd": "HD 177716",
+      "c": "Sgr"
+    },
+    "93683": {
+      "name": "Manubrij",
+      "bayer": "Omicron",
+      "flam": "39",
+      "var": "",
+      "hd": "HD 177241",
+      "c": "Sgr"
+    },
+    "94141": {
+      "name": "Albaldah",
+      "bayer": "Pi",
+      "flam": "41",
+      "var": "",
+      "hd": "HD 178524",
+      "c": "Sgr"
+    },
+    "94820": {
+      "name": "",
+      "bayer": "d",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 180540",
+      "c": "Sgr"
+    },
+    "95168": {
+      "name": "",
+      "bayer": "Rho1",
+      "flam": "44",
+      "var": "",
+      "hd": "HD 181577",
+      "c": "Sgr"
+    },
+    "95176": {
+      "name": "",
+      "bayer": "Upsilon",
+      "flam": "46",
+      "var": "",
+      "hd": "HD 181615",
+      "c": "Sgr"
+    },
+    "93085": {
+      "name": "",
+      "bayer": "Xi2",
+      "flam": "37",
+      "var": "",
+      "hd": "HD 175775",
+      "c": "Sgr"
+    },
+    "92761": {
+      "name": "Ainalrami",
+      "bayer": "Nu1",
+      "flam": "32",
+      "var": "",
+      "hd": "HD 174974",
+      "c": "Sgr"
+    },
+    "78265": {
+      "name": "Fang",
+      "bayer": "Pi",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 143018",
+      "c": "Sco"
+    },
+    "78401": {
+      "name": "Dschubba",
+      "bayer": "Delta",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 143275",
+      "c": "Sco"
+    },
+    "78820": {
+      "name": "Acrab",
+      "bayer": "Beta1",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 144217",
+      "c": "Sco"
+    },
+    "80112": {
+      "name": "Alniyat",
+      "bayer": "Sigma",
+      "flam": "20",
+      "var": "",
+      "hd": "HD 147165",
+      "c": "Sco"
+    },
+    "80763": {
+      "name": "Antares",
+      "bayer": "Alpha",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 148478",
+      "c": "Sco"
+    },
+    "81266": {
+      "name": "Paikauhale",
+      "bayer": "Tau",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 149438",
+      "c": "Sco"
+    },
+    "82396": {
+      "name": "Larawag",
+      "bayer": "Epsilon",
+      "flam": "26",
+      "var": "",
+      "hd": "HD 151680",
+      "c": "Sco"
+    },
+    "82514": {
+      "name": "Xamidimura",
+      "bayer": "Mu1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 151890",
+      "c": "Sco"
+    },
+    "82729": {
+      "name": "Grafias",
+      "bayer": "Zeta2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 152334",
+      "c": "Sco"
+    },
+    "84143": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 155203",
+      "c": "Sco"
+    },
+    "86228": {
+      "name": "Sargas",
+      "bayer": "Theta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 159532",
+      "c": "Sco"
+    },
+    "87073": {
+      "name": "Girtab",
+      "bayer": "Iota1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 161471",
+      "c": "Sco"
+    },
+    "86670": {
+      "name": "Mula",
+      "bayer": "Kappa",
+      "flam": "",
+      "var": "",
+      "hd": "HD 160578",
+      "c": "Sco"
+    },
+    "85927": {
+      "name": "Shaula",
+      "bayer": "Lambda",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 158926",
+      "c": "Sco"
+    },
+    "4577": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 5737",
+      "c": "Scl"
+    },
+    "117452": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 223352",
+      "c": "Scl"
+    },
+    "115102": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 219784",
+      "c": "Scl"
+    },
+    "116231": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 221507",
+      "c": "Scl"
+    },
+    "91117": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 171443",
+      "c": "Sct"
+    },
+    "92175": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 173764",
+      "c": "Sct"
+    },
+    "91726": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 172748",
+      "c": "Sct"
+    },
+    "90595": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 170296",
+      "c": "Sct"
+    },
+    "77233": {
+      "name": "Nasak Shamiya",
+      "bayer": "Beta",
+      "flam": "28",
+      "var": "",
+      "hd": "HD 141003",
+      "c": "Ser"
+    },
+    "76852": {
+      "name": "",
+      "bayer": "Iota",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 140159",
+      "c": "Ser"
+    },
+    "77450": {
+      "name": "Gudja",
+      "bayer": "Kappa",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 141477",
+      "c": "Ser"
+    },
+    "78072": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "41",
+      "var": "",
+      "hd": "HD 142860",
+      "c": "Ser"
+    },
+    "76276": {
+      "name": "Nasak Yamani",
+      "bayer": "Delta",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 138917",
+      "c": "Ser"
+    },
+    "77070": {
+      "name": "Unukalhai",
+      "bayer": "Alpha",
+      "flam": "24",
+      "var": "",
+      "hd": "HD 140573",
+      "c": "Ser"
+    },
+    "77622": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "37",
+      "var": "",
+      "hd": "HD 141795",
+      "c": "Ser"
+    },
+    "86263": {
+      "name": "",
+      "bayer": "Xi",
+      "flam": "55",
+      "var": "",
+      "hd": "HD 159876",
+      "c": "Ser"
+    },
+    "88404": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "69",
+      "var": "",
+      "hd": "HD 164764",
+      "c": "Oph"
+    },
+    "89962": {
+      "name": "",
+      "bayer": "Eta",
+      "flam": "58",
+      "var": "",
+      "hd": "HD 168723",
+      "c": "Ser"
+    },
+    "92946": {
+      "name": "Alya",
+      "bayer": "Theta1",
+      "flam": "63",
+      "var": "",
+      "hd": "HD 175638",
+      "c": "Ser"
+    },
+    "49641": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 87887",
+      "c": "Sex"
+    },
+    "48437": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "8",
+      "var": "",
+      "hd": "HD 85558",
+      "c": "Sex"
+    },
+    "51362": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "29",
+      "var": "",
+      "hd": "HD 90882",
+      "c": "Sex"
+    },
+    "51437": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 90994",
+      "c": "Sex"
+    },
+    "26451": {
+      "name": "Tianguan",
+      "bayer": "Zeta",
+      "flam": "123",
+      "var": "",
+      "hd": "HD 37202",
+      "c": "Tau"
+    },
+    "21421": {
+      "name": "Aldebaran",
+      "bayer": "Alpha",
+      "flam": "87",
+      "var": "",
+      "hd": "HD 29139",
+      "c": "Tau"
+    },
+    "20894": {
+      "name": "Chamukuy",
+      "bayer": "Theta2",
+      "flam": "78",
+      "var": "",
+      "hd": "HD 28319",
+      "c": "Tau"
+    },
+    "20205": {
+      "name": "Prima Hyadum",
+      "bayer": "Gamma",
+      "flam": "54",
+      "var": "",
+      "hd": "HD 27371",
+      "c": "Tau"
+    },
+    "20455": {
+      "name": "Secunda Hyadum",
+      "bayer": "Delta",
+      "flam": "61",
+      "var": "",
+      "hd": "HD 27697",
+      "c": "Tau"
+    },
+    "20889": {
+      "name": "Ain",
+      "bayer": "Epsilon",
+      "flam": "74",
+      "var": "",
+      "hd": "HD 28305",
+      "c": "Tau"
+    },
+    "18724": {
+      "name": "",
+      "bayer": "Lambda",
+      "flam": "35",
+      "var": "",
+      "hd": "HD 25204",
+      "c": "Tau"
+    },
+    "16083": {
+      "name": "",
+      "bayer": "Xi",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 21364",
+      "c": "Tau"
+    },
+    "18907": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "38",
+      "var": "",
+      "hd": "HD 25490",
+      "c": "Tau"
+    },
+    "15900": {
+      "name": "",
+      "bayer": "Omicron",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 21120",
+      "c": "Tau"
+    },
+    "16852": {
+      "name": "",
+      "bayer": "",
+      "flam": "10",
+      "var": "",
+      "hd": "HD 22484",
+      "c": "Tau"
+    },
+    "89112": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 166063",
+      "c": "Tel"
+    },
+    "90422": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 169467",
+      "c": "Tel"
+    },
+    "90568": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 169767",
+      "c": "Tel"
+    },
+    "8796": {
+      "name": "Mothallah",
+      "bayer": "Alpha",
+      "flam": "2",
+      "var": "",
+      "hd": "HD 11443",
+      "c": "Tri"
+    },
+    "10064": {
+      "name": "Mizan",
+      "bayer": "Beta",
+      "flam": "4",
+      "var": "",
+      "hd": "HD 13161",
+      "c": "Tri"
+    },
+    "10670": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 14055",
+      "c": "Tri"
+    },
+    "82273": {
+      "name": "Atria",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 150798",
+      "c": "TrA"
+    },
+    "77952": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 141891",
+      "c": "TrA"
+    },
+    "74946": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 135382",
+      "c": "TrA"
+    },
+    "110130": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 211416",
+      "c": "Tuc"
+    },
+    "114996": {
+      "name": "",
+      "bayer": "Gamma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 219571",
+      "c": "Tuc"
+    },
+    "2484": {
+      "name": "",
+      "bayer": "Beta1",
+      "flam": "",
+      "var": "",
+      "hd": "HD 2884",
+      "c": "Tuc"
+    },
+    "1599": {
+      "name": "",
+      "bayer": "Zeta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 1581",
+      "c": "Tuc"
+    },
+    "118322": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 224686",
+      "c": "Tuc"
+    },
+    "110838": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 212581",
+      "c": "Tuc"
+    },
+    "59774": {
+      "name": "Megrez",
+      "bayer": "Delta",
+      "flam": "69",
+      "var": "",
+      "hd": "HD 106591",
+      "c": "UMa"
+    },
+    "54061": {
+      "name": "Dubhe",
+      "bayer": "Alpha",
+      "flam": "50",
+      "var": "",
+      "hd": "HD 95689",
+      "c": "UMa"
+    },
+    "53910": {
+      "name": "Merak",
+      "bayer": "Beta",
+      "flam": "48",
+      "var": "",
+      "hd": "HD 95418",
+      "c": "UMa"
+    },
+    "58001": {
+      "name": "Phecda",
+      "bayer": "Gamma",
+      "flam": "64",
+      "var": "",
+      "hd": "HD 103287",
+      "c": "UMa"
+    },
+    "62956": {
+      "name": "Alioth",
+      "bayer": "Epsilon",
+      "flam": "77",
+      "var": "",
+      "hd": "HD 112185",
+      "c": "UMa"
+    },
+    "65378": {
+      "name": "Mizar",
+      "bayer": "Zeta",
+      "flam": "79",
+      "var": "",
+      "hd": "HD 116656",
+      "c": "UMa"
+    },
+    "67301": {
+      "name": "Alkaid",
+      "bayer": "Eta",
+      "flam": "85",
+      "var": "",
+      "hd": "HD 120315",
+      "c": "UMa"
+    },
+    "57399": {
+      "name": "Taiyangshou",
+      "bayer": "Chi",
+      "flam": "63",
+      "var": "",
+      "hd": "HD 102224",
+      "c": "UMa"
+    },
+    "55219": {
+      "name": "Alula Borealis",
+      "bayer": "Nu",
+      "flam": "54",
+      "var": "",
+      "hd": "HD 98262",
+      "c": "UMa"
+    },
+    "55203": {
+      "name": "Alula Australis",
+      "bayer": "Xi",
+      "flam": "53",
+      "var": "",
+      "hd": "HD 98230",
+      "c": "UMa"
+    },
+    "54539": {
+      "name": "",
+      "bayer": "Psi",
+      "flam": "52",
+      "var": "",
+      "hd": "HD 96833",
+      "c": "UMa"
+    },
+    "50801": {
+      "name": "Tania Australis",
+      "bayer": "Mu",
+      "flam": "34",
+      "var": "",
+      "hd": "HD 89758",
+      "c": "UMa"
+    },
+    "50372": {
+      "name": "Tania Borealis",
+      "bayer": "Lambda",
+      "flam": "33",
+      "var": "",
+      "hd": "HD 89021",
+      "c": "UMa"
+    },
+    "46733": {
+      "name": "",
+      "bayer": "h",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 81937",
+      "c": "UMa"
+    },
+    "41704": {
+      "name": "Muscida",
+      "bayer": "Omicron",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 71369",
+      "c": "UMa"
+    },
+    "48319": {
+      "name": "",
+      "bayer": "Upsilon",
+      "flam": "29",
+      "var": "",
+      "hd": "HD 84999",
+      "c": "UMa"
+    },
+    "48402": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "30",
+      "var": "",
+      "hd": "HD 85235",
+      "c": "UMa"
+    },
+    "46853": {
+      "name": "",
+      "bayer": "Theta",
+      "flam": "25",
+      "var": "",
+      "hd": "HD 82328",
+      "c": "UMa"
+    },
+    "44127": {
+      "name": "Talitha",
+      "bayer": "Iota",
+      "flam": "9",
+      "var": "",
+      "hd": "HD 76644",
+      "c": "UMa"
+    },
+    "44471": {
+      "name": "Alkaphrah",
+      "bayer": "Kappa",
+      "flam": "12",
+      "var": "",
+      "hd": "HD 77327",
+      "c": "UMa"
+    },
+    "77055": {
+      "name": "Akfa Farkadain",
+      "bayer": "Zeta",
+      "flam": "16",
+      "var": "",
+      "hd": "HD 142105",
+      "c": "UMi"
+    },
+    "79822": {
+      "name": "Anwa Farkadain",
+      "bayer": "Eta",
+      "flam": "21",
+      "var": "",
+      "hd": "HD 148048",
+      "c": "UMi"
+    },
+    "75097": {
+      "name": "Pherkad",
+      "bayer": "Gamma",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 137422",
+      "c": "UMi"
+    },
+    "72607": {
+      "name": "Kochab",
+      "bayer": "Beta",
+      "flam": "7",
+      "var": "",
+      "hd": "HD 131873",
+      "c": "UMi"
+    },
+    "82080": {
+      "name": "Circitores",
+      "bayer": "Epsilon",
+      "flam": "22",
+      "var": "",
+      "hd": "HD 153751",
+      "c": "UMi"
+    },
+    "85822": {
+      "name": "Yildun",
+      "bayer": "Delta",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 166205",
+      "c": "UMi"
+    },
+    "11767": {
+      "name": "Polaris",
+      "bayer": "Alpha",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 8890",
+      "c": "UMi"
+    },
+    "45941": {
+      "name": "Markeb",
+      "bayer": "Kappa",
+      "flam": "",
+      "var": "",
+      "hd": "HD 81188",
+      "c": "Vel"
+    },
+    "48774": {
+      "name": "",
+      "bayer": "Phi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 86440",
+      "c": "Vel"
+    },
+    "52727": {
+      "name": "",
+      "bayer": "Mu",
+      "flam": "",
+      "var": "",
+      "hd": "HD 93497",
+      "c": "Vel"
+    },
+    "50191": {
+      "name": "",
+      "bayer": "q",
+      "flam": "",
+      "var": "",
+      "hd": "HD 88955",
+      "c": "Vel"
+    },
+    "46651": {
+      "name": "",
+      "bayer": "Psi",
+      "flam": "",
+      "var": "",
+      "hd": "HD 82434",
+      "c": "Vel"
+    },
+    "44816": {
+      "name": "Suhail",
+      "bayer": "Lambda",
+      "flam": "",
+      "var": "",
+      "hd": "HD 78647",
+      "c": "Vel"
+    },
+    "57380": {
+      "name": "",
+      "bayer": "Nu",
+      "flam": "3",
+      "var": "",
+      "hd": "HD 102212",
+      "c": "Vir"
+    },
+    "57757": {
+      "name": "Zavijava",
+      "bayer": "Beta",
+      "flam": "5",
+      "var": "",
+      "hd": "HD 102870",
+      "c": "Vir"
+    },
+    "60129": {
+      "name": "Zaniah",
+      "bayer": "Eta",
+      "flam": "15",
+      "var": "",
+      "hd": "HD 107259",
+      "c": "Vir"
+    },
+    "61941": {
+      "name": "Porrima",
+      "bayer": "Gamma",
+      "flam": "29",
+      "var": "",
+      "hd": "HD 110379",
+      "c": "Vir"
+    },
+    "64238": {
+      "name": "Apami-Atsa",
+      "bayer": "Theta",
+      "flam": "51",
+      "var": "",
+      "hd": "HD 114330",
+      "c": "Vir"
+    },
+    "65474": {
+      "name": "Spica",
+      "bayer": "Alpha",
+      "flam": "67",
+      "var": "",
+      "hd": "HD 116658",
+      "c": "Vir"
+    },
+    "69701": {
+      "name": "Syrma",
+      "bayer": "Iota",
+      "flam": "99",
+      "var": "",
+      "hd": "HD 124850",
+      "c": "Vir"
+    },
+    "71957": {
+      "name": "Rijl al Awwa",
+      "bayer": "Mu",
+      "flam": "107",
+      "var": "",
+      "hd": "HD 129502",
+      "c": "Vir"
+    },
+    "63608": {
+      "name": "Vindemiatrix",
+      "bayer": "Epsilon",
+      "flam": "47",
+      "var": "",
+      "hd": "HD 113226",
+      "c": "Vir"
+    },
+    "63090": {
+      "name": "Minelauva",
+      "bayer": "Delta",
+      "flam": "43",
+      "var": "",
+      "hd": "HD 112300",
+      "c": "Vir"
+    },
+    "66249": {
+      "name": "Heze",
+      "bayer": "Zeta",
+      "flam": "79",
+      "var": "",
+      "hd": "HD 118098",
+      "c": "Vir"
+    },
+    "68520": {
+      "name": "",
+      "bayer": "Tau",
+      "flam": "93",
+      "var": "",
+      "hd": "HD 122408",
+      "c": "Vir"
+    },
+    "72220": {
+      "name": "",
+      "bayer": "",
+      "flam": "109",
+      "var": "",
+      "hd": "HD 130109",
+      "c": "Vir"
+    },
+    "44382": {
+      "name": "",
+      "bayer": "Alpha",
+      "flam": "",
+      "var": "",
+      "hd": "HD 78045",
+      "c": "Vol"
+    },
+    "41312": {
+      "name": "",
+      "bayer": "Beta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 71878",
+      "c": "Vol"
+    },
+    "39794": {
+      "name": "",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 68520",
+      "c": "Vol"
+    },
+    "35228": {
+      "name": "",
+      "bayer": "Delta",
+      "flam": "",
+      "var": "",
+      "hd": "HD 57623",
+      "c": "Vol"
+    },
+    "34481": {
+      "name": "",
+      "bayer": "Gamma2",
+      "flam": "",
+      "var": "",
+      "hd": "HD 55865",
+      "c": "Vol"
+    },
+    "94703": {
+      "name": "",
+      "bayer": "",
+      "flam": "1",
+      "var": "",
+      "hd": "HD 180554",
+      "c": "Vul"
+    },
+    "95771": {
+      "name": "Anser",
+      "bayer": "Alpha",
+      "flam": "6",
+      "var": "",
+      "hd": "HD 183439",
+      "c": "Vul"
+    },
+    "97886": {
+      "name": "",
+      "bayer": "",
+      "flam": "13",
+      "var": "",
+      "hd": "HD 188260",
+      "c": "Vul"
+    },
+    "98543": {
+      "name": "",
+      "bayer": "",
+      "flam": "15",
+      "var": "NT",
+      "hd": "HD 189849",
+      "c": "Vul"
+    },
+    "99874": {
+      "name": "",
+      "bayer": "",
+      "flam": "23",
+      "var": "",
+      "hd": "HD 192806",
+      "c": "Vul"
+    },
+    "60260": {
+      "name": "Ginan",
+      "bayer": "Epsilon",
+      "flam": "",
+      "var": "",
+      "hd": "HD 107446",
+      "c": "Cru"
+    },
+    "104382": {
+      "name": "Polaris Australis",
+      "bayer": "Sigma",
+      "flam": "",
+      "var": "",
+      "hd": "HD 177482",
+      "c": "Oct"
+    }
+  }
+}

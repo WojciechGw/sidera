@@ -2,7 +2,7 @@
 
 A standalone sky observatory for **RP6502-PICO and RP6502-EMU**. The project
 uses cc65 and the [RP6502-SDK](https://picocomputer.github.io/sdk.html)
-to produce a single `sidera.rp6502` containing all data and five overlays.
+to produce a single `sidera.rp6502` containing all data and six overlays.
 It does not require the mtRAM repository or razemOS.
 
 On 13 November 2026, the owner confirmed that SIDERA starts and runs on a physical
@@ -37,7 +37,7 @@ ctest --preset cc65/Release
 
 Outputs: `build/cc65/debug/sidera/sidera.rp6502` and
 `build/cc65/release/sidera/sidera.rp6502`. The same directories contain `.map`, `.lbl`, `.dbg`,
-`.sym`, the core image and five `.ovl` files. Do not mix files from different builds.
+`.sym`, the resident images and six `.ovl` files. Do not mix files from different builds.
 The build automatically checks the ROM structure, CRC, build identifier,
 BSS and memory boundaries. Each configuration also builds native test executables.
 

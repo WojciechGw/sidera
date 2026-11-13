@@ -12,7 +12,7 @@ extern unsigned char ovl_memory[6144];
 #define OVL_SCRATCH 0xDF00u
 #endif
 #define OVL_HEADER_BYTES 24u
-enum { OVL_NONE, OVL_INIT, OVL_CITIES, OVL_EDIT, OVL_COVER, OVL_SOLAR };
+enum { OVL_NONE, OVL_INIT, OVL_CITIES, OVL_EDIT, OVL_COVER, OVL_SOLAR, OVL_FIND };
 
 extern const char *boot_location;
 extern int boot_config;

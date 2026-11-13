@@ -1,5 +1,13 @@
 sidera graphics
 
+FIND names and designations: d3-celestial, Copyright (c) 2015 Olaf Frohn,
+BSD-3-Clause (full license below), data/starnames.json at revision
+e4e84411d74bddf2e49af0655851d617f817593c, imported 2026-11-13.
+Cross-indices: Kostjuk (2002), VizieR IV/27A; Smith (1996), IV/22;
+Samus et al., B/gcvs; Gliese et al., V/70A. English names and ASCII
+designations only; the 759 existing HIP stars and their positions are unchanged.
+Normalized source, provenance and checksum: src/data/find-names.json.
+
 Startup cover: user-supplied rmt/assets/sidera-cover.bmp, 320x180 indexed pixels.
 Pixel indexes are preserved; its palette is converted to opaque RGB555 with
 33 fade levels. The source BMP is retained unchanged and is not part of the

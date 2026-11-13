@@ -1,5 +1,17 @@
 sidera constellation catalogue
 
+FIND names and designations were added on 2026-11-13 from d3-celestial
+data/starnames.json, revision e4e84411d74bddf2e49af0655851d617f817593c.
+The subset and source SHA-256 are retained in find-names.json. Only English
+proper names, Bayer/Flamsteed/variable designations, HD and constellation
+abbreviations are imported; Greek letters are spelled out in ASCII.
+All 759 existing HIP identifiers and coordinates are unchanged. There are
+337 nonempty proper names in this snapshot; other objects use designations
+or HIP. The existing Alpha Centauri entry is component B (HIP 71681).
+The upstream name cross-indices are Kostjuk (2002), VizieR IV/27A;
+Smith (1996), IV/22; Samus et al., B/gcvs; and Gliese et al., V/70A.
+See https://github.com/ofrohn/d3-celestial for attribution and BSD-3-Clause terms.
+
 Adapted from d3-celestial, Copyright (c) 2015 Olaf Frohn, BSD-3-Clause.
 Upstream: https://github.com/ofrohn/d3-celestial
 Files: data/constellations.lines.json, data/constellations.json,
@@ -37,3 +49,10 @@ not IAU SOFA software and carries no IAU/SOFA endorsement.
 The offline test compares against full cubic precession and a standard GMST
 polynomial in double precision. It measures numerical/model approximation,
 not the omitted physical effects or catalogue astrometric errors.
+
+World locator: world-land.json contains normalized Natural Earth 1:110m land
+rings, version 4.1.0, downloaded 2026-11-13. The source URL and archive SHA-256
+are embedded in that file. Natural Earth data are public domain; see
+https://www.naturalearthdata.com/about/terms-of-use/ and
+../rom/sidera-map-license.txt. Geographic region assignment is original SIDERA
+code in scripts/world_regions.py, not Natural Earth administrative boundaries.

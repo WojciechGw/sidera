@@ -36,7 +36,9 @@ assert(option_value(OPT_GRID,v,0)==(a<=3));assert(option_value(OPT_CONSTELLATION
 assert(option_code("VIEW")==OPT_VIEW&&!option_code("unknown"));
 assert(option_value(OPT_VIEW,"65,+14",1)&&bearing==65&&elevation==14);
 assert(!option_value(OPT_VIEW,"360,0",1)&&bearing==65);
-assert(!option_value(OPT_VIEW,"0,-55",1)&&elevation==14);
+assert(!option_value(OPT_VIEW,"0,-91",1)&&elevation==14);
+assert(option_value(OPT_VIEW,"65,90",1)&&elevation==90);
+assert(option_value(OPT_VIEW,"65,-90",1)&&elevation==-90);
 assert(!option_value(OPT_VIEW,"999999999999,0",1));
 assert(!option_value(OPT_FOV,"55",1)&&fov==160);
 assert(option_value(OPT_FOV,"50",1)&&fov==50);

@@ -34,6 +34,12 @@ original code and documentation. The full text is in [LICENSE](../LICENSE).
 Third-party data, artwork and tools retain their existing terms and attribution;
 the scope and exceptions are in [LICENSE-NOTICE.txt](../LICENSE-NOTICE.txt).
 
+The CITIES locator uses public-domain Natural Earth 1:110m land, version 4.1.0,
+downloaded on 13 November 2026. Normalized rings, the source URL and archive
+SHA-256 are retained in `src/data/world-land.json`; the shipped notice is
+[sidera-map-license.txt](../src/rom/sidera-map-license.txt). SIDERA supplies the
+separate geographic grouping rules and rasterizer; rebuilding needs no network.
+
 Significant adaptations include local paths, standard SDK targets and packing,
 generation into `build/`, portable test adapters and using `int32_t` for the
 four-byte offset field in the time-zone file. The last change removes the

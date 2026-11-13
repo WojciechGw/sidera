@@ -4,6 +4,8 @@
 
 Observer observer={0,0,0};Date moment={2000,1,1,12,0,0};Sky sky;
 int bearing=0,elevation=24,gx_circle=1800;
+unsigned target_id=0xFFFFu;
+unsigned char target_figure=255;
 unsigned char grid=0,live=0;
 unsigned char planets=0;
 Position planet_positions[PLANET_COUNT];
@@ -86,7 +88,7 @@ int main(int argc,char **argv)
     x=300;y=416;x1=400;y1=500;assert(!clip(&x,&y,&x1,&y1));
     x=-100;y=100;x1=0;y1=300;assert(!clip(&x,&y,&x1,&y1));
     box.left=628;box.right=27;box.top=416;
-    segment(-100,100,700,100);
+    segment(-100,100,700,100,0);
     assert(pixels==120&&minx==28&&maxx==623&&miny==100&&maxy==100&&lastx==623);
     assert(box.left==28&&box.right==627);
     assert(!constellation_mode);
@@ -111,7 +113,7 @@ int main(int argc,char **argv)
         check_labels();
         label_calls=named_calls=0;cs_labels(1);assert(label_calls==13&&named_calls==8);
     }
-    constellation_mode=4;pixels=0;segment(28,100,627,100);assert(!pixels);
+    constellation_mode=4;pixels=0;segment(28,100,627,100,0);assert(!pixels);
     /* Each newly added isolated star is visible in every enabled C mode,
        without extra line pixels; its figure gets a label even when alone. */
     for(i=757;i<759;++i)for(c=1;c<=4;++c) {

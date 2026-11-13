@@ -118,11 +118,11 @@ static void checked_sky_compute(const Date *d,const Observer *o,Sky *s)
         expect_text_at(202,21,"Location ",0);
         expect_text_at(226,43,"Sun AZ ... ALT ...",0);
         expect_text_at(412,43,"Moon AZ ... ALT ... LIT ...",0);
-        expect_text_at(12,450,"N: now",0);expect_text_at(12,462,"Arrows: view",0);
-        expect_text_at(114,462," grid ",grid?255:0);
-        expect_text_at(180,462," paths ",trails?255:0);
-        expect_text_at(246,462," Planets ",planets?255:0);
-        expect_text_at(330,462," constellations ",constellation_mode?255:0);
+        expect_text_at(12,450,"N: now",0);expect_text_at(17,462,"Arrows: view",0);
+        expect_text_at(113,462," grid ",grid?255:0);
+        expect_text_at(167,462," paths ",trails?255:0);
+        expect_text_at(227,462," Planets ",planets?255:0);
+        expect_text_at(299,462," constellations ",constellation_mode?255:0);
         expect_header_icons(0);
         for(i=71*80;i<448*80;++i)assert(!xram[i]);
     }
@@ -170,7 +170,7 @@ static unsigned constellation_keys(void)
             assert(!gx_busy()&&scene_checks==constellation_scenes);
             assert(!memcmp(frozen_frame+71*80,xram+71*80,377*80));
             expect_busy(1);
-            assert(xram[462*80+330/8]&(128>>(330&7))); /* Selected C, immediately. */
+            assert(xram[462*80+299/8]&(128>>(299&7))); /* Selected C, immediately. */
             if(constellation_mode!=constellation_target)return 'C';
             return 0;
         }
@@ -349,7 +349,7 @@ unsigned key_poll(void)
     if(simulation_test)return simulation_keys();
     if(control_test)return control_keys();
     if(solar_test)return solar_keys();
-    if(failed_overlay)return strstr(failed_overlay,"solar")?'X':strstr(failed_overlay,"edit")?'Z':'K';
+    if(failed_overlay)return strstr(failed_overlay,"solar")?'X':strstr(failed_overlay,"find")?'F':strstr(failed_overlay,"edit")?'Z':'K';
 #endif
     if(gx_busy()&&!editing&&!cities_active) {
         ++render_polls;expect_busy(1);
@@ -455,7 +455,7 @@ unsigned key_poll(void)
     }
     if(key_index>=4&&key_index<=6)assert(portal_writes<30000);
     if(key_index==7)assert(portal_writes>=25000); /* G off still clears the plot. */
-    if(key_index>=4&&key_index<=7)for(i=114;i<120;++i)
+    if(key_index>=4&&key_index<=7)for(i=113;i<119;++i)
         assert(!!(xram[462*80+i/8]&(128>>(i&7)))==!!grid);
     portal_writes=0;
     if(cities_active)++menu_seen;
@@ -618,7 +618,7 @@ int main(int argc,char **argv)
     assert(render_test==10&&cache_test==7&&gx_busy()); /* Q exited a partial frame. */
     assert(trail_checks>=TRAIL_COUNT&&sky_checks&&planet_checks&&star_checks&&idle_steps>1&&render_polls>1);
     assert(trail_done==TRAIL_COUNT&&!cs_busy());
-    assert(!opened&&rom_reads-overlay_reads==5&&planets&&constellation_mode==1);
+    assert(!opened&&rom_reads-overlay_reads==7&&planets&&constellation_mode==1); /* Two CITIES openings each load the map. */
     assert(!strcmp(asset_path,"ROM:sidera.dat"));
     assert(!note[0]);
 #ifdef SIDERA_OVERLAY_HOST

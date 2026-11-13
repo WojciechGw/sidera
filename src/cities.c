@@ -13,6 +13,7 @@
 #define DETAILS_Y (CITIES_BOTTOM-60)
 #define NOTE_Y (CITIES_BOTTOM-46)
 #define TEXT_CHARS ((CITIES_RIGHT-TEXT_X-2)/6)
+#define LIST_CHARS 52
 #define RECORD 96
 unsigned char cities_active=0;
 #ifdef SIDERA_OVERLAYS
@@ -32,6 +33,7 @@ static Observer candidate;
 
 void cities_close(void)
 {
+    world_close();
     /* Erase the panel, including gaps outside the plot's normal redraw area.
      * gx_clear also invalidates the axes and footer for restoration. */
     if(cities_active)gx_clear(CITIES_TOP,CITIES_BOTTOM-CITIES_TOP);
@@ -146,42 +148,55 @@ static void clear_rows(int y,int height)
         gx_write(a,row,sizeof(row));
     }
 }
-static void fit_line(void)
+static void clear_list_rows(unsigned y,unsigned char height)
 {
-    if(strlen(line)>TEXT_CHARS)strcpy(line+TEXT_CHARS-3,"...");
+    unsigned char row[41];memset(row,0,sizeof(row));row[0]=128;
+    while(height--)gx_write(y++*80u,row,sizeof(row));
+}
+static void fit_line(unsigned char width)
+{
+    if(strlen(line)>width)strcpy(line+width-3,"...");
 }
 static void draw_search(void)
 {
-    clear_rows(CITIES_TOP+28,8);
+    clear_list_rows(CITIES_TOP+28,8);
     sprintf(line,"Search: %s",query);gx_text(TEXT_X,CITIES_TOP+28,line);
 }
 static int draw_row(unsigned char i)
 {
-    clear_rows(ROW_Y-1+i*ROW_HEIGHT,10); /* include the old inverse label's border */
+    clear_list_rows(ROW_Y-1+i*ROW_HEIGHT,10);
     if(!read_city(ids[i]))return 0;
     sprintf(line,"%s %s - %s%s",record,record+3,record+43,
             record[93]&2?" [Capital]":record[93]&4?" [Seat]":"");
-    fit_line();gx_label(TEXT_X,ROW_Y+i*ROW_HEIGHT,line,selected==page+i);return 1;
+    fit_line(LIST_CHARS);gx_label(TEXT_X,ROW_Y+i*ROW_HEIGHT,line,selected==page+i);return 1;
 }
 static void draw_list(void)
 {
     unsigned char i;
-    clear_rows(ROW_Y-1,ROWS*ROW_HEIGHT);
+    clear_list_rows(ROW_Y-1,140);clear_list_rows(ROW_Y-1+140,140);
     for(i=0;i<rows;++i)if(!draw_row(i))break;
     if(!total)gx_text(TEXT_X,ROW_Y,"No matching cities.");
 }
 static void draw_details(void)
 {
+    unsigned char n,ok=0;
     clear_rows(DETAILS_Y,8);
     if(rows&&read_city(ids[selected-page])) {
+        ok=1;
         location_format(line,&candidate,0);gx_text(TEXT_X,DETAILS_Y,line);
+        world_select(record[93]>>4,&candidate);
+    } else world_select(0,0);
+    for(n=0;n<2;++n) {
+        memset(line,' ',39);line[39]=0;
+        if(ok)memcpy(line,record+(n?3:43),strlen((char *)record+(n?3:43)));
+        gx_label(334,240+n*14,line,0);
     }
     sprintf(line,"%u / %u",total?selected+1:0,total);
     gx_text(CITIES_RIGHT-6-(int)strlen(line)*6,DETAILS_Y,line);
 }
 static void draw_note(void)
 {
-    clear_rows(NOTE_Y,8);strcpy(line,note);fit_line();gx_text(TEXT_X,NOTE_Y,line);
+    clear_rows(NOTE_Y,8);strcpy(line,note);fit_line(TEXT_CHARS);gx_text(TEXT_X,NOTE_Y,line);
 }
 void cities_draw(void)
 {
@@ -191,6 +206,7 @@ void cities_draw(void)
     gx_line(CITIES_RIGHT-1,CITIES_TOP,CITIES_RIGHT-1,CITIES_BOTTOM-1,0);
     gx_line(CITIES_LEFT,CITIES_BOTTOM-1,CITIES_RIGHT-1,CITIES_BOTTOM-1,0);
     gx_label(CITIES_LEFT+2,CITIES_TOP+12," CITIES ",1);
+    world_begin();
     gx_text(TEXT_X,CITIES_TOP+44,"Country - City  [Capital / Seat of government]");
     draw_search();draw_list();draw_details();
     gx_text(TEXT_X,CITIES_BOTTOM-26,"Type: search (2+ chars)  Backspace: erase  Up/Down: select  PgUp/PgDn: page");

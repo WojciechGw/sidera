@@ -10,6 +10,7 @@ static unsigned char header_visible;
 static unsigned char calculating,status_drawn=255;
 static unsigned char footer_valid,footer_flags; /* Valid bits: help rows 1, note row 2. */
 static char footer_note[sizeof(note)];
+static unsigned char panel_dirty;
 static char text[120];
 int fov=120,gx_circle=1800; /* Horizontal degrees; pixels per full azimuth turn. */
 static int last_elevation=-100,origin_y;
@@ -33,6 +34,7 @@ static int axes_bearing,axes_elevation,axes_circle;
 
 void gx_axes_invalidate(void) { axes_valid=0; }
 void gx_footer_invalidate(void) { footer_valid=0; }
+void gx_panel_restore(void) { panel_dirty=1;gx_axes_invalidate();gx_footer_invalidate(); }
 
 static void body_cache(void)
 {
@@ -236,6 +238,7 @@ int gx_canvas(void)
     unsigned char i;
     gx_axes_invalidate();
     gx_footer_invalidate();
+    panel_dirty=0;
     header_icons(0);
     status_drawn=255;
     RIA.step0=1;RIA.addr0=XR_CFG;
@@ -245,9 +248,13 @@ int gx_canvas(void)
     /* Positions are supplied after the next calculation/scene refresh. */
     RIA.addr0=XR_MOON_CFG+12;put16(-64);
     for(i=0;i<=PLANET_COUNT;++i){RIA.addr0=XR_BODY_CFG+i*10;put16(-64);}
+    RIA.addr0=XR_CITY_CFG;
+    put16(-64);put16(0);put16(XR_CITY_IMAGE);put16(XR_CITY_PAL);put16(0x11);
     if(r>=0)r=xreg(1,0,1,5,56,XR_BODY_CFG,PLANET_COUNT+10,1,VIEW_TOP,VIEW_BOTTOM);
     if(r>=0)r=xreg(1,0,1,4,1,XR_MOON_CFG,1,2,VIEW_TOP,VIEW_BOTTOM);
-    if(r>=0)r=xreg(1,0,1,5,19,XR_SUN_HEADER_CFG,1,0,0,VIEW_TOP);
+    if(r>=0)r=xreg(1,0,1,5,19,XR_SUN_HEADER_CFG,1,0,0,CITIES_TOP);
+    /* Plane 0 sprite overlays the bitmap fill, below the header Sun. */
+    if(r>=0)r=xreg(1,0,1,5,56,XR_CITY_CFG,1,0,75,229);
     if(r>=0)r=xreg(1,0,1,4,1,XR_MOON_HEADER_CFG,1,1,0,VIEW_TOP);
     return r>=0;
 }
@@ -257,7 +264,7 @@ void gx_console(void)
 }
 static unsigned char panel_hit(int x,int y,int w,int h)
 {
-    if(cities_active&&x<CITIES_RIGHT&&x+w>CITIES_LEFT&&
+    if((cities_active||find_active)&&x<CITIES_RIGHT&&x+w>CITIES_LEFT&&
        y<CITIES_BOTTOM&&y+h>CITIES_TOP)return 1;
     return solar_hit(x,y,w,h);
 }
@@ -323,6 +330,7 @@ void gx_planet_labels(void)
     body_cache();
     for(i=0;i<PLANET_COUNT;++i) {
         lx[i]=-100;
+        if(target_id==i+2u)continue; /* The selected body's inverse label has priority. */
         sx=gx_body_x[i+2];sy=gx_body_y[i+2];if(sx<0)continue;
         w=(int)strlen(planet_names[i])*6;
         x=sx+6;if(x+w>=VIEW_RIGHT)x=sx-6-w;
@@ -446,14 +454,15 @@ void gx_footer(void)
     if(!(footer_valid&1)) {
         gx_clear(448,24);
         gx_text(12,450,"N: now   Space: mode cycle    +/-: 15 min   [/]: day    D: date   L: location    Z: Timezone   S: save");
-        gx_text(12,462,"Arrows: view   G: grid    T: paths   P: Planets    C: constellations   K: Cities    X: Solar   Q: quit");
+        /* 101 character cells: 17px side margins and two spaces per gap. */
+        gx_text(17,462,"Arrows: view  G: grid  T: paths  P: Planets  C: constellations  K: Cities  F: Find  X: Solar  Q: quit");
         footer_flags=0;footer_valid|=1;
     }
     changed=flags^footer_flags;
-    if(changed&1)draw_text(114,462," grid ",flags&1?255:0);
-    if(changed&2)draw_text(180,462," paths ",flags&2?255:0);
-    if(changed&4)draw_text(246,462," Planets ",flags&4?255:0);
-    if(changed&8)draw_text(330,462," constellations ",flags&8?255:0);
+    if(changed&1)draw_text(113,462," grid ",flags&1?255:0);
+    if(changed&2)draw_text(167,462," paths ",flags&2?255:0);
+    if(changed&4)draw_text(227,462," Planets ",flags&4?255:0);
+    if(changed&8)draw_text(299,462," constellations ",flags&8?255:0);
     footer_flags=flags;
     if(!(footer_valid&2)||strcmp(footer_note,note)) {
         gx_clear(472,8);gx_text(20,472,note);
@@ -478,6 +487,7 @@ void gx_trail(unsigned char body,unsigned char n)
     if(planets)for(i=0;i<PLANET_COUNT;++i)
         if(lx[i]>=0&&gx_label_damaged(lx[i],ly[i],(int)strlen(planet_names[i])*6))
             gx_label(lx[i],ly[i],planet_names[i],0);
+    target_draw();
 }
 void gx_grid_cycle(void) { grid=(grid+1)&3; }
 static void grid_pixel(int x,int y)
@@ -558,6 +568,10 @@ static void scene_clear_row(unsigned y)
 {
     unsigned a=y*80u;
     unsigned char i;
+    if(panel_dirty) {
+        RIA.step0=1;RIA.addr0=a;for(i=0;i<80;++i)RIA.rw0=0;
+        return;
+    }
     if((y>=VIEW_TOP&&y<VIEW_BOTTOM)||
        (y<VIEW_TOP&&(axes_redraw&AXIS_TOP)))clear_plot_row(a);
     if(y>=VIEW_TOP-6&&y<VIEW_BOTTOM+2&&(axes_redraw&AXIS_SIDES))clear_sides_row(a);
@@ -604,7 +618,7 @@ void gx_grid_add(void)
     grid_prepare();axes_prepare();
     /* Only add the new layer. Opaque labels must remain above the marks. */
     if(grid>=2)grid_marks(grid==2,grid==3);
-    cs_labels(0);grid_axes();horizon_label();gx_planet_labels();
+    cs_labels(0);grid_axes();horizon_label();gx_planet_labels();target_draw();
     axes_valid|=AXIS_TOP|AXIS_SIDES;
 }
 /* Full-width band starting at the ticks, with a black row below the V
@@ -679,7 +693,7 @@ void gx_scene_step(void)
             else drawing=5;break;
         case 5:if(cs_draw_step())drawing=6;break;
         case 6:grid_axes();horizon_label();axes_valid|=AXIS_TOP|AXIS_SIDES;drawing=7;break;
-        case 7:gx_planet_labels();drawing=0;break;
+        case 7:gx_planet_labels();target_draw();panel_dirty=0;drawing=0;break;
         }
         if((unsigned)(platform_ticks()-start)>=2)break;
     }

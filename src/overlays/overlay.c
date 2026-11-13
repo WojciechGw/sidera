@@ -17,7 +17,7 @@ const unsigned char ovl_build_id[8]={0,0,0,0,0,0,0,0};
 static const char *const names[]={
     "ROM:sidera-init.ovl", "ROM:sidera-cities.ovl",
     "ROM:sidera-edit.ovl", "ROM:sidera-cover.ovl",
-    "ROM:sidera-solar.ovl"
+    "ROM:sidera-solar.ovl", "ROM:sidera-find.ovl"
 };
 static const uint32_t crc_table[16]={
     0x00000000UL,0x1DB71064UL,0x3B6E20C8UL,0x26D930ACUL,
@@ -52,7 +52,7 @@ unsigned char ovl_select(unsigned char id)
     const char *error;
     unsigned char *window=OVL_MEMORY;
     if(ovl_failed)return 0;
-    if(id<OVL_INIT||id>OVL_SOLAR){error="invalid ID";goto fail;}
+    if(id<OVL_INIT||id>OVL_FIND){error="invalid ID";goto fail;}
     if(id==loaded)return 1;
     fd=open(names[id-1],O_RDONLY);
     if(fd<0){error="cannot open";goto fail;}
@@ -80,6 +80,6 @@ unsigned char ovl_select(unsigned char id)
 fail:
     if(fd>=0)close(fd);
     loaded=OVL_NONE;ovl_failed=1;
-    sprintf(note,"sidera: %s: %s",id>=OVL_INIT&&id<=OVL_SOLAR?names[id-1]:"overlay",error);
+    sprintf(note,"sidera: %s: %s",id>=OVL_INIT&&id<=OVL_FIND?names[id-1]:"overlay",error);
     return 0;
 }

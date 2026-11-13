@@ -28,7 +28,7 @@ add_test(NAME sidera_rom
         "$<TARGET_PROPERTY:sidera,RP6502_ROM>")
 rp6502_test(NAME sidera_emu COMMAND tests/emu_smoke.py
     --memseed 123 "$<TARGET_PROPERTY:sidera,RP6502_ROM>"
-    -- /config SAVE:/sidera.cfg /date "2026-11-12 20:00:00")
+    -- /config SAVE:/sidera.cfg /date "2026-11-12 20:00:00" /view 180,24)
 set_tests_properties(sidera_emu PROPERTIES TIMEOUT 90)
 rp6502_test(NAME sidera_input COMMAND tests/measure_input_latency.py
     --memseed 123 --phi2 8000 "$<TARGET_PROPERTY:sidera,RP6502_ROM>"
@@ -45,6 +45,16 @@ rp6502_test(NAME sidera_startup COMMAND tests/startup_panels.py
     --memseed 123 --phi2 8000 "$<TARGET_PROPERTY:sidera,RP6502_ROM>"
     -- /config SAVE:/startup.cfg)
 set_tests_properties(sidera_startup PROPERTIES TIMEOUT 90)
+rp6502_test(NAME sidera_find COMMAND tests/find_smoke.py
+    --memseed 123 --phi2 8000 "$<TARGET_PROPERTY:sidera,RP6502_ROM>"
+    -- /config SAVE:/find.cfg /date "2026-11-12 20:00:00" /fov 50
+    /grid 1 /paths off /constellations 0 /planets off)
+set_tests_properties(sidera_find PROPERTIES TIMEOUT 180)
+rp6502_test(NAME sidera_cities_map COMMAND tests/cities_map_smoke.py
+    --memseed 123 --phi2 8000 "$<TARGET_PROPERTY:sidera,RP6502_ROM>"
+    -- /config SAVE:/cities-map.cfg /date "2026-11-12 20:00:00"
+    /location PL/Warsaw /grid 1 /paths off /constellations 0 /planets off)
+set_tests_properties(sidera_cities_map PROPERTIES TIMEOUT 180)
 add_test(NAME sidera_generated_assets
     COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/scripts/regenerate.py"
         --output "${CMAKE_CURRENT_BINARY_DIR}/generated" --check)

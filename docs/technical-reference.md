@@ -13,7 +13,7 @@ and compiled with cc65. It displays the Sun, Moon, six planets and stars from al
 location, explore dates from 1900 through 2200, animate time, display daily paths
 and inspect local rise/set times. A separate panel shows a schematic Solar System.
 
-The deliverable is one `sidera.rp6502` file containing resident code, five code
+The deliverable is one `sidera.rp6502` file containing resident code, six code
 overlays and the data resources. All astronomical calculations run on the 6502;
 the application needs no network service. The RP6502 interface supplies console,
 clock, filesystem and VGA access. The supported execution model is standalone.
@@ -31,6 +31,8 @@ Start with `main.c`, then follow the relevant subsystem through this table.
 | [graphics.c](../src/graphics.c), [constellations.c](../src/constellations.c) | Sky rendering, star projection, constellation caches and labels |
 | [riseset.c](../src/riseset.c), [timezone.c](../src/timezone.c) | Local-day rise/set searches and time-zone lookup |
 | [cities.c](../src/cities.c), [editor.c](../src/editor.c) | Location selection and location/date/zone editors |
+| [world_map.c](../src/world_map.c) | Incremental geographic locator inside CITIES |
+| [find.c](../src/find.c), [target.c](../src/target.c), [figure.c](../src/figure.c) | Object/constellation search, persistent selection and figure fitting |
 | [files.c](../src/files.c), [cover.c](../src/cover.c) | Resource access, settings persistence and splash screen |
 | [solar_math.c](../src/solar_math.c), [solar_draw.c](../src/solar_draw.c), [solar_labels.c](../src/solar_labels.c), [solar_ui.c](../src/solar_ui.c) | Solar System snapshot calculations, drawing, label placement and UI |
 | [sidera.h](../src/sidera.h), [solar.h](../src/solar.h) | Shared declarations, graphics constants and XRAM layout |
@@ -96,7 +98,8 @@ C follows the same preparation rule when enabling stars or changing their mode:
 the selected footer option and Working indicator update immediately, while the
 existing plot stays visible until pending star positions are ready. Further C
 presses replace the pending mode; one final scene uses the latest selection.
-Switching back to mode 0 removes stars without waiting for their calculation.
+Switching back to mode 0 removes the general star layer without waiting for its
+calculation; a selected constellation remains visible and still needs its angles.
 
 G/T/P/C update their footer highlights before starting chart work. The footer
 caches the four visible on/off states and the last message. Only a changed label
@@ -138,6 +141,66 @@ hidden until it closes. The main sky jobs remain suspended while selecting a
 city. Closing clears the panel and invalidates the axes and footer so the plot,
 scales, compasses and sky shortcuts are restored, including daylight inversion.
 
+The left-hand list retains 20 rows, clipped to 52 characters. A 300x150 north-up, equirectangular world map
+occupies the upper-right corner with a five-pixel inset from the frame. The
+selected city's geographic continent is filled white; other land remains in
+outline. A red 5x5 cross, one pixel thick, is centered on the city without a backing. Full city/country
+names appear below the map. No matches removes the highlight and marker.
+Each pass streams three raster rows; a move within the same region updates only
+the sprite coordinates, leaving the map bitmap intact. The map is optional at runtime:
+an I/O failure does not prevent selecting a city.
+
+Seven conventional geographic regions are assigned from coordinates by
+`scripts/world_regions.py`, independently of country membership. Europe/Asia
+uses a simplified Urals–Caspian–Caucasus–Turkish Straits division. Oceania includes
+Hawaii and New Guinea; Greenland is North American, Madeira/Canaries African.
+The three region bits occupy bits 4..6 of the existing SIDCITY2 role byte, leaving
+the default/capital/seat bits intact. Untagged legacy catalogues use a coarse
+lookup raster from the map resource. These assignments serve a schematic locator.
+
+F opens FIND with the same bounds and 20 rows. The 855-entry offline catalogue
+contains eight Solar System bodies, the existing 759 stars and 88 constellations,
+indexed back to their unchanged vectors and figures. Search matches a case-insensitive substring of names,
+Bayer/Flamsteed designations, HIP or HD identifiers from two characters onward.
+Constellations match Latin names and three-letter abbreviations. An exact name
+or constellation abbreviation is placed first, ahead of partial matches.
+The selected row shows exact AZ/ALT and Above/Below horizon for the frozen date.
+The 312 px list on the left has five fixed columns: Type, HIP, HD, Designation
+and Name. Types use Sun/Moon/Pl/St/Con. Empty cells stay blank, long values use an
+ellipsis, and selection inverts the whole row.
+The primary designation is Bayer's when available, otherwise Flamsteed's;
+constellations use their three-letter code. Full names, all aliases and positions
+appear on the right of the 20-row list. All original aliases remain searchable.
+On a finished page, arrow navigation XORs the old and new row rectangles, with
+800 bitmap writes and no catalogue reads. Page clearing, painting and figure
+calculations accept new navigation. Details wait for 250 ms without navigation,
+then calculate the latest object and paint one detail line per polling step.
+Enter bypasses the delay but never accepts a stale position.
+Queries replace an unfinished scan; Esc cancels, and Enter during work waits for
+the latest result. Scanning, clearing old results and painting yield to input.
+
+For single objects, Enter sets bearing/elevation, preserves FOV, and enables P or C1 if necessary.
+LIVE first resynchronizes the time, then centres the freshly computed position.
+In C4 the selected star is drawn in addition to the restricted groups. A resident
+marker follows its changing position without moving the camera. Cancellation
+preserves the previous selection; replacing it or exiting ends that selection.
+Turning its layer off hides the marker. Selection is not part of saved settings.
+The view range, CLI validation and settings now allow elevation -90..+90 degrees.
+The selected star is omitted from the normal cached star pass and rendered once
+at its exact current position with its catalogue size. Its marker replaces the
+usual navigation/planet label to avoid duplicate labels.
+
+For constellations, `figure.c` finds the shortest azimuth arc and altitude bounds
+of all figure endpoints, centres the view and fits both dimensions with an 8 px
+margin plus angular rounding allowance. FOV is rounded up to 10-degree steps,
+within 50..160 degrees; a message reports an insufficient maximum. Previews
+calculate two endpoints per polling step for the frozen date and report whether
+the figure is above, below or crossing the horizon. After selection, the fit uses
+the completed angular cache for the current sky time. Selected stars, solid lines
+and an inverse figure label are drawn independently of C, including C0 and C4.
+The mode remains unchanged. LIVE refreshes the angular cache at each displayed
+time while a figure is selected; the camera moves only on selection.
+
 The X panel captures a snapshot of the displayed date. While open, it suspends
 sky work and simulation advancement; LIVE clocks can still update. X closes the
 panel and refreshes the sky, and Q exits. Panel state is not saved in settings.
@@ -153,10 +216,10 @@ ranges include both endpoints.
 | `$0200` to below `$C800` | Resident code, constants and application data |
 | `$C800–$DEFF` | One active overlay: 5,888 bytes shared by code, constants, initialized data and BSS |
 | `$DF00–$DFFF` | Independent 256-byte scratch area, including a 224-byte configuration buffer |
-| `$E000–$F6FF` | Currently unallocated by the linker; not an automatically available heap |
+| `$E000–$F6FF` | Resident HIGH target/figure code and initialized workspace; unused tail is not a heap |
 | `$F700–$FEFF` | 2,048-byte C software stack |
 
-The five overlays serve distinct UI phases:
+The six overlays serve distinct UI phases:
 
 | Overlay | Contents |
 | --- | --- |
@@ -165,10 +228,11 @@ The five overlays serve distinct UI phases:
 | EDIT | Observer, UTC date and time-zone editors |
 | COVER | Splash screen and initial VGA asset loading |
 | SOLAR | Solar System calculations, drawing and labels |
+| FIND | Incremental catalogue search, results and exact selected-object details |
 
 A single ld65 link assigns all overlay execution addresses. The
 [packer](../scripts/pack_overlays.py) produces the ROM resources and stamps the
-resident image and overlay headers with a common eight-byte build identifier.
+both resident images and overlay headers with a common eight-byte build identifier.
 Overlays are specific to that linked build; they are not independently relocatable
 plugins.
 
@@ -310,8 +374,10 @@ Resources are embedded in the ROM and opened through `ROM:` paths.
 | Resource | Format and purpose |
 | --- | --- |
 | `sidera.dat` | `SIDERA5` header; font, palettes, Sun and Moon images, six sky-planet images, star/constellation data and splash assets |
+| `sidera.find` | `SIDFIND3` header and 855 fixed 256-byte records: object index, label, complete searchable aliases and a padded 52-character table row |
 | `sidera-solar.dat` | Additional Earth and Neptune images and palettes for the X panel |
 | `sidera.cty` | `SIDCITY2` header and fixed-size city records with coordinates, height and time-zone ID |
+| `sidera.map` | `SIDMAP1` header, eight 300x150 map variants in shifted 39-byte rows, then a geographic lookup raster; 91816 bytes |
 | `sidera.tz` | `SIDTZ001` header, sorted zone index and UTC intervals carrying local offsets |
 | `help`, `manual` | Startup help and the English user manual |
 | `sidera-gpl.txt`, `sidera-notice.txt`, `sidera-sdk-license.txt` | GPLv3 text, project licensing scope and the retained SDK license |

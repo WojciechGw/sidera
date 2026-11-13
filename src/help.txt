@@ -6,7 +6,7 @@ Sun, Moon and planets. 1900–2200, UTC. VGA required.
 sidera [/config path][/date \"YYYY-MM-DD HH:MM:SS\"][/location CC|City|CC/City]
 
 Additional options:
-/view AZ,ALT       Azimuth 0..359, altitude -54..54 degrees
+/view AZ,ALT       Azimuth 0..359, altitude -90..90 degrees
 /fov 50..160       Horizontal FOV, multiples of 10 degrees
 /grid 0..3         0: off, 1: scale, 2: crosses, 3: crosses and dots
 /paths on|off      Sun/Moon paths
@@ -35,6 +35,7 @@ G                Cycle grid and coordinate markers
 T                Toggle daily Sun and Moon paths
 P                Toggle planets (Mercury to Uranus)
 K                Search countries and cities in a framed sky panel
+F                Find bodies, stars or constellations by name/code/HIP
 Z                Set time zone (IANA name)
 C                Cycle constellation display modes
 X                Solar System snapshot; only X/Q work, sky and SIM pause

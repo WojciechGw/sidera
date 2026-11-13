@@ -22,6 +22,8 @@ HostRIA RIA;
 static unsigned ticks;
 static char rom_dir[512];
 static const char *city_file;
+static unsigned char fail_find_open,fail_find_read;
+static unsigned char fail_map_open,fail_map_read;
 static unsigned char fail_rom_zones;
 static int fail_star_seek;
 static unsigned file_reads;
@@ -32,7 +34,7 @@ long host_lseek(int fd,long offset,int whence)
     if(fail_star_seek&&offset>=DATA_VECTORS&&offset<DATA_EDGES){fail_star_seek=0;return -1;}
     return _lseek(fd,offset,whence);
 }
-int host_read(int fd,void *p,unsigned n){++file_reads;return _read(fd,p,n);}
+int host_read(int fd,void *p,unsigned n){++file_reads;if(fail_find_read&&n==256){fail_find_read=0;return -1;}if(fail_map_read&&n==117){fail_map_read=0;return -1;}return _read(fd,p,n);}
 static unsigned planet_mode;
 static unsigned portal_writes;
 static unsigned vector_reads;
@@ -69,8 +71,8 @@ void xr_write0(unsigned v)
     }
     if(checking_cities) {
         unsigned a=RIA.addr0,bit;
-        assert(a<480*80&&city_allowed[a/80]);
-        for(bit=0;bit<8;++bit)if((xram[a]^v)&(128>>bit))
+        assert((a<480*80&&city_allowed[a/80])||(a>=XR_CITY_CFG&&a<XR_CITY_CFG+4));
+        for(bit=0;a<480*80&&bit<8;++bit)if((xram[a]^v)&(128>>bit))
             assert((a%80)*8+bit>CITIES_LEFT&&(a%80)*8+bit<CITIES_RIGHT-1);
     }
     if(checking_header && RIA.addr0<63*80) {
@@ -86,6 +88,8 @@ int host_open(const char *p,int flags)
 {
     char path[1024];
     if(!strncmp(p,"ROM:",4)) {
+        if(!strcmp(p,"ROM:sidera.find")&&fail_find_open)return -1;
+        if(!strcmp(p,"ROM:sidera.map")&&fail_map_open)return -1;
         if(!strcmp(p,"ROM:sidera.tz")&&fail_rom_zones)return -1;
         if(!strcmp(p,"ROM:sidera.cty")&&city_file)p=city_file;
         else {sprintf(path,"%s/%s",rom_dir,p+4);p=path;}
@@ -108,6 +112,10 @@ int xreg(int a,int b,int c,...)
         if(cfg==XR_MOON_CFG) {
             length=va_arg(ap,int);plane=va_arg(ap,int);top=va_arg(ap,int);bottom=va_arg(ap,int);
             assert(mode==4&&options==1&&length==1&&plane==2&&top==VIEW_TOP&&bottom==416);
+        }
+        if(cfg==XR_CITY_CFG) {
+            length=va_arg(ap,int);plane=va_arg(ap,int);top=va_arg(ap,int);bottom=va_arg(ap,int);
+            assert(mode==5&&options==56&&length==1&&plane==0&&top==75&&bottom==229);
         }
         va_end(ap);
     }
@@ -372,13 +380,14 @@ static void footer_states(void)
     unsigned char saved_grid=grid,saved_c=constellation_mode,saved_t=trails,saved_p=planets;
     for(g=0;g<4;++g)for(c=0;c<5;++c)for(flags=0;flags<4;++flags) {
         grid=g;constellation_mode=c;trails=flags&1;planets=flags&2;gx_footer();
-        expect_text(114,462," grid ",g?255:0);
-        expect_text(180,462," paths ",trails?255:0);
-        expect_text(330,462," constellations ",c?255:0);
-        expect_text(246,462," Planets ",planets?255:0);
-        expect_text(102,462,"G:",0);expect_text(168,462,"T:",0);
-        expect_text(318,462,"C:",0);expect_text(234,462,"P:",0);
-        expect_text(498,450,"Z: Timezone",0);expect_text(438,462,"K: Cities",0);
+        expect_text(113,462," grid ",g?255:0);
+        expect_text(167,462," paths ",trails?255:0);
+        expect_text(299,462," constellations ",c?255:0);
+        expect_text(227,462," Planets ",planets?255:0);
+        expect_text(101,462,"G:",0);expect_text(155,462,"T:",0);
+        expect_text(287,462,"C:",0);expect_text(215,462,"P:",0);
+        expect_text(498,450,"Z: Timezone",0);
+        expect_text(401,462,"K: Cities  F: Find  X: Solar  Q: quit",0);
     }
     grid=saved_grid;constellation_mode=saved_c;trails=saved_t;planets=saved_p;gx_footer();
 }
@@ -389,7 +398,7 @@ static void footer_region(unsigned x,unsigned y,unsigned w,unsigned h)
 }
 static void footer_updates(void)
 {
-    static const unsigned x[]={114,180,246,330},w[]={36,42,54,96};
+    static const unsigned x[]={113,167,227,299},w[]={36,42,54,96};
     static unsigned char expected[480*80];
     unsigned char saved_g=grid,saved_t=trails,saved_p=planets,saved_c=constellation_mode;
     unsigned i,on,full,writes[4];
@@ -497,10 +506,10 @@ static void planet_display(const char *path)
         assert(word(XR_PLANET_PAL+i*512)==0); /* transparent background */
     }
     assert(!memcmp(before_clock,xram,64*80));
-    expect_text(246,462," Planets ",255); /* P feedback precedes the scene. */
+    expect_text(227,462," Planets ",255); /* P feedback precedes the scene. */
     for(i=416*80;i<480*80;++i)for(c=0;c<8;++c)
         if((before_clock[i]^xram[i])&(128>>c))
-            assert(i/80>=462&&i/80<470&&(i%80)*8+c>=246&&(i%80)*8+c<300);
+        assert(i/80>=462&&i/80<470&&(i%80)*8+c>=227&&(i%80)*8+c<281);
     sprintf(file,"%s.planet-icons",path);f=fopen(file,"wb");assert(f);
     assert(fwrite(xram,1,65536,f)==65536);fclose(f);
     assert(planet_key('P')&&!planets);assert(gx_objects());gx_scene();
@@ -852,6 +861,11 @@ static void type_city(const char *p)
 {
     while(*p)assert(!cities_key((unsigned char)*p++));
 }
+static void city_map_settle(void)
+{
+    unsigned n;for(n=0;n<60&&cities_step();++n){}
+    assert(n<60);
+}
 static void city_count(const char *text)
 {
     expect_text(CITIES_RIGHT-6-(int)strlen(text)*6,CITIES_BOTTOM-60,text,0);
@@ -877,6 +891,7 @@ static void city_key_checked(unsigned key,unsigned kind,unsigned old_row,unsigne
     if(kind)memset(city_allowed+CITIES_BOTTOM-46,1,8);
     if(kind==1||kind==3)memset(city_allowed+CITIES_TOP+28,1,8);
     if(kind>=2)memset(city_allowed+CITIES_BOTTOM-60,1,8);
+    if(kind>=2){memset(city_allowed+240-1,1,10);memset(city_allowed+254-1,1,10);}
     if(kind==2) {
         memset(city_allowed+CITIES_TOP+59+old_row*14,1,10);memset(city_allowed+CITIES_TOP+59+new_row*14,1,10);
     }
@@ -886,7 +901,7 @@ static void city_key_checked(unsigned key,unsigned kind,unsigned old_row,unsigne
     if(!kind)assert(!writes&&!file_reads);
     if(kind==1)assert(!file_reads&&writes<3000);
     if(kind==2)assert(file_reads<=3&&writes<8000);
-    memcpy(before_clock,xram,sizeof(xram));cities_draw();
+    city_map_settle();memcpy(before_clock,xram,sizeof(xram));cities_draw();city_map_settle();
     assert(!memcmp(before_clock,xram,sizeof(xram))); /* identical to a fresh full draw */
 }
 static void city_incremental(void)
@@ -1101,6 +1116,9 @@ static void reference_views(const char *output)
     }
     puts("PASS: reference views A/B/C, Gdansk/Los Angeles/Rio de Janeiro, G1 T1 P1 C4");
 }
+#include "find_test.inc"
+#include "figure_test.inc"
+#include "world_map_test.inc"
 int main(int argc,char **argv)
 {
     char buf[160];Observer o;Date d;FILE *f;unsigned i,bit,changes=0,below;int x,y;
@@ -1232,7 +1250,7 @@ int main(int argc,char **argv)
     daylight_compass();
     assert(date_parse("2026-11-10 23:00:00",&moment));assert(rs_sync());gx_riseset();
     expect_text(250,53,"Rise ..:.. Set ..:..",0);assert(rs_busy());
-    startup_settings(argv[1]);reference_views(argv[2]);
+    startup_settings(argv[1]);reference_views(argv[2]);find_tests(argv[2]);figure_tests(argv[2]);world_map_tests(argv[2]);
     assets_close();
     puts("PASS: DMS/UTF-8, date/config round-trip, XRAM bounds, projection, sprite layout, drawing, clock-only update");
     return 0;

@@ -17,21 +17,26 @@ for y in range(480):
             a=(y*640+x)*3;pixels[a:a+3]=b'\xff\xff\xff'
 for mode,cfg,top,bottom in ([] if '--bitmap' in sys.argv[3:] else
                            [(6,0xb050+i*10,84,416) for i in range(16 if '--solar' in sys.argv else 7)]+
-                           [(4,0xb018,84,416),(5,0xb030,0,84),(4,0xb038,0,84)]):
+                           [(4,0xb018,84,416),(5,0xb030,0,71),(4,0xb038,0,84),
+                            (7,0xb0f0,75,229)]):
     size=32
-    if mode in (5,6):
+    if mode in (5,6,7):
         x,y,src,pal=s(cfg),s(cfg+2),u(cfg+4),u(cfg+6)
         if mode==6:
             assert data[cfg+9]==3
             size=((data[cfg+8]&15)+1)*4
             assert size==((data[cfg+8]>>4)+1)*4
+        if mode==7:
+            assert data[cfg+8]==0x11 and not data[cfg+9]
+            size=8
     else:
         x,y,src=s(cfg+12),s(cfg+14),u(cfg+16)
         aa,ab,b0,ba,bb,b1=struct.unpack_from('<6h',data,cfg)
     for dy in range(size):
         for dx in range(size):
             if not (0<=x+dx<640 and top<=y+dy<bottom):continue
-            if mode in (5,6):c=u(pal+data[src+dy*size+dx]*2)
+            if mode==7:c=u(pal+((data[src+dy]>>(7-dx))&1)*2)
+            elif mode in (5,6):c=u(pal+data[src+dy*size+dx]*2)
             else:
                 tx=(aa*dx+ab*dy+b0)//256;ty=(ba*dx+bb*dy+b1)//256
                 if not (0<=tx<32 and 0<=ty<32):continue
