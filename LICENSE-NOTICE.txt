@@ -1,0 +1,21 @@
+SIDERA licensing and provenance
+
+The owner confirmed that the SIDERA application and the copied shared code
+are their own project. This extraction preserves existing notices and does
+not grant a new license to that original code.
+
+Third-party data and assets retain their existing terms:
+* src/data/d3-celestial-LICENSE.txt: BSD-3-Clause, Olaf Frohn.
+* src/data/NOTICE.txt and src/rom/sidera-license.txt: constellation data,
+  model attribution, artwork and graphics provenance.
+* src/rom/sidera-cities-license.txt: GeoNames city data and attribution.
+* src/rom/sidera-timezones-license.txt: Python tzdata / IANA notices,
+  including the Apache License 2.0 text. The source wheel is in src/data/.
+
+SDK tools are supplied by picocomputer/rp6502; their provenance and upstream
+license are recorded in docs/provenance.md and LICENSES/. Compiler and
+emulator downloads remain external tool dependencies. Their own licensing
+terms and emulator --credits apply.
+
+Source paths mentioned inside preserved upstream notices describe historical
+provenance; they are not dependencies of this standalone build.

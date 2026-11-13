@@ -1,0 +1,52 @@
+name: SIDERA build and tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-24.04]
+        configuration: [Debug, Release]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install cc65 using the SDK installer (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/picocomputer/.github/main/install/cc65.sh | sh
+          echo "$HOME/.rp6502/cc65/bin" >> "$GITHUB_PATH"
+      - name: Install cc65 using the SDK installer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          irm https://raw.githubusercontent.com/picocomputer/.github/main/install/cc65.ps1 | iex
+          "$env:USERPROFILE/.rp6502/cc65/bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Configure
+        run: cmake --preset cc65/${{ matrix.configuration }}
+      - name: Build
+        run: cmake --build --preset cc65/${{ matrix.configuration }}
+      - name: Test
+        run: ctest --preset cc65/${{ matrix.configuration }}
+      - name: Keep ROM, symbols, reports and reference views
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sidera-${{ matrix.os }}-${{ matrix.configuration }}
+          path: |
+            build/cc65/*/sidera/sidera*
+            build/cc65/*/host-native/views/
+            build/cc65/*/test/sidera_emu/*.png
+            build/cc65/*/Testing/Temporary/
+            build/cc65/*/host-native/Testing/Temporary/

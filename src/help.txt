@@ -1,2 +1,46 @@
-This information is displayed with the HELP and INFO monitor commands.
-Please change it to suit your project.
+SIDERA - The Celestial Observatory
+sidera (Latin: "celestial bodies")
+A digital sky observatory for Picocomputer 6502.
+Sun, Moon and planets. 1900–2200, UTC. VGA required.
+
+sidera [/config path][/date \"YYYY-MM-DD HH:MM:SS\"][/location CC|City|CC/City]
+
+Additional options:
+/view AZ,ALT       Azimuth 0..359, altitude -54..54 degrees
+/fov 50..160       Horizontal FOV, multiples of 10 degrees
+/grid 0..3         0: off, 1: scale, 2: crosses, 3: crosses and dots
+/paths on|off      Sun/Moon paths
+/planets on|off    Planet sprites
+/constellations 0..4  0: off, 1: stars, 2: figures, 3: labels, 4: selected
+                     4: UMa/UMi/Cru/Cen/Oct, stars and labels, no lines
+                        Eight navigation stars have corner markers and names.
+/live             Current UTC time; overrides saved simulation
+Defaults < configuration < command line. Last repeated option wins.
+/location selects a local-hour direction unless /view is also given.
+Use /config for complete presets: the shell command limit is 127 bytes.
+
+Keys:
+Arrows           Pan the view
++ / -            Adjust observation time by + / - 15 min
+[ / ]            Move observation date backward / forward 1 day
+Space            Pause/resume simulation (15 min/step)
+Shift+Left/Right Decrease/Increase FOV by 10 deg (50–160 deg default: 120 deg)
+N                Set observation time to now (computer local time)
+D                Set observation date and time
+L                Set location (DMS coordinates)
+S                Save location, zone, view, FOV, G/T/C/P and LIVE/simulation time
+H                Point view to N/NE/E/SE/S/SW/W/NW
+G                Cycle grid and coordinate markers
+T                Toggle daily Sun and Moon paths
+P                Toggle planets (Mercury to Uranus)
+K                Search countries and cities
+Z                Set time zone (IANA name)
+C                Cycle constellation display modes
+X                Solar System snapshot; only X/Q work, sky and SIM pause
+Q                Quit
+
+Standalone edition with embedded ROM resources.
+Default settings: MSC0:/sidera.cfg. Q returns to the monitor.
+
+Have fun!
+(c)2026 by WojciechGw

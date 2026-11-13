@@ -1,0 +1,637 @@
+{
+  "source_repository": "mtRAM",
+  "source_head": "b4654cd",
+  "basis": "working tree, including uncommitted and untracked files",
+  "files": [
+    {
+      "source": "rmt/apps/sidera/app/astro.c",
+      "destination": "src/astro.c",
+      "sha256": "0709d342c9f18673c89b13f4fe2c2281367c1545a4f0bfa1d8b408d749db18e8"
+    },
+    {
+      "source": "rmt/apps/sidera/app/astro.h",
+      "destination": "src/astro.h",
+      "sha256": "ea5ff45e7501d1498caebfff92557043185338cd910c6122bdd498c54b35b271"
+    },
+    {
+      "source": "rmt/apps/sidera/app/bare/boot.c",
+      "destination": "src/bare/boot.c",
+      "sha256": "a0575c4344e0ab53634050ee528f0122bd06729aa1b4f1a080dedf561faef1d5"
+    },
+    {
+      "source": "rmt/apps/sidera/app/bare/init_files.c",
+      "destination": "src/bare/init_files.c",
+      "sha256": "ec34cf8b05df549f2dee56ed4926d0ae7b44561bf38d59bd9c60ed50f674a2e2"
+    },
+    {
+      "source": "rmt/apps/sidera/app/bare/init_files.inc",
+      "destination": "src/bare/init_files.inc",
+      "sha256": "a18710779a3c18313574feef30208740ca90227bfa40bdabb4a643b73c165417"
+    },
+    {
+      "source": "rmt/apps/sidera/app/bare/overlay.c",
+      "destination": "src/bare/overlay.c",
+      "sha256": "ddcbfc3b21c6c8c85a0dfe1cd04f0a1011c2ed7de78c962b4b52b2a300f58f64"
+    },
+    {
+      "source": "rmt/apps/sidera/app/bare/overlay.cfg",
+      "destination": "src/bare/overlay.cfg",
+      "sha256": "06e9c26a8f29103fbd822c82945c0314ed335951b1ef4632489b2dd306261b50"
+    },
+    {
+      "source": "rmt/apps/sidera/app/bare/overlay.h",
+      "destination": "src/bare/overlay.h",
+      "sha256": "49b17ad2f06540cd9a566739ed9bb4fc6379556bc98c085da2ddcf307b05b58c"
+    },
+    {
+      "source": "rmt/apps/sidera/app/bare/parse.inc",
+      "destination": "src/bare/parse.inc",
+      "sha256": "acbb88ee91174a5f83d1374353b014ac74200e3948cf1ff7162e65a9b5535b0d"
+    },
+    {
+      "source": "rmt/apps/sidera/app/cities.c",
+      "destination": "src/cities.c",
+      "sha256": "3e4c280e9a1730b76e13c37fd7f9db518ac5563c7b0e693c3c003e1f4139324a"
+    },
+    {
+      "source": "rmt/apps/sidera/app/constellations.c",
+      "destination": "src/constellations.c",
+      "sha256": "3cab8a52485cbc350c4b3226ddb928bcd8cad773581c20f9cf303193f246040e"
+    },
+    {
+      "source": "rmt/apps/sidera/app/cover.c",
+      "destination": "src/cover.c",
+      "sha256": "98a7bdc034f3737ca6eee34c4a2699f0dd47a9b68a38dd5f7cc6e92db0fe047a"
+    },
+    {
+      "source": "rmt/apps/sidera/app/data/cities.json",
+      "destination": "src/data/cities.json",
+      "sha256": "56ac72d4c62fd42cf172cc7a5aeff40b50203129b6523d73670bcc56e2b27608"
+    },
+    {
+      "source": "rmt/apps/sidera/app/data/constellations.json",
+      "destination": "src/data/constellations.json",
+      "sha256": "a99de8f41a3dbef97b468ea72d77c67548ce1e22efbf862ef224508ed4eed944"
+    },
+    {
+      "source": "rmt/apps/sidera/app/data/d3-celestial-LICENSE.txt",
+      "destination": "src/data/d3-celestial-LICENSE.txt",
+      "sha256": "95e8d6c281db702112e3f990c9c2958a4b412e2cfc09d419ec33f1227aa8dce4"
+    },
+    {
+      "source": "rmt/apps/sidera/app/data/NOTICE.txt",
+      "destination": "src/data/NOTICE.txt",
+      "sha256": "87caf5837478c48cb413e6d30f038ef1e89a503b31b5e42b88dfe457429e1e2b"
+    },
+    {
+      "source": "rmt/apps/sidera/app/data/tzdata-2026.6-py2.py3-none-any.whl",
+      "destination": "src/data/tzdata-2026.6-py2.py3-none-any.whl",
+      "sha256": "0a10eec6e13ef16b627fabed9a5f2ba61a62b1c67f327305f4e7e412a70b4aec"
+    },
+    {
+      "source": "rmt/apps/sidera/app/editor.c",
+      "destination": "src/editor.c",
+      "sha256": "20ace295c7e56e5d7999461fe44b9931aa6c0d8563f3accd042dbe83e8dcc1fb"
+    },
+    {
+      "source": "rmt/apps/sidera/app/files.c",
+      "destination": "src/files.c",
+      "sha256": "3b4af395094c688b413269e5598b91019bdf253287d4ebc1702be93b88158e02"
+    },
+    {
+      "source": "rmt/apps/sidera/app/graphics.c",
+      "destination": "src/graphics.c",
+      "sha256": "60265931187de4202686073cf631e3e829e48be549a073ef4cf62801bbeb5191"
+    },
+    {
+      "source": "rmt/apps/sidera/app/help.txt",
+      "destination": "src/help.txt",
+      "sha256": "317ccad344deca37c383472600148cfb483b9b19c9d2227b79f9f518398f48d9"
+    },
+    {
+      "source": "rmt/apps/sidera/app/main.c",
+      "destination": "src/main.c",
+      "sha256": "b001e57f7ec041dcba4708ea9a38a3f95905e76eab6d6162ea46b84ca11e9f97"
+    },
+    {
+      "source": "rmt/apps/sidera/app/README.md",
+      "destination": "docs/original-application.md",
+      "sha256": "148d92a4fe775cab2663bed7f45dd5a41eaab6a1167bcd999412f7bc79a2ea61"
+    },
+    {
+      "source": "rmt/apps/sidera/app/riseset.c",
+      "destination": "src/riseset.c",
+      "sha256": "6150edb0210d8c9f8a3eecf4bf49d87e7f556cfc314c2c673bbfcc29a2cbd3bb"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera-cities-license.txt",
+      "destination": "src/rom/sidera-cities-license.txt",
+      "sha256": "386fb9693cfad9b8363fcab916c7fa22101c8103a3b1d819bf33b1b017de8502"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera-license.txt",
+      "destination": "src/rom/sidera-license.txt",
+      "sha256": "1b61a0adbdad480d7eeeb13e919fa19c38a5eaad49ca637d5cbd37231412cfc6"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera-manual-en.txt",
+      "destination": "src/rom/sidera-manual-en.txt",
+      "sha256": "3db554598d6572b6a8e1ef6ac928346860aaa3c23a5a8f35b8e8f86ba0674dcf"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera-solar.dat",
+      "destination": "src/rom/sidera-solar.dat",
+      "sha256": "5db986c394713c21e4149d272fed844dc44fa3d99091198ebbe9e14edd88cd26"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera-timezones-license.txt",
+      "destination": "src/rom/sidera-timezones-license.txt",
+      "sha256": "f4e4cb9f41386ddcab1995c6da32cb8be87220bae127cc89a4dab3e4ba4495e5"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera.cty",
+      "destination": "src/rom/sidera.cty",
+      "sha256": "c948c91a2b4d85432ecae21ed5ec41894b51f5963b10c36f9a5cb44e193838cb"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera.dat",
+      "destination": "src/rom/sidera.dat",
+      "sha256": "bc79f20c68cea566e08739f1386ee0e24943b68a6e315d08cafd1aad19d3ef14"
+    },
+    {
+      "source": "rmt/apps/sidera/app/rom/sidera.tz",
+      "destination": "src/rom/sidera.tz",
+      "sha256": "070ddcf9216c86c9d54d2f3aceea98226fdd90f91bece219f41745169626594d"
+    },
+    {
+      "source": "rmt/apps/sidera/app/sidera.h",
+      "destination": "src/sidera.h",
+      "sha256": "29828127df07809eb3e467875e59fbe6c5c3a1d75357bf5720fc81c156b7ea7b"
+    },
+    {
+      "source": "rmt/apps/sidera/app/solar.h",
+      "destination": "src/solar.h",
+      "sha256": "4facbe3331f446782524f90313abc9d5b469638e0e99df40548d9de251ca02ae"
+    },
+    {
+      "source": "rmt/apps/sidera/app/solar_draw.c",
+      "destination": "src/solar_draw.c",
+      "sha256": "23bbf66028403bc631f3a6bfdde538c859101680482f8ea9f760aaf6dafcdad0"
+    },
+    {
+      "source": "rmt/apps/sidera/app/solar_labels.c",
+      "destination": "src/solar_labels.c",
+      "sha256": "3de83c4cd8e2bd912a4818585047af795c909d6ad6f9f55f2badc982918c81d3"
+    },
+    {
+      "source": "rmt/apps/sidera/app/solar_math.c",
+      "destination": "src/solar_math.c",
+      "sha256": "99c1946cc9604e056ae3ec3417debd1c30bf32de89dda99b417fd557b6bbcf28"
+    },
+    {
+      "source": "rmt/apps/sidera/app/solar_ui.c",
+      "destination": "src/solar_ui.c",
+      "sha256": "8b43e16e98074fb8e66b8874c2902299979dccd8d9c0089b8cc6f9be8afe41a7"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tables/atan.h",
+      "destination": "src/tables/atan.h",
+      "sha256": "2a619fde5c612f61f9ff835b922f436fe859228a69e1c974e2c11dc0799a09e0"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tables/catalogue.h",
+      "destination": "src/tables/catalogue.h",
+      "sha256": "fb2f0c07b47776ad6e8368f72f0eac5a9c148d5fb01e0d146673d60cef99d2ce"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tables/constellations.h",
+      "destination": "src/tables/constellations.h",
+      "sha256": "ff289ffb1c47490feb4b3cc2ea75376534db2a8727c723fa32ed41d7fd056eca"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tables/sine.h",
+      "destination": "src/tables/sine.h",
+      "sha256": "a2353b69c027e0198f8a71e449d12d1bd11306423bfebc5d178863d7f9ea91e5"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/bare_host.c",
+      "destination": "tests/bare_host.c",
+      "sha256": "6f883c700c24683d6d4bb1705fc5a0451d385bd1492b11147ba87a13c74f8e19"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_6502.py",
+      "destination": "tests/check_6502.py",
+      "sha256": "747987bef58bc56676122b3200e5124a7c5fb0f949c3261e114bf8ddeef960b5"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_catalogue.py",
+      "destination": "tests/check_catalogue.py",
+      "sha256": "5e00b9d5c4c395b99c1586fdae0f6135bad632cd378189ed16778aeed79a67d9"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_cover.py",
+      "destination": "tests/check_cover.py",
+      "sha256": "669abad65acf2eb3a2d096fc558836837836d7379c2381517c17b6876c1a90c9"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_fast_6502.py",
+      "destination": "tests/check_fast_6502.py",
+      "sha256": "db80dd5456dbaad56ecd68d9d53585a01dafd2eff3201bf46a2fcfda4d8cc319"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_labels_6502.py",
+      "destination": "tests/check_labels_6502.py",
+      "sha256": "8b5b11ac45d1f73ff351f44becad22e911df6fc6535e8aa66644f2a25a5cf1b2"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_overlay_6502.py",
+      "destination": "tests/check_overlay_6502.py",
+      "sha256": "8daf9ff2488485c4b4ac2e2e9aeedc211ec347f3c7f032816b153a284af04cbd"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_overlay_loop.py",
+      "destination": "tests/check_overlay_loop.py",
+      "sha256": "d152b4f56bcda4652db7503bf32313d7763e71e7a9084b7e9b31b6c2b0f81a5d"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_overlays.py",
+      "destination": "tests/check_overlays.py",
+      "sha256": "394f13e96210c449911ffd798d38596e34fa211463dcc6d40db89d394d434662"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_planets.py",
+      "destination": "tests/check_planets.py",
+      "sha256": "4625f95ffeb9af583a689e71ccb7dc20917e9891e7380095b2985bd0128d77bd"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_projection_6502.py",
+      "destination": "tests/check_projection_6502.py",
+      "sha256": "7af6b5cbf7eb3d526d35983289e24a2c59b2bcdcce1221e8b5cb6ecfe61ddb9c"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_riseset.py",
+      "destination": "tests/check_riseset.py",
+      "sha256": "d7827fec6ab282c4b72aeb95ba315b4f9fe5f1b06766defd66c498f6f4d35790"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_riseset_6502.py",
+      "destination": "tests/check_riseset_6502.py",
+      "sha256": "84a5aa845f84d44f25171a0cdfcd2d134bffdd2920b61e898682e825208179c8"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_settings_6502.py",
+      "destination": "tests/check_settings_6502.py",
+      "sha256": "941ade12b31541acbf02e47fb64ac9f1d990e782db26e13d09f5d544ad8be357"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_solar_6502.py",
+      "destination": "tests/check_solar_6502.py",
+      "sha256": "aef125ed213d2ad6d2f7b30d67ace578b2f762ee35814cb69161319c9d65f5fa"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_stars.py",
+      "destination": "tests/check_stars.py",
+      "sha256": "39b7ea18ee9aa61a85d86d5df9ebb9530adb314cbb28820edf54db281918681d"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_timezone_6502.py",
+      "destination": "tests/check_timezone_6502.py",
+      "sha256": "d021a151d6fe4272c956245f553cb1aacabc3a805881fef3e01370ec72b5bad8"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/check_timezones.py",
+      "destination": "tests/check_timezones.py",
+      "sha256": "058606ed46fca51b0f1200143b3e3103c0ed7b9b588cd4bd069a06a9c1787660"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/CMakeLists.txt",
+      "destination": "tests/CMakeLists.txt",
+      "sha256": "d30bf1da7bfdd92bfa5fd655bad396f18a3d86ebd41b79db99ede778fdf0de07"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/constellation_test.c",
+      "destination": "tests/constellation_test.c",
+      "sha256": "6b09e6bda37333016a51d841135953030fc3b7b75d73c9cc22b11918c3d8e842"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/cover_host.c",
+      "destination": "tests/cover_host.c",
+      "sha256": "c5c2553274ff1387d7cf1948f35763b31c9b46d0a5ff9b880e6f71c65c184c9d"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/fetch_planets.py",
+      "destination": "tests/fetch_planets.py",
+      "sha256": "fdec28d45e4d548835a498904d926a699171bea704211bfc9f8107ab325cefed"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/fetch_reference.py",
+      "destination": "tests/fetch_reference.py",
+      "sha256": "a3afa6145827be00c0d9f08fc8a6e0bf0306bb30a4c7044d8c049a7b385424ae"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/horizons.json",
+      "destination": "tests/horizons.json",
+      "sha256": "82835399d214354f0fa4b0113d45dce7e97da2f170a9e41079766ae849a73aa7"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/host/rpmt.h",
+      "destination": "tests/host/rpmt.h",
+      "sha256": "16a646ad76760da2fe6c4179323f17cfbe808f8df7f000123b2c14508ddabac0"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/host/unistd.h",
+      "destination": "tests/host/unistd.h",
+      "sha256": "3a0b87ad218f26609fc4e35cc693e6c22676ec3f6cb37a6d7ca146a412182083"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/host_test.c",
+      "destination": "tests/host_test.c",
+      "sha256": "fc93629c61c5f4863c8977315d5eaf20b9432fa94f13a48d0616c2c207a143af"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/planets_horizons.json",
+      "destination": "tests/planets_horizons.json",
+      "sha256": "d1746518c20c9e58d00f6fabf3d7d50b47618eb990ffc59ec2919bae347bbaba"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/prepare_host.py",
+      "destination": "tests/prepare_host.py",
+      "sha256": "ec2835a7f24fb9777406c1e9e1d10d7bf63b31f1739e228c4b8786333ae9bacd"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/preview.py",
+      "destination": "tests/preview.py",
+      "sha256": "08a2cced0d041181e22677a6e4399921846aabbdcfb12717334ffae62c4abfe8"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/preview_cover.py",
+      "destination": "tests/preview_cover.py",
+      "sha256": "fcd6d28126e172549bee980031d7cfc7d784299c66e3a3997cc4f92536bd76ec"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/preview_planets.py",
+      "destination": "tests/preview_planets.py",
+      "sha256": "aca9dd411566c710d409f918cd1043d70bca83f46de084e6142fec0f4f58bb5d"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/reference_views.py",
+      "destination": "tests/reference_views.py",
+      "sha256": "95667290624226e5c7cc2206433cf4655144bfa30c1b8b94de4be93ac65bc4d0"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/riseset_host.c",
+      "destination": "tests/riseset_host.c",
+      "sha256": "caa8946a88e2b3e7f0624310a225e32ecba2f69b8573247ccef759fb0e8d91c2"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/riseset_usno.json",
+      "destination": "tests/riseset_usno.json",
+      "sha256": "f9de88f4e414585e1c5f63e7956b4d87eafd4bec0bd4b1109a1e70496d3cc1cf"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/settings_test.inc",
+      "destination": "tests/settings_test.inc",
+      "sha256": "4e0580570b02311ecadacbd5fdef61eac3c9c9a04482be8ee5af716c339b6f2c"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/solar_labels_test.c",
+      "destination": "tests/solar_labels_test.c",
+      "sha256": "ccfc0e220c41ec358857f9e8dbf35a5732c1ed553e06101ae9032f5f17da866a"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tests/timezone_host.c",
+      "destination": "tests/timezone_host.c",
+      "sha256": "08507ce3b56000d24cdbd7be1eace2a1a10ebed1d951e4a9cda8d5079c2ffed2"
+    },
+    {
+      "source": "rmt/apps/sidera/app/timezone.c",
+      "destination": "src/timezone.c",
+      "sha256": "090f2f1c84eb8ecb2d9184c0c43135eef0a38acad335e1bbd708e3136fd1dd9e"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tools/assets.py",
+      "destination": "scripts/assets.py",
+      "sha256": "f9bc9cd84b26cb536027626150ca0944340b182dc46bb0ec04864a68982e875c"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tools/cities.py",
+      "destination": "scripts/cities.py",
+      "sha256": "4ebda2d704047bd5c810bbb163c498be9eaa2f191140c29b44a06b3cb7c443a4"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tools/constellations.py",
+      "destination": "scripts/constellations.py",
+      "sha256": "9b7d7e143b9fda51a2980b2c7cc5cbaf3a1ca1ea914d4ddff27b0e478a2df635"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tools/pack_overlays.py",
+      "destination": "scripts/pack_overlays.py",
+      "sha256": "7b1db3f5a479c78fc7c354ecfe8c8bac776f63247ec91d47b1ec0e9b11c92729"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tools/solar_assets.py",
+      "destination": "scripts/solar_assets.py",
+      "sha256": "4dedd7572b6d663226eae5c5d9ddd561f5835b88c588171d1ba93b9f825da672"
+    },
+    {
+      "source": "rmt/apps/sidera/app/tools/timezones.py",
+      "destination": "scripts/timezones.py",
+      "sha256": "64521e16018827c5c42e73835b7935b697c9ab124f19d6607700fd8638959c5f"
+    },
+    {
+      "source": "rmt/common/rpc_common/errtext.c",
+      "destination": "src/common/rpc_common/errtext.c",
+      "sha256": "cf5551de941198aaa39f9d3920ee6c8d035456dcb44fa3271a460b1aab8b6283"
+    },
+    {
+      "source": "rmt/common/rpc_common/ftype.c",
+      "destination": "src/common/rpc_common/ftype.c",
+      "sha256": "5aed66215d16edecf9962782ce15d2e614750de78686317f8b56a20902b0f0c0"
+    },
+    {
+      "source": "rmt/common/rpc_common/hand.c",
+      "destination": "src/common/rpc_common/hand.c",
+      "sha256": "595c719ec53ce379236393ac61d5950805786fa0c822ac836b52a679408d5662"
+    },
+    {
+      "source": "rmt/common/rpc_common/hand.h",
+      "destination": "src/common/rpc_common/hand.h",
+      "sha256": "b08f1d2cbcdae73b0347145926d6ba3b3350b9700e571c90d207dd0522332bb0"
+    },
+    {
+      "source": "rmt/common/rpc_common/key.c",
+      "destination": "src/common/rpc_common/key.c",
+      "sha256": "a1308df26d36c291e58f7706637866beb4f3e94b28a8fae6661608be7fa9aa87"
+    },
+    {
+      "source": "rmt/common/rpc_common/key.h",
+      "destination": "src/common/rpc_common/key.h",
+      "sha256": "9fa70bd72d7a09d672e175a8f4e01b9f0bced312edf30d7761e539b0f18b09a3"
+    },
+    {
+      "source": "rmt/common/rpc_common/pathx.c",
+      "destination": "src/common/rpc_common/pathx.c",
+      "sha256": "b555da418c617b937688e89bd52706328bcef593aa4f03f63409d9608a000784"
+    },
+    {
+      "source": "rmt/common/rpc_common/rpc_xram.h",
+      "destination": "src/common/rpc_common/rpc_xram.h",
+      "sha256": "6ed21b45e81abf2c1e6018d4f1f7bb919abd81dc8d18585ee5c7bc6396b73c85"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr.h",
+      "destination": "src/common/rpc_common/scr.h",
+      "sha256": "1276bd43fb582e327b285d37326386b14c9e1aa93da17fd16ff7e9e3ef29e053"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_dlg.c",
+      "destination": "src/common/rpc_common/scr_dlg.c",
+      "sha256": "731851b941effa945c0055523a59a2b5abbd4aba9fc3042d1546deb3525e32f0"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_ed.c",
+      "destination": "src/common/rpc_common/scr_ed.c",
+      "sha256": "ff6e7863517f5216760d8d63141003906c8ec9c2aa860ded0dc0363eb3f4f154"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_keys.c",
+      "destination": "src/common/rpc_common/scr_keys.c",
+      "sha256": "65159b40de1e26e796496d15a74d9551ca4d4c28b0421790eb0a8807eaee6bb0"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_menu.c",
+      "destination": "src/common/rpc_common/scr_menu.c",
+      "sha256": "675b9ce52736e13b6be7b37bb2d9d802c20fb4ddfb6a32d723791016e7fcb2a4"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_msg.c",
+      "destination": "src/common/rpc_common/scr_msg.c",
+      "sha256": "1a40664d14191058133633332049da0aa94067ba8dd09c7a4ebce47d8666a42b"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_out.c",
+      "destination": "src/common/rpc_common/scr_out.c",
+      "sha256": "7a2319c3054045549b1cf6dde35e7a75a58861c1f353ada56cc36897e2c9f9b5"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_term.c",
+      "destination": "src/common/rpc_common/scr_term.c",
+      "sha256": "228edbb844865eca1c2dc6287cb7d0e8cd571a219ce285f0dea0cfd934c325bf"
+    },
+    {
+      "source": "rmt/common/rpc_common/scr_text.c",
+      "destination": "src/common/rpc_common/scr_text.c",
+      "sha256": "b78d4e40bdd899d2a13abe96a9d31ea2c02478052d1f7eb0bf68bbacf04b6aff"
+    },
+    {
+      "source": "rmt/common/rpc_common/textcut.c",
+      "destination": "src/common/rpc_common/textcut.c",
+      "sha256": "52b0671b68a2561642d126d569308105d45de06ebc0acbccf6edc385649ef44e"
+    },
+    {
+      "source": "rmt/common/rpc_common/util.c",
+      "destination": "src/common/rpc_common/util.c",
+      "sha256": "b1afaa664cb820878482cb86ebce3f35b92f11f4db55a5d65251cc702edeafd8"
+    },
+    {
+      "source": "rmt/common/rpc_common/util.h",
+      "destination": "src/common/rpc_common/util.h",
+      "sha256": "18086edd60ff19e8d57e862ce5ddef609177a171c97c243b2fd46269bfa0127d"
+    },
+    {
+      "source": "rmt/common/rpc_common/xr.h",
+      "destination": "src/common/rpc_common/xr.h",
+      "sha256": "e16a06fcf703e28c5e4032e5d82f286aea743f04397ca2f5fee51fd773766030"
+    },
+    {
+      "source": "rmt/common/rpc_common/xr_gets.c",
+      "destination": "src/common/rpc_common/xr_gets.c",
+      "sha256": "0b546132e51b6d1ff80e5d9342b2c8a6079c2e124f47ba5d0c1db2640f237547"
+    },
+    {
+      "source": "rmt/common/rpc_common/xr_move.c",
+      "destination": "src/common/rpc_common/xr_move.c",
+      "sha256": "6b6bd1c9fbd0837ef86887a63f4a057459c11ba475ef27b4e719b3283d6f5db0"
+    },
+    {
+      "source": "rmt/common/rpc_common/xram.c",
+      "destination": "src/common/rpc_common/xram.c",
+      "sha256": "4e2f6f679697a325c01e580a6dad8532ef013d0c66c17ea11f60b7085b209603"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-solarA.png",
+      "destination": "src/assets/sidera-solarA.png",
+      "sha256": "7fe09617ff5f4e2ad80ef234480dba72f03d85fd07f9da8da197b2b153742773"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-solarB.png",
+      "destination": "src/assets/sidera-solarB.png",
+      "sha256": "5205c1f1c1859fbb2ef10e19c13af60bfb2014930cda4722d40c11b7a2235cf2"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-solarC.png",
+      "destination": "src/assets/sidera-solarC.png",
+      "sha256": "685bd6eb6eed081efe7aa653f19a224421aa617855edc29e342add6dcc891381"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-testA.cfg",
+      "destination": "src/assets/sidera-testA.cfg",
+      "sha256": "f484b76a6a63c01ae0b8ce9c7a63b5ca967d6371ae7cf23db27d3abe21ba0b97"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-testA.png",
+      "destination": "src/assets/sidera-testA.png",
+      "sha256": "540f4ce5a09ae920b12971092bdfcb8bcda0a8e9d6f9f7174690910c45d0544a"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-testB.cfg",
+      "destination": "src/assets/sidera-testB.cfg",
+      "sha256": "cfe77f029e54ae3206b4fe4b5962952084c0cf78a09e44233676802d158ac314"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-testB.png",
+      "destination": "src/assets/sidera-testB.png",
+      "sha256": "00d1b90b0078659c98bdf4bc483034dfa9c2939624550862f8f76a9f4f6d823f"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-testC.cfg",
+      "destination": "src/assets/sidera-testC.cfg",
+      "sha256": "5c4834bfe87dda9094698c2b5028d766ad2f68cc030fc943cffde2b66862607d"
+    },
+    {
+      "source": "rmt/apps/sidera/assets/sidera-testC.png",
+      "destination": "src/assets/sidera-testC.png",
+      "sha256": "cd4feab0b3cffaf5ebaccd06156ab677f3c9cfd3d84238caaf55750fa4d8aa57"
+    },
+    {
+      "source": "rmt/bare/rpmt_bare.c",
+      "destination": "src/platform/rpmt_bare.c",
+      "sha256": "92b287c52561e5100c97ea5b025dab509878bcd6d2c813f0c81a6ea2f9a915f3"
+    },
+    {
+      "source": "rmt/lib/rpmt.h",
+      "destination": "src/platform/rpmt.h",
+      "sha256": "33a07b8466e070235aadfa5e10632e8bdd5974f1f7cb9a5b36225efc4551e8a9"
+    },
+    {
+      "source": "rmt/lib/rpmt_os_file.c",
+      "destination": "src/platform/rpmt_os_file.c",
+      "sha256": "4ea1f7a11c418365a3305ddbf5c706944eae74d11dea71515e71699d6baef3b6"
+    },
+    {
+      "source": "rmt/lib/rpmt_os_dir.c",
+      "destination": "src/platform/rpmt_os_dir.c",
+      "sha256": "0b375884ecba28bfbc326a9a420c8ccec315da670ca28ef514e906378f781a5f"
+    },
+    {
+      "source": "rmt/assets/sidera-cover.bmp",
+      "destination": "src/assets/sidera-cover.bmp",
+      "sha256": "daab711a0b35c5a59af42289e4b6fc927c34d1cef5a7102afde6225fcd972774"
+    },
+    {
+      "source": "rmt/apps/sidera/README.md",
+      "destination": "docs/architecture.md",
+      "sha256": "557b208e747fb4565be848ddd38c29bad8fe7a201471fa15a0a608dbcde9ed60"
+    }
+  ]
+}

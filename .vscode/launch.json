@@ -15,7 +15,7 @@
                 "debugAdapterExecutable": "${command:cmake.launchTargetDirectory}/rp6502-emu.exe"
             },
             "program": "${command:cmake.launchTargetPath}.rp6502",
-            "args": [],
+            "args": ["/config", "SAVE:/sidera.cfg"],
             "stopOnEntry": false,
             "stopOnExit": true
         },
@@ -31,29 +31,6 @@
                 "${workspaceFolder}/.rp6502",
                 "${command:cmake.launchTargetPath}.rp6502"
             ],
-        },
-        {
-            "name": "RP6502-WEB",
-            "type": "debugpy",
-            "request": "launch",
-            "console": "internalConsole",
-            "module": "http.server",
-            "args": [
-                "--bind",
-                "127.0.0.1",
-                "--directory",
-                "${command:cmake.buildDirectory}/web",
-                "0"
-            ],
-            "env": {
-                "PYTHONUNBUFFERED": "1"
-            },
-            "preLaunchTask": "CMake: build",
-            "serverReadyAction": {
-                "pattern": "\\((https?://\\S+)\\)",
-                "uriFormat": "%s",
-                "action": "openExternally"
-            },
         },
     ]
 }

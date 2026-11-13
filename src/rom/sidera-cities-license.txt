@@ -1,0 +1,53 @@
+SIDERA city catalogue - attribution and provenance
+
+345 selected populated places, covering 193 United Nations members and the two
+non-member observer states (Holy See and State of Palestine).
+Catalogue snapshot: 2026-11-09. It is not a historical list of capitals.
+
+City coordinates (WGS84), names, country information and most elevations:
+GeoNames, https://www.geonames.org/
+https://download.geonames.org/export/dump/cities15000.zip
+https://download.geonames.org/export/dump/countryInfo.txt
+https://download.geonames.org/export/dump/PL.zip
+Licensed under Creative Commons Attribution 4.0 International:
+https://creativecommons.org/licenses/by/4.0/
+Changes: selected and transliterated names, curated regional additions,
+capital/default/seat classification, coordinates rounded to 0.1 arcsecond,
+fixed-record binary conversion. Source IDs and heights are in cities.json.
+
+Elevations use the GeoNames point elevation when available, otherwise its
+SRTM3/GTOPO30 terrain model. Heights are approximate point elevations, not
+uniform elevations of entire cities. Display precision is not accuracy.
+Four missing coastal DEM heights (Punta Arenas, Suva, Monaco, Tromso) use
+Copernicus GLO-90 via Open-Meteo, queried at the same points on 2026-11-09:
+https://open-meteo.com/en/docs/elevation-api
+Open-Meteo data: CC BY 4.0. Copernicus DEM attribution:
+European Union, Copernicus Land Monitoring Service.
+
+Polish additions: 18 regional capitals (Warsaw already present), plus
+Sosnowiec (GeoNames 3085128) and Radziechowy village (3087431), both in
+Slaskie, admin1=83. New Polish heights use DEM terrain at the reference
+point, including Szczecin (25 m), not the city-wide elevation field.
+
+Scope:
+https://research.un.org/en/unmembers/observers
+Geographical coverage guides the additional cities. Timezone identifiers
+select civil-time rules from the separately bundled IANA database; see
+sidera-timezones-license.txt. Astronomical calculations continue using UTC.
+
+Capital corrections / classification references:
+Palau (Ngerulmud): https://55piflm.gov.pw/about
+Sri Lanka (Sri Jayewardenepura Kotte, Colombo):
+https://www.gov.lk/sri-lanka/country-overview
+South Africa (Pretoria, Cape Town, Bloemfontein):
+https://www.gov.za/south-africa-glance
+Equatorial Guinea: Ciudad de la Paz, GeoNames snapshot and decree of
+2026-01-02 published by https://www.guineaecuatorialpress.com/
+The Hague, Putrajaya, La Paz, Cotonou, Abidjan and Ramallah are additional
+government seats, not labelled as national capitals. Bern and Yaren are
+country-code defaults labelled Seat. East Jerusalem is the Palestinian
+declared capital as recorded by GeoNames; Ramallah is also selectable.
+Names and inclusion of locations do not determine territorial status.
+
+The data are supplied as-is. Rebuild offline with tools/cities.py; the
+reviewed source snapshot is data/cities.json.

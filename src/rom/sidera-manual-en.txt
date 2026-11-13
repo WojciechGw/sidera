@@ -1,0 +1,569 @@
+SIDERA - The Celestial Observatory
+Standalone user manual
+
+1. ABOUT SIDERA
+
+SIDERA is a sky observatory for Picocomputer 6502 with VGA. It shows the Sun,
+Moon, six planets and stars from all 88 constellations for an observer on
+Earth. Choose a place and a date between 1900 and 2200, explore the sky,
+follow daily paths, and check local sunrise, sunset, moonrise and moonset.
+Calculations run on the 6502 without an Internet connection. The standalone
+edition runs without razemOS(mt) or mtRAM. Its display is 640 x 480 pixels.
+
+2. STARTING SIDERA
+
+Connect a VGA display and keyboard. Copy sidera.rp6502 to your USB drive.
+At the Picocomputer monitor, enter:
+
+  LOAD MSC0:/sidera.rp6502
+
+The ROM includes the graphics, city catalogue, time zones, help and manual.
+No separate data files are needed. An overlay load error ends the program
+with a diagnostic message and returns to the monitor. After a five-second
+splash, the sky opens.
+Wait for Working... to disappear before judging a fully calculated view.
+Use Q to return to the monitor. The computer clock supplies LIVE time.
+
+Without saved settings, the observer is Warsaw [PL], 113 m AMSL. FOV is 120
+degrees, the view centre is 24 degrees above the horizon, and G/T/C/P are off.
+The initial direction follows the current local hour: E at 04:00-09:59,
+S at 10:00-15:59, W at 16:00-21:59, and N at 22:00-03:59.
+
+Optional startup parameters:
+  /location NAME       Country code, city or CC/City; quote names with spaces.
+  /date "YYYY-MM-DD HH:MM:SS"   UTC date and time; starts in SIM / PAUSE.
+  /live                Use the current UTC time.
+  /view AZ,ALT          Azimuth 0-359, altitude -54 to +54; whole degrees.
+  /fov N               Horizontal field of view: 50-160, in steps of 10.
+  /grid N              Grid mode 0-3; 0 means off.
+  /paths on|off        Show or hide the daily Sun and Moon paths.
+  /planets on|off      Show or hide the planets.
+  /constellations N    Constellation mode 0-4; 0 means off.
+  /config PATH         Read and save settings at this path.
+  /assets PATH         Use an external sidera.dat instead of the embedded one.
+  /help or /?          Print brief startup help and return to the monitor.
+
+Examples (each command is entered on one line):
+  LOAD MSC0:/sidera.rp6502 /location "PL/Gdansk"
+  LOAD MSC0:/sidera.rp6502 /date "1945-09-01 02:45:00"
+  LOAD MSC0:/sidera.rp6502 /view 65,14 /fov 160
+  LOAD MSC0:/sidera.rp6502 /config MSC0:/evening.cfg
+
+Settings are applied in this order: defaults, configuration, startup options.
+The last repeated option wins, including the choice between /date and /live.
+An explicit /location chooses the local-hour direction unless /view is given.
+Otherwise a saved View is retained. Use a configuration for a complete preset.
+Country and city names ignore case; use ASCII spellings such as Gdansk.
+
+3. KEYBOARD CONTROLS
+
+Left / Right        Turn the view by 5 degrees.
+Up / Down           Raise/lower the view centre by 5 degrees, within +/-54.
+Shift+Left/Right    Narrow/widen FOV by 10 degrees, within 50-160.
+H                   Next direction: N, NE, E, SE, S, SW, W, NW.
+N                   Return to LIVE using the computer's current UTC time.
+Space               Start or pause simulation; each step advances 15 minutes.
++ / -               Move forward/backward 15 minutes and pause simulation.
+[ / ]               Move backward/forward one day and pause simulation.
+D                   Edit UTC date and time.
+L                   Edit latitude, longitude and height in metres AMSL.
+K                   Open Cities to select an observer location.
+Z                   Edit the IANA time zone, for example Europe/Warsaw.
+S                   Save all current settings to the configuration file.
+G                   Cycle grid modes: scale, crosses, dots, off.
+T                   Toggle Sun and Moon daily paths.
+C                   Cycle constellation modes described below.
+P                   Toggle Mercury, Venus, Mars, Jupiter, Saturn and Uranus.
+Ctrl+L              Redraw the screen.
+X                   Show/hide a Solar System snapshot for the displayed UTC.
+Q / Esc             Quit to the monitor when no editor or city list is open.
+
+In an editor, Enter applies changes and Esc cancels. Left/Right, Home/End,
+Backspace and Delete edit the text. In L, type D for degrees, an apostrophe
+for minutes and a double quote for seconds. Use tenths of an arcsecond, e.g.
+49d38'54.6" N, 19d09'19.7" E, 395 m AMSL. AMSL means Above Mean Sea Level;
+heights range from -500 to 10000 m. IANA zone names are case-sensitive.
+In Cities, type a country code, country or city name; filtering starts at two
+characters. Use Up/Down, Page Up/Down or Home/End; Enter selects, Esc cancels.
+A selected city supplies its coordinates, height and time zone. Selection
+also chooses the local-hour viewing direction; press S to keep the settings.
+
+The X panel shows a schematic Solar System from ecliptic north. Eight
+concentric circles separate the planet sprites; distances are not in AU
+scale. The Sun uses its original 32 x 32 sprite. Planet directions follow
+the date printed at the top right. The panel is 317 x 317 pixels.
+English planet names appear beside their sprites, without connecting lines;
+their placement avoids other names, sprites and the panel edges.
+An unlabelled white 2 x 2 dot marks the Moon, 8 pixels from Earth's centre.
+A one-pixel black border separates it from the orbit lines. Its direction
+follows the snapshot time; labels avoid both the dot and its border.
+Only X and Q work while it is open. Sky drawing and calculations stop;
+LIVE updates only the UTC/LOCAL clocks. SIM / PLAY pauses until X closes
+the panel, then resumes. Closing recalculates and redraws the sky for the
+current time. Reopening takes a new snapshot. Q returns to the monitor.
+
+4. USING THE OBSERVATORY
+
+Time is UTC; the line below it is LOCAL time for the selected time zone,
+including daylight saving where applicable. Location gives coordinates and
+height. View gives azimuth and elevation of the centre; FOV is the horizontal
+angular span. Azimuth runs clockwise: N=0, E=90, S=180, W=270 degrees.
+Altitude is positive above the dotted horizon and negative below it.
+Sun/Moon AZ and ALT give their positions. Moon LIT is the illuminated percent;
+its image follows the phase and tilt relative to the local horizon.
+Object icons are illustrative and do not represent their angular diameters.
+
+Rise and Set are local times for the displayed LOCAL calendar date.
+..:.. means calculation is in progress; --:-- means no such event that day.
+UP means above the horizon all day; DOWN means below it all day.
+N/A means the event times are unavailable. Times assume a level horizon
+and standard refraction; buildings, hills and weather can change visibility.
+
+G cycles: 1 = degree labels and edge ticks; 2 = these plus crosses at grid
+intersections; 3 = these plus dots every 2 degrees; 0 = off.
+C cycles: 1 = stars; 2 = stars and dotted figures; 3 = figures with Latin
+names and IAU abbreviations in white on black; 4 = only Ursa Major, Ursa
+Minor,
+Crux, Centaurus and Octans, with stars and labels but no connecting lines;
+0 = off. Epsilon Crucis and Sigma Octantis are included as isolated stars.
+Mode 4 also marks Merak, Dubhe, Polaris, Alpha Centauri, Beta Centauri,
+Gacrux, Acrux and Sigma Octantis with open 9x9 corner frames and white names
+on black. Star names take priority over constellation labels; labels that
+cannot fit without overlapping are omitted. Alpha Centauri uses the
+catalogue position of component B (HIP 71681).
+Figures can extend beyond the view and are also drawn below the horizon.
+Active G/T/C/P labels in the footer are highlighted in inverse video.
+T shows paths from midnight to midnight UTC: solid for Sun, dashed for Moon.
+
+LIVE updates the clock each second, Sun/Moon/planets each minute, and stars
+every five minutes. SIM / PLAY advances in 15-minute steps; calculations may
+delay a step. SIM / PAUSE holds the date. Working... marks calculation or
+drawing in progress. Paths and rise/set calculations can take a while.
+
+S saves the location, zone, View, FOV, G/T/C/P and time mode. The default file
+is MSC0:/sidera.cfg; /config selects another file. A writable drive is
+needed.
+LIVE reloads with current time; a saved simulation reloads at its saved UTC
+date in PAUSE, even if saved during PLAY. Successful saving clears the bottom
+message. Changes are not saved automatically, and older formats are not read.
+
+Use SIDERA for sky exploration, not precision eclipse or navigation work.
+Monitor command reference: https://picocomputer.github.io/pico.html
+
+Have fun!
+
+Credits
+----------------------------
+
+COPYRIGHT, DATA SOURCES AND THIRD-PARTY NOTICES
+
+SIDERA project credit: (c)2026 by WojciechGw.
+The notices below apply to the identified third-party components and data;
+they do not assign a single licence to the entire application or its artwork.
+References to organisations and authors do not imply their endorsement.
+
+Astronomical models and reference material
+
+Sun, Moon and planetary calculations use a fixed-point adaptation of Paul
+Schlyter's published orbital elements, Kepler solution and perturbations:
+  Paul Schlyter, "How to compute planetary positions"
+  https://stjarnhimlen.se/comp/ppcomp.html
+  https://stjarnhimlen.se/comp/tutorial.html
+Schlyter credits T. van Flandern and K. Pulkkinen's "Low precision formulae
+for planetary positions" (1980) as the basis of his simplified algorithms.
+SIDERA's numerical implementation and approximations are its own; this is
+not a redistribution of a third-party astronomical calculation library.
+
+Stellar precession uses the linear terms of the IAU 1976 precession model
+associated with J. H. Lieske and collaborators. Constellation names and
+three-letter abbreviations follow the International Astronomical Union:
+  https://www.iau.org/IAU/Astronomy-FAQs/Constellations.aspx
+The line figures are not official IAU boundaries or prescribed IAU figures.
+No IAU SOFA software is included, and no IAU/SOFA endorsement is claimed.
+
+Rise/set conventions follow the U.S. Naval Observatory's definitions:
+  https://aa.usno.navy.mil/faq/RST_defs
+Independent development tests use USNO event tables and NASA/JPL Horizons
+DE441 reference positions. These are test references, not a runtime
+ephemeris database or a dependency on an online service:
+  https://aa.usno.navy.mil/data/RS_OneDay
+  https://ssd.jpl.nasa.gov/horizons/
+  https://ssd-api.jpl.nasa.gov/doc/horizons.html
+
+Constellation and star catalogue
+
+Adapted from d3-celestial, Copyright (c) 2015, Olaf Frohn.
+Licensed under BSD-3-Clause; its full notice is reproduced below.
+  https://github.com/ofrohn/d3-celestial
+Source files: constellations.lines.json, constellations.json, stars.8.json.
+Snapshot downloaded on 2026-11-08. SIDERA selects 759 stars and 743 segments,
+including Epsilon Crucis (HIP 60260) and Sigma Octantis (HIP 104382) as
+isolated points added from that snapshot on 2026-11-10. SIDERA
+converts coordinates to Q14 J2000 unit vectors, assigns star size classes,
+and converts the selected data to its binary catalogue. The two Serpens
+figures are combined, Corona Australis uses the IAU name, and the Bootes
+name retains its diaeresis in the display font.
+
+The upstream stellar coordinates and magnitudes derive from XHIP:
+E. Anderson and C. Francis (2012), The Extended Hipparcos Compilation,
+VizieR catalogue V/137D, distributed through CDS, Strasbourg.
+  https://cdsarc.cds.unistra.fr/viz-bin/cat/V/137D
+
+City coordinates, names and elevations
+
+GeoNames data, https://www.geonames.org/
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+  https://creativecommons.org/licenses/by/4.0/
+Sources: cities15000.zip, countryInfo.txt and PL.zip at
+  https://download.geonames.org/export/dump/
+Snapshot: 2026-11-09. Changes include selection of 345 places, transliteration
+of names, capital/seat classification, regional additions, coordinate
+rounding to 0.1 arcsecond and conversion to fixed-size binary records.
+Elevations use GeoNames point heights or its SRTM3/GTOPO30 terrain values.
+The data are supplied as-is, without a guarantee of accuracy or completeness.
+
+Four missing heights, for Punta Arenas, Suva, Monaco and Tromso, were obtained
+from Open-Meteo's elevation API on 2026-11-09, using Copernicus DEM GLO-90.
+Elevation data by Open-Meteo.com, https://open-meteo.com/
+Open-Meteo API data: CC BY 4.0, as linked above.
+  https://open-meteo.com/en/docs/elevation-api
+Changes: point samples selected for the city catalogue and stored as integer
+metres in SIDERA's binary records. Copernicus data source:
+  https://doi.org/10.5270/ESA-c5d3d65
+
+Produced using Copernicus WorldDEM-90 (c) DLR e.V. 2010-2014 and
+(c) Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS
+by the European Union and ESA; all rights reserved.
+EO data provided under COPERNICUS by the European Union and ESA.
+Copernicus DEM licence and attribution information:
+https://spacedata.copernicus.eu/collections/copernicus-digital-elevation-model
+
+When redistributing the adapted CC BY data, retain attribution, the licence
+link and an indication of changes. Do not imply endorsement by the providers.
+Detailed city provenance is also included as sidera-cities-license.txt.
+
+Civil-time data
+
+The time-zone tables are derived from IANA tzdb 2026f, supplied in the
+Python tzdata 2026.6 package. SIDERA expands UTC-offset transitions over
+1900-2200 and converts them to its own binary interval tables.
+IANA's time-zone data are public domain; the Python tzdata package carries
+the Apache License, Version 2.0, and these copyright notices:
+  Copyright (c) 2020, Paul Ganssle (Google)
+  Copyright (c) 2026, Stan Ulbrych
+The package notice and full Apache licence are reproduced below.
+  https://www.iana.org/time-zones
+  https://data.iana.org/time-zones/tzdb/LICENSE
+  https://pypi.org/project/tzdata/2026.6/
+The release describes the rules recorded at its publication, not a guarantee
+of future civil-time legislation or complete historical accuracy.
+
+Runtime, platform and artwork
+
+The executable is built with cc65 and includes its C runtime/library code.
+Credit to the cc65 contributors, including Ullrich von Bassewitz, and to
+Rumbledethumps for Picocomputer/RP6502 support. cc65 uses the zlib licence;
+the upstream notice is reproduced below.
+  https://github.com/cc65/cc65
+  https://github.com/cc65/cc65/blob/master/LICENSE
+  https://picocomputer.github.io/
+
+The custom font and Sun, Moon and planet images are generated by SIDERA's
+asset tools. The Moon surface detail is procedural, not a copied photograph.
+The current Saturn icon is a generated sphere, like the other five planets.
+
+Artwork Credits
+
+Astronomer Copernicus, or Conversations with God
+Artist: Jan Matejko (1838-1893)
+Year: 1873
+Original title: Astronom Kopernik, czyli rozmowa z Bogiem
+Collection: Jagiellonian University Museum, Krakow, Poland
+Source: Wikimedia Commons
+Copyright status: Public Domain
+
+The painting was created to commemorate the 400th anniversary of Nicolaus
+Copernicus's birth. The original artwork is in the public domain; its
+copyright protection has expired under Polish copyright law.
+The digital reproduction used in SIDERA is sourced from Wikimedia Commons
+and is identified as a faithful reproduction of a public-domain artwork.
+Public Domain - No known copyright restrictions.
+
+SIDERA uses the supplied sidera-cover.bmp as its startup cover, with an
+indexed palette converted for the display and generated fade levels.
+
+The ROM also retains the separate notices sidera-license.txt,
+sidera-cities-license.txt and sidera-timezones-license.txt. Full licence
+texts follow; only line wrapping has been adjusted for this text display.
+
+
+BSD-3-CLAUSE LICENCE TEXT (d3-celestial)
+
+Copyright (c) 2015, Olaf Frohn
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+TZDATA NOTICE AND APACHE LICENSE 2.0
+
+Apache Software License 2.0
+
+Copyright (c) 2020, Paul Ganssle (Google)
+Copyright (c) 2026, Stan Ulbrych
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+ZLIB LICENCE TEXT (cc65)
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from
+the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+claim that you wrote the original software. If you use this software in
+a product, an acknowledgment in the product documentation would be
+appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and must not
+be misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source distribution.

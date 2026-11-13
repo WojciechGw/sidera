@@ -1,0 +1,39 @@
+sidera constellation catalogue
+
+Adapted from d3-celestial, Copyright (c) 2015 Olaf Frohn, BSD-3-Clause.
+Upstream: https://github.com/ofrohn/d3-celestial
+Files: data/constellations.lines.json, data/constellations.json,
+       data/stars.8.json; downloaded 2026-11-08.
+Full upstream license: d3-celestial-LICENSE.txt.
+
+The upstream star coordinates and magnitudes derive from XHIP:
+Anderson E., Francis C. (2012), VizieR V/137D.
+https://cdsarc.cds.unistra.fr/viz-bin/cat/V/137D
+The positions are equatorial J2000.0. SIDERA retains 759 stars: the 757
+used by the 743 figure segments, plus Epsilon Crucis (HIP 60260) and
+Sigma Octantis (HIP 104382). These two isolated points were added from the
+same downloaded stars.8.json snapshot on 2026-11-10; no new segments.
+This is not the entire magnitude-limited catalogue.
+
+Names and three-letter abbreviations follow the IAU list:
+https://www.iau.org/IAU/Astronomy-FAQs/Constellations.aspx
+Changes: merge both Serpens figures under Serpens [Ser], use the IAU name
+Corona Australis [CrA], preserve Bootes' diaeresis in the custom font.
+No IAU boundaries are drawn. Line figures are the d3-celestial variant;
+IAU does not prescribe an official set of connecting lines.
+
+tools/constellations.py converts the normalized JSON into Q14 unit vectors,
+star size classes, segment indices and single-row labels. Catalogue vectors
+are streamed in small batches from sidera.dat; projected coordinates and
+segment indices are held in XRAM. Labels and star sizes are also held in XRAM;
+rendered pixels and the font remain exclusively in XRAM.
+
+The stellar model uses the linear terms of Lieske's IAU 1976 precession
+angles, with the local sidereal angle used by sidera's solar/lunar model.
+It omits proper motion, annual parallax, aberration, nutation and atmospheric
+refraction. The fixed-point implementation is original sidera code; it is
+not IAU SOFA software and carries no IAU/SOFA endorsement.
+
+The offline test compares against full cubic precession and a standard GMST
+polynomial in double precision. It measures numerical/model approximation,
+not the omitted physical effects or catalogue astrometric errors.

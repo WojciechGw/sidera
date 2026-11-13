@@ -2,7 +2,7 @@
     "version": 3,
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 21,
+        "minor": 28,
         "patch": 0
     },
     "configurePresets": [
@@ -10,8 +10,11 @@
             "name": "base",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_C_FLAGS_DEBUG": "-g -O",
+                "CMAKE_C_FLAGS_RELEASE": "-O -DNDEBUG"
+            },
+            "generator": "Ninja"
         },
         {
             "name": "cc65/Debug",
@@ -34,38 +37,6 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CC65_TARGET_SYSTEM": "rp6502"
             }
-        },
-        {
-            "name": "llvm-mos/Debug",
-            "displayName": "llvm-mos/Debug",
-            "description": "llvm-mos, with debug information",
-            "inherits": "base",
-            "binaryDir": "${sourceDir}/build/llvm-mos/debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "LLVM_MOS_PLATFORM": "rp6502"
-            }
-        },
-        {
-            "name": "llvm-mos/Release",
-            "displayName": "llvm-mos/Release",
-            "description": "llvm-mos, optimized",
-            "inherits": "base",
-            "binaryDir": "${sourceDir}/build/llvm-mos/release",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "LLVM_MOS_PLATFORM": "rp6502"
-            }
-        },
-        {
-            "name": "basic",
-            "displayName": "basic",
-            "description": "BASIC",
-            "inherits": "base",
-            "binaryDir": "${sourceDir}/build/basic",
-            "cacheVariables": {
-                "RP6502_BASIC": "ON"
-            }
         }
     ],
     "buildPresets": [
@@ -73,31 +44,33 @@
             "name": "cc65/Debug",
             "displayName": "cc65/Debug",
             "configurePreset": "cc65/Debug",
-            "targets": ["all"]
+            "targets": [
+                "all"
+            ]
         },
         {
             "name": "cc65/Release",
             "displayName": "cc65/Release",
             "configurePreset": "cc65/Release",
-            "targets": ["all"]
+            "targets": [
+                "all"
+            ]
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "cc65/Debug",
+            "configurePreset": "cc65/Debug",
+            "output": {
+                "outputOnFailure": true
+            }
         },
         {
-            "name": "llvm-mos/Debug",
-            "displayName": "llvm-mos/Debug",
-            "configurePreset": "llvm-mos/Debug",
-            "targets": ["all"]
-        },
-        {
-            "name": "llvm-mos/Release",
-            "displayName": "llvm-mos/Release",
-            "configurePreset": "llvm-mos/Release",
-            "targets": ["all"]
-        },
-        {
-            "name": "basic",
-            "displayName": "basic",
-            "configurePreset": "basic",
-            "targets": ["all"]
+            "name": "cc65/Release",
+            "configurePreset": "cc65/Release",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ]
 }

@@ -1,100 +1,123 @@
-# RP6502 Project Template
+# SIDERA
 
-Scaffolding for a new Picocomputer 6502 software project, in C with
-either 6502 compiler, cc65 or llvm-mos, or in BASIC. The CMake preset
-sets the language: the `cc65` and `llvm-mos` presets build the C program,
-and the `basic` preset builds the BASIC program. Each program is "Hello,
-world!".
+Samodzielne obserwatorium nieba dla **RP6502-PICO i RP6502-EMU**. Projekt
+korzysta z cc65 i [RP6502-SDK](https://picocomputer.github.io/sdk.html),
+tworząc jeden `sidera.rp6502` z kompletem danych i pięcioma nakładkami.
+Nie wymaga repozytorium mtRAM ani systemu razemOS.
 
-`src/main.c` is the C program, which builds with either compiler:
+## Wymagania
 
-```c
-#include <rp6502.h>
-#include <stdio.h>
-#include "xram.h"
+- CMake 3.28+, Ninja, Python 3.12+, Git.
+- Aktualny cc65 z obsługą RP6502, w tym `cl65`, `ca65`, `ld65`, `ar65`, `sim65`.
+  Instalacja według [instrukcji SDK](https://picocomputer.github.io/sdk.html#installing-the-prerequisites).
+- Do testów hosta: Windows — Visual Studio 2022 Build Tools z C++ i Windows SDK;
+  Linux — GCC i Make (`build-essential` w Ubuntu).
 
-int main(void)
-{
-    puts("Hello, world!");
-}
+Testy i generatory korzystają ze standardowej biblioteki Pythona. Dane odniesienia,
+źródłowa grafika oraz przypięty pakiet tzdata są lokalne. Pierwsza konfiguracja
+SDK może pobrać emulator 0.43; późniejsze kompilacje używają lokalnej kopii.
+Nie jest pobierany emulator WEB.
+
+## Budowanie i testy
+
+Z katalogu projektu, w PowerShell lub powłoce Linuksa:
+
+```text
+cmake --preset cc65/Debug
+cmake --build --preset cc65/Debug
+ctest --preset cc65/Debug
+
+cmake --preset cc65/Release
+cmake --build --preset cc65/Release
+ctest --preset cc65/Release
 ```
 
-`src/main-cc65.s` and `src/main-llvm-mos.s` are assembly for that C.
-To start an assembly language project, replace `src/main.c` in
-`CMakeLists.txt` with the version for the assembler you will use.
+Wyniki: `build/cc65/debug/sidera/sidera.rp6502` i
+`build/cc65/release/sidera/sidera.rp6502`. Obok są `.map`, `.lbl`, `.dbg`,
+`.sym`, rdzeń i pięć `.ovl`. Plików z różnych kompilacji nie wolno mieszać.
+Kompilacja automatycznie kontroluje strukturę ROM-u, CRC, identyfikator kompilacji,
+BSS i granice pamięci. Każda konfiguracja buduje również natywne programy testowe.
 
-`src/main.bas` is the BASIC program. `rp6502_basic()` packages it with
-a BASIC ROM into `hello.rp6502`, and BASIC runs it at start:
+Oba presety zachowują oryginalną optymalizację `-O`, ponieważ rozmiary nakładek
+są częścią architektury. Debug używa `-g`, Release `-DNDEBUG`; SDK dostarcza
+informacje do debuggera również dla plików wynikowych Release. Natywne testy
+mają aktywne asercje w obu konfiguracjach.
 
-```basic
-10 PRINT "Hello, world!"
+Windows i WSL muszą używać osobnych katalogów wynikowych. Na WSL dla tego
+samego checkoutu:
+
+```text
+cmake --preset cc65/Debug -B build/linux/cc65/debug
+cmake --build build/linux/cc65/debug
+ctest --test-dir build/linux/cc65/debug --output-on-failure
 ```
 
-<!-- rp6502
-preset: basic
-publish: hello.zip
--->
-[![Hello, world!](https://picocomputer.github.io/rp6502-sdk/hello/screenshot.png)](https://picocomputer.github.io/rp6502-sdk/hello/)
+Dla Release użyj presetu `cc65/Release` i katalogu `build/linux/cc65/release`.
+SDK wybiera w WSL emulator Windows; test korzysta z lokalnego adaptera ścieżek
+`scripts/emu_wsl.py`. Na zwykłym Linuksie SDK wybiera emulator Linuksa.
 
-[Run it in your browser](https://picocomputer.github.io/rp6502-sdk/hello/),
-BASIC is usable. Type `10` then TAB to edit line 10. `RUN` to run.
+## Uruchamianie
 
-On each push to `main`, `.github/workflows/web.yml` publishes this web
-player and its screenshot to GitHub Pages. The `preset` in the `rp6502`
-comment above the picture sets the program it plays: `basic` for the
-BASIC program, or a `cc65/Release` or `llvm-mos/Release` preset for the
-C program. To publish yours, open Settings > Pages on GitHub and set
-Source to GitHub Actions.
+W VS Code wybierz preset, cel `sidera` oraz konfigurację `RP6502-EMU` lub
+`RP6502-PICO`. F5 dla PICO **wysyła program na sprzęt** — uruchamiaj ją świadomie.
+Ustawienia połączenia PICO (`device`, `key`, `workdir`, `args`) znajdują się
+w lokalnym, ignorowanym `.rp6502`, zgodnie z SDK. Nie zapisuj kluczy w repozytorium.
 
-The `if()` in `CMakeLists.txt` has a branch for each language. Keep the
-branch you want, delete the other and the `if()`, and delete the presets
-and files you do not use. Set the `preset` in the `rp6502` comment to a
-preset you keep.
+Na sprzęcie domyślna konfiguracja to `MSC0:/sidera.cfg`. `/config` pozwala
+wybrać inną ścieżkę. Konfiguracja EMU w VS Code przekazuje
+`/config SAVE:/sidera.cfg`, aby umożliwić trwały zapis w emulatorze.
+Przy uruchamianiu z wiersza poleceń podaj te same argumenty po `--`.
+Test emulatora używa własnego pustego katalogu zapisu i nie korzysta z urządzenia.
 
-### Requirements:
- * CMake 3.28 or newer
- * Python 3
- * Make or Ninja
- * [cc65 or llvm-mos](https://github.com/picocomputer?view_as=public), for
-   C. Install both if you want to try both.
+[Instrukcja użytkownika](src/rom/sidera-manual-en.txt) opisuje klawisze i opcje.
+Pomoc i instrukcja są też zasobami `ROM:help` oraz `ROM:manual`.
 
-The install steps for Windows, macOS and Linux are in
-[RP6502-SDK](https://picocomputer.github.io/sdk.html#sdk-install), along with
-the rest of the SDK documentation.
+## Struktura
 
-### Use the template:
-Go to the [GitHub template](https://github.com/picocomputer/rp6502-sdk) and
-select "Use this template" then "Create a new repository". Don't fork it: a
-fork stays linked to this repository and includes its history, while "Use this
-template" makes a new repository with a clean history. Then clone the new
-repository.
+| Katalog | Zawartość |
+| --- | --- |
+| `src/` | Aplikacja, lokalny kod wspólny i platformowy, linker, dane, zasoby |
+| `scripts/` | Generatory, przygotowanie nakładek i adapter testów WSL |
+| `cmake/` | Integracja nakładek i testów ze standardowym SDK |
+| `tests/` | Testy hosta, sim65, całego ROM-u i renderery kontrolne |
+| `tools/` | Narzędzia dostarczane i aktualizowane przez SDK |
+| `docs/` | Architektura, testy, pochodzenie i raport weryfikacji |
+| `build/` | Wszystkie wyniki kompilacji, generowania i testów |
 
-### Updating the tools:
-`tools/` holds the CMake and Python scripts that the SDK runs. Update them with
-the "RP6502: update tools" task (Terminal > Run Task), or with:
+## Odtwarzanie zasobów
 
-```bash
-$ cmake -P tools/rp6502.cmake
+```text
+python scripts/regenerate.py --output build/generated --check
+cmake --build --preset cc65/Debug --target sidera_assets
 ```
 
-### Updating an older project:
-Projects made before this template merged cc65 and llvm-mos have their compiler
-wired into the top of `CMakeLists.txt`, and a `tools/` that predates any of
-this. Start by copying this template's `tools/rp6502.cmake` over yours. That
-name used to be the cc65 toolchain file; it is now the small script that
-fetches everything, and the toolchain it replaces comes back as
-`tools/cc65-toolchain.cmake` on the first configure.
+Pierwsze polecenie odtwarza zasoby offline i porównuje je z dostarczonymi
+plikami. Drugie tylko je generuje. Zwykła kompilacja używa wersji z `src/rom/`
+i `src/tables/`. Generatory zapisują wyniki do `build/`; aktualizacja źródeł
+danych wymaga osobnego, świadomego skopiowania przejrzanych wyników do `src/`.
+Opcjonalne importery i skrypty pobierania danych odniesienia zachowano,
+ale nie są uruchamiane podczas kompilacji ani testów.
 
-Then replace everything above `project()` with:
+## SDK, CI i WEB
 
-```cmake
-cmake_minimum_required(VERSION 3.28)
+`cmake -P tools/rp6502.cmake` aktualizuje narzędzia SDK. Własne rozszerzenia
+znajdują się poza `tools/`. Aktualizator może także zmieniać `.vscode/`,
+`.gitignore` i główny CMake — po aktualizacji przejrzyj diff i uruchom testy.
+W szczególności może ponownie dodać konfigurację uruchamiania WEB.
 
-include(${CMAKE_CURRENT_LIST_DIR}/tools/rp6502.cmake)
-```
+WEB jest wyłączony: brak wywołania `rp6502_web()`, paczki i aktywnej konfiguracji.
+Oryginalne pliki zachowano jako `.github/workflows/web.yml.disabled` oraz
+`.vscode/launch-web.json.disabled`. Nie przywracaj ich aktywnych nazw bez
+osobnej decyzji o WEB. Workflow `ci.yml` buduje i testuje Windows/Linux ×
+Debug/Release oraz zachowuje artefakty. Nie publikuje strony ani wydań.
 
-Delete `tools/CMakeLists.txt` and the `add_subdirectory(tools)` line that
-pulled it in — the `include()` above replaces both. Copy `CMakePresets.json`
-from this template as well; that is where the compiler is chosen now. Old
-projects called `rp6502_executable()` with the address their compiler happened
-to use, and `DATA default RESET default` works under both.
+## Dokumentacja i licencje
+
+- [Architektura i pamięć](docs/architecture.md)
+- [Testy, generatory i sześć widoków](docs/tests.md)
+- [Pochodzenie źródeł](docs/provenance.md)
+- [Raport lokalnej weryfikacji](docs/validation.md)
+- [Informacje licencyjne](LICENSE-NOTICE.txt)
+
+Wydzielenie nie nadaje nowej licencji własnemu kodowi autora. Zachowano
+licencje i przypisania danych oraz narzędzi zewnętrznych.
