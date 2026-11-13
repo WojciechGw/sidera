@@ -1,10 +1,10 @@
-# Źródła aplikacji
+# Application sources
 
-Kod jest w `src/`, skrypt linkera w `src/bare/overlay.cfg`. Punktem wejścia
-budowania jest główny `CMakeLists.txt`.
+The code is in `src/`, and the linker script is `src/overlays/overlay.cfg`.
+The top-level `CMakeLists.txt` is the build entry point.
 
-Warianty bez `SIDERA_OVERLAYS` zachowano dla testów hosta i sim65.
-Dostarczany ROM zawsze używa pięciu nakładek.
+Variants without `SIDERA_OVERLAYS` are retained for host and sim65 tests.
+The distributed ROM always uses five overlays.
 
-[Instrukcja użytkownika](../src/rom/sidera-manual-en.txt),
-[architektura](architecture.md), [budowanie](../README.md).
+[User manual](../src/rom/sidera-manual-en.txt),
+[architecture](architecture.md), [building](../README.md).

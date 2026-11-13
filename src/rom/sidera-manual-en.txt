@@ -157,7 +157,20 @@ Credits
 
 COPYRIGHT, DATA SOURCES AND THIRD-PARTY NOTICES
 
-SIDERA project credit: (c)2026 by WojciechGw.
+Copyright (c) 2026 Wojciech Gwioździk (WojciechGw)
+SIDERA's original code and documentation are licensed under the GNU General
+Public License, version 3 only (SPDX: GPL-3.0-only).
+You may redistribute and modify them under those terms, including commercially.
+The program comes WITHOUT ANY WARRANTY, including the implied warranties of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+The complete license is embedded as ROM:sidera-gpl.txt. Licensing scope and
+source-distribution information are in ROM:sidera-notice.txt; the SDK license
+is in ROM:sidera-sdk-license.txt. The source repository is:
+  https://github.com/WojciechGw/sidera
+Distributors must provide the corresponding source for their binary version
+through a method allowed by GPLv3 section 6.
+
 The notices below apply to the identified third-party components and data;
 they do not assign a single licence to the entire application or its artwork.
 References to organisations and authors do not imply their endorsement.

@@ -1,8 +1,31 @@
 SIDERA licensing and provenance
 
-The owner confirmed that the SIDERA application and the copied shared code
-are their own project. This extraction preserves existing notices and does
-not grant a new license to that original code.
+Copyright (c) 2026 Wojciech Gwioździk (WojciechGw)
+SPDX-License-Identifier: GPL-3.0-only
+
+SIDERA's original application code, platform code, scripts, tests, build
+configuration and documentation are licensed under the GNU General Public
+License, version 3 only. This grant covers the author's original contributions;
+third-party components, data and artwork retain the terms identified below.
+
+SIDERA is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, version 3 of the License only.
+
+SIDERA is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for details.
+
+The full license is in LICENSE and is embedded as ROM:sidera-gpl.txt.
+This notice is embedded as ROM:sidera-notice.txt. If you did not receive
+a copy of the license, see https://www.gnu.org/licenses/gpl-3.0.html.
+
+Project source repository: https://github.com/WojciechGw/sidera
+When distributing a binary, provide its complete corresponding source under
+GPLv3, including the build scripts, through a method allowed by section 6.
+For downloads, offer the matching source alongside the binary or clearly
+link to that exact version; a link to a changing branch alone is insufficient
+if it no longer contains the source corresponding to the distributed binary.
 
 Third-party data and assets retain their existing terms:
 * src/data/d3-celestial-LICENSE.txt: BSD-3-Clause, Olaf Frohn.
@@ -13,7 +36,8 @@ Third-party data and assets retain their existing terms:
   including the Apache License 2.0 text. The source wheel is in src/data/.
 
 SDK tools are supplied by picocomputer/rp6502; their provenance and upstream
-license are recorded in docs/provenance.md and LICENSES/. Compiler and
+license are recorded in docs/provenance.md and LICENSES/. The SDK license
+is also embedded as ROM:sidera-sdk-license.txt. Compiler and
 emulator downloads remain external tool dependencies. Their own licensing
 terms and emulator --credits apply.
 

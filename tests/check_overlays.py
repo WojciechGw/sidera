@@ -31,6 +31,9 @@ app = (Path(__file__).resolve().parents[1] / 'src')
 resources = {('manual' if p.name == 'sidera-manual-en.txt' else p.name): p.read_bytes()
              for p in (app / 'rom').iterdir()}
 resources['help'] = (app / 'help.txt').read_bytes()
+resources['sidera-gpl.txt'] = (app.parent / 'LICENSE').read_bytes()
+resources['sidera-notice.txt'] = (app.parent / 'LICENSE-NOTICE.txt').read_bytes()
+resources['sidera-sdk-license.txt'] = (app.parent / 'LICENSES/RP6502-SDK.txt').read_bytes()
 assert set(assets) == set(resources) | {f'sidera-{n}.ovl' for n in NAMES}
 for name, content in resources.items():
     assert assets[name] == content, name

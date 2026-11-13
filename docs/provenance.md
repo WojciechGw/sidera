@@ -1,35 +1,40 @@
-# Pochodzenie
+# Provenance
 
-Podstawą wydzielenia jest zatwierdzony przez właściciela bieżący stan roboczy
-projektu w repozytorium mtRAM, w tym pliki niezatwierdzone i nieśledzone.
-HEAD źródła: `b4654cd`. Sam commit nie odtwarza tego stanu roboczego.
+The extraction is based on the current working tree of the project in the mtRAM
+repository, approved by the owner, including uncommitted and untracked files.
+Source HEAD: `b4654cd`. The commit alone does not reproduce that working tree.
 
-[source-manifest.json](source-manifest.json) zapisuje oryginalne ścieżki,
-docelowe miejsca i SHA-256 plików przed dostosowaniem. Ścieżki źródłowe są
-informacją historyczną; kompilacja i testy używają wyłącznie tego repozytorium.
-Przeniesiono aplikację, wszystkie jej testy i generatory, dane, instrukcje,
-wzorce obrazów, źródłowy BMP oraz lokalną kopię `rpc_common`, `rpmt_bare.c`,
-`rpmt.h`, `rpmt_os_file.c` i `rpmt_os_dir.c`. Biblioteki sieciowe i system mtRAM
-nie są potrzebne do linkowania SIDERY.
+[source-manifest.json](source-manifest.json) records original paths, destinations
+and SHA-256 hashes of files before adaptation. Source paths are historical
+information; builds and tests use only this repository. The application, all its
+tests and generators, data, manuals, reference images, source BMP and a local
+copy of `rpc_common`, `rpmt_bare.c`, `rpmt.h`, `rpmt_os_file.c` and `rpmt_os_dir.c`
+were transferred. Network libraries and the mtRAM system are not needed to link
+SIDERA.
 
-13 listopada 2026 usunięto warstwę zgodności RMT oraz nieużywany kod wspólny.
-Z `rpc_common` zachowano dekoder klawiatury jako `src/platform/key.c` i `key.h`.
-Obsługa RP6502 znajduje się w `src/platform/`, a dawny katalog `src/bare/`
-otrzymał nazwę `src/overlays/`. Manifest pozostaje niezmienionym zapisem
-pierwotnego importu; jego pola docelowe nie są indeksem obecnego drzewa.
-Zakres i weryfikację refaktoryzacji opisuje [raport](rmt-cleanup.md).
+On 13 November 2026, the RMT compatibility layer and unused shared code were
+removed. The keyboard decoder from `rpc_common` was retained as
+`src/platform/key.c` and `key.h`. RP6502 support is in `src/platform/`, and the
+former `src/bare/` directory was renamed to `src/overlays/`. The manifest remains
+an unchanged record of the original import; its destination fields are not an
+index of the current tree. The scope and validation of the refactoring are
+described in the [report](rmt-cleanup.md).
 
-Narzędzia w `tools/` pochodzą z RP6502-SDK (`picocomputer/rp6502`). Były już
-pobrane w repozytorium docelowym przed migracją; nie wprowadzono do nich
-własnych zmian. Ich licencję zachowano w [LICENSES/RP6502-SDK.txt](../LICENSES/RP6502-SDK.txt).
-Emulator jest przypięty do wersji 0.43. Oficjalne instalatory cc65 wskazuje
-[dokumentacja SDK](https://picocomputer.github.io/sdk.html).
+Tools in `tools/` come from RP6502-SDK (`picocomputer/rp6502`). They had already
+been downloaded into the destination repository before migration; no custom
+changes were made to them. Their license is retained in
+[LICENSES/RP6502-SDK.txt](../LICENSES/RP6502-SDK.txt).
+The emulator is pinned to version 0.43. Official cc65 installers are linked from
+the [SDK documentation](https://picocomputer.github.io/sdk.html).
 
-Własność aplikacji i przeniesionego kodu wspólnego została potwierdzona przez
-autora. Nie nadano nowej licencji temu kodowi. Licencje danych i przypisania
-zachowano; indeks znajduje się w [LICENSE-NOTICE.txt](../LICENSE-NOTICE.txt).
+The author confirmed ownership of the application and transferred shared code.
+The initial extraction did not grant a new license. On 13 November 2026,
+Wojciech Gwioździk (WojciechGw) selected **GPL-3.0-only** for the project's
+original code and documentation. The full text is in [LICENSE](../LICENSE).
+Third-party data, artwork and tools retain their existing terms and attribution;
+the scope and exceptions are in [LICENSE-NOTICE.txt](../LICENSE-NOTICE.txt).
 
-Istotne dostosowania: lokalne ścieżki, standardowe cele i pakowanie SDK,
-generowanie do `build/`, przenośne adaptery testów oraz użycie `int32_t` dla
-czterobajtowego pola przesunięcia w pliku stref czasowych. Ta ostatnia zmiana
-usuwa założenie, że `long` ma cztery bajty; na cc65 nie zmienia formatu danych.
+Significant adaptations include local paths, standard SDK targets and packing,
+generation into `build/`, portable test adapters and using `int32_t` for the
+four-byte offset field in the time-zone file. The last change removes the
+assumption that `long` is four bytes; it does not change the data format on cc65.

@@ -1,110 +1,110 @@
-# Architektura SIDERY
+# SIDERA architecture
 
-Samodzielny ROM dla RP6502-PICO i RP6502-EMU. [Budowanie](../README.md).
+A standalone ROM for RP6502-PICO and RP6502-EMU. [Building](../README.md).
 
-## Okno i podział
+## Memory window and layout
 
-Jedno ciągłe okno `$C800–$DFFF` ma 6144 B, zaczyna się na granicy 2048 B
-i nie zmienia adresu pomiędzy nakładkami. `$C800–$DEFF` (5888 B) mieści
-kod, stałe, zainicjalizowane dane i BSS aktywnej nakładki. `$DF00–$DFFF`
-(256 B) to niezależny bufor roboczy, w tym 224 B konfiguracji.
+A single contiguous window at `$C800–$DFFF` occupies 6144 B, starts on a 2048-byte
+boundary and stays at the same address for all overlays. `$C800–$DEFF` (5888 B)
+holds the active overlay's code, constants, initialized data and BSS.
+`$DF00–$DFFF` (256 B) is an independent scratch buffer, including 224 B for settings.
 
-| Zasób `ROM:` | Zawartość | Odczyt do okna | BSS | Wolne w 5888 B |
+| `ROM:` resource | Contents | Bytes loaded into the window | BSS | Free within 5888 B |
 | --- | --- | ---: | ---: | ---: |
-| `sidera-init.ovl` | Opcje, konfiguracja, otwarcie danych | 4517 B | 0 B | 1371 B |
-| `sidera-cities.ovl` | Wyszukiwanie i wybór miasta | 3579 B | 303 B | 2006 B |
-| `sidera-edit.ovl` | Edycja lokalizacji, daty i strefy | 3106 B | 112 B | 2670 B |
-| `sidera-cover.ovl` | Splash i początkowe zasoby VGA | 829 B | 0 B | 5059 B |
-| `sidera-solar.ovl` | Orbity i panel Układu Słonecznego pod X | 5672 B | 82 B | 134 B |
+| `sidera-init.ovl` | Options, settings and opening data files | 4517 B | 0 B | 1371 B |
+| `sidera-cities.ovl` | City search and selection | 3579 B | 303 B | 2006 B |
+| `sidera-edit.ovl` | Location, date and time-zone editors | 3106 B | 112 B | 2670 B |
+| `sidera-cover.ovl` | Splash screen and initial VGA assets | 829 B | 0 B | 5059 B |
+| `sidera-solar.ovl` | Orbits and the Solar System panel opened with X | 5672 B | 82 B | 134 B |
 
-Rozmiary po bieżącej kompilacji cc65; każdy zasób ma dodatkowo 24 B nagłówka,
-czytanego poza oknem. Kontrola podczas budowania odrzuca przekroczenie granic.
+Sizes are from the current cc65 build. Each resource also has a 24-byte header,
+read outside the window. Build-time checks reject memory boundary violations.
 
-Kod rezydentny, jego stałe i BSS kończą się na `$B3F1` (adres wyłączny).
-Po odjęciu całego okna pozostaje **11023 B niezajętego RAM** poniżej stosu C:
-5135 B w `$B3F1–$C7FF` i 5888 B w `$E000–$F6FF`.
-Stos C zachowuje `$F700–$FEFF`, 2048 B. Górny wolny obszar nie jest obecnie
-segmentem linkera ani stertą; wykorzystanie go przez przyszły kod wymaga
-osobnego segmentu i uwzględnienia go w pakowaniu obrazu.
+Resident code, constants and BSS end at `$B3F1` (exclusive).
+After reserving the entire window, **11023 B of unallocated RAM** remain below
+the C stack: 5135 B at `$B3F1–$C7FF` and 5888 B at `$E000–$F6FF`.
+The C stack retains `$F700–$FEFF`, 2048 B. The upper free area is currently neither
+a linker segment nor a heap; using it in future code requires a separate segment
+and corresponding changes to image packing.
 
-Dla porównywanej oryginalnej kompilacji standalone koniec danych wynosi
-`$D5B1`, a wolna przestrzeń 8527 B. Po dodaniu funkcji X i usunięciu warstwy RMT pozostaje **2496 B**
-więcej wolnego RAM niż w oryginale, po odjęciu okna, loadera i obsługi panelu.
-Wolne miejsca wewnątrz nakładek nie są dodawane do tego wyniku.
+In the original standalone build used for comparison, data ends at `$D5B1`,
+leaving 8527 B free. After adding X and removing the RMT layer, **2496 B** more RAM
+is available than in the original, after accounting for the window, loader and
+panel code. Unused space inside overlays is not included in this result.
 
-Samodzielna obsługa sprzętu znajduje się w `src/platform/`. Bufor argumentów
-monitora ma 512 B i jest rezydentny. `argv.c` jest bezpośrednim źródłem celu
-`sidera`, aby linker nie zastąpił go domyślną implementacją cc65.
-Pliki nakładek i konfiguracja linkera są w `src/overlays/`; ich układ
-pamięci nie zależy od dawnego systemu RMT.
+Standalone hardware support is in `src/platform/`. The monitor argument buffer
+is 512 B and resident. `argv.c` is compiled directly into the `sidera` target
+so that the linker does not substitute cc65's default implementation.
+Overlay files and the linker configuration are in `src/overlays/`; their memory
+layout does not depend on the former RMT system.
 
-## Wywołania i trwałość danych
+## Calls and data lifetime
 
-Jeden przebieg ld65 linkuje program i pięć plików pod tym samym adresem.
-Wywołania mają zwykłe adresy ustalone w tej kompilacji; plików `.ovl` nie
-można mieszać między kompilacjami. Packer nadaje rdzeniowi i nagłówkom
-wspólny identyfikator kompilacji i zapisuje CRC32 każdego ładunku.
+A single ld65 invocation links the program and five overlay files sharing the
+same execution address. Calls use ordinary addresses fixed by that build;
+`.ovl` files from different builds cannot be mixed. The packer assigns a shared
+build identifier to the core and headers and records each payload's CRC32.
 
-Rezydentny `main` wybiera nakładkę przez `ovl_select()` przed wywołaniem jej
-funkcji. Nakładka nie może przełączać własnego okna ani zachowywać wskaźników
-do niego po powrocie. Start przebiega: INIT prepare, opcjonalnie CITIES dla
-`/location`, INIT apply, COVER, widok nieba. Podczas obserwacji doładowania
-występują przy wejściu w K, L/D/Z lub X. Obliczenia nieba i zapis S są rezydentne.
+Resident `main` selects an overlay through `ovl_select()` before calling its
+functions. An overlay cannot replace its own window or retain pointers into it
+after returning. Startup proceeds through INIT prepare, optional CITIES for
+`/location`, INIT apply, COVER and the sky view. During observation, overlays
+load when entering K, L/D/Z or X. Sky calculations and S saving are resident.
 
-## Panel X
+## X panel
 
-X otwiera nieruchomy obraz Układu Słonecznego dla aktualnego `moment` (UTC).
-Ponowne X zamyka go; kolejne otwarcie pobiera nowy czas. Stan panelu nie jest
-zapisywany klawiszem S. Kwadrat **317×317 px** zajmuje x=301..617, y=93..409:
-10 pustych pikseli dzieli go od prawej granicy wykresu, ostatniego znacznika
-górnego kompasu i najwyższego znacznika dolnego kompasu (y=420).
+X opens a static Solar System view for the current `moment` (UTC). Pressing X
+again closes it; reopening captures a new time. The S key does not save panel
+state. The **317×317 px** square occupies x=301..617, y=93..409: 10 empty pixels
+separate it from the plot's right boundary, the last upper compass tick and
+the highest lower compass tick (y=420).
 
-Osiem orbit to koncentryczne okręgi o promieniach 30, 42, 54, 66, 83, 100,
-117 i 134 px. Układ jest schematyczny, bez skali AU. Odstępy zapewniają brak
-nakładania sprite'ów 8×8 px także przy zbliżonych kierunkach planet. Słońce
-używa oryginalnego sprite'a 32×32 px, bez skalowania.
-Angielskie nazwy ośmiu planet leżą bezpośrednio przy sprite'ach, bez linii
-łączących. Rozmieszczenie uwzględnia obszar tekstu z tłem: omija Słońce,
-wszystkie planety, pozostałe podpisy i granice panelu. Przy ciasnych układach
-próbuje kolejnych położeń przy krawędziach sprite'ów, z odstępem do 10 px.
-Księżyc to biała kropka 2×2 px bez podpisu, w schematycznej odległości 8 px
-od środka Ziemi (po zaokrągleniu do pikseli). Kierunek wynika z geocentrycznej
-długości ekliptycznej dla czasu snapshotu, obliczanej istniejącym modelem
-Księżyca. Czarna obwódka o grubości 1 px oddziela kropkę od orbit.
-Podpisy, w tym `Earth`, omijają cały obszar 4×4 px wraz z obwódką.
+The eight orbits are concentric circles with radii of 30, 42, 54, 66, 83, 100,
+117 and 134 px. The layout is schematic, without an AU scale. Spacing prevents
+8×8 px sprites from overlapping even when planets have similar directions.
+The Sun uses the original 32×32 px sprite without scaling.
+English names of all eight planets sit directly beside their sprites, without
+connecting lines. Placement accounts for the text area and its background:
+it avoids the Sun, every planet, other labels and panel boundaries. In crowded
+layouts, it tries successive positions along sprite edges, with gaps up to 10 px.
+The Moon is an unlabelled white 2×2 px dot at a schematic distance of 8 px from
+Earth's centre (after rounding to pixels). Its direction follows the geocentric
+ecliptic longitude at the snapshot time, calculated with the existing lunar
+model. A 1 px black border separates the dot from the orbits.
+Labels, including `Earth`, avoid the entire 4×4 px area including the border.
 
-Kierunki heliocentryczne są obliczane dla zapamiętanej daty z
-[elementów Schlytera](https://stjarnhimlen.se/comp/ppcomp.html#4), bez poprawek
-perturbacyjnych. Widok jest od północy ekliptyki; kierunek równonocy jest
-w prawo, 90° długości ekliptycznej w górę. Odległości nie są odwzorowane.
-Nagłówek zawiera ` SOLAR SYSTEM ` czarnymi literami na białym tle po lewej,
-obniżone o 8 px (tekst na y=105). `snapshot YYYY-MM-DD HH:MM:SS UTC` pozostaje
-na y=97, wyrównane do prawej z marginesem 2 px.
-U dołu są `Schematic view (not in AU scale)` oraz
-`X: close`, wyrównane do prawej z marginesem 2 px. Oba wiersze skrótów
-klawiszowych pod głównym wykresem zaczynają się na x=12 (przesunięcie o 8 px).
+Heliocentric directions are calculated for the captured date from
+[Schlyter's orbital elements](https://stjarnhimlen.se/comp/ppcomp.html#4), without
+perturbation corrections. The view is from ecliptic north: the equinox direction
+points right, and 90° ecliptic longitude points up. Distances are not represented
+to scale. The header has ` SOLAR SYSTEM ` in black on white on the left, lowered
+by 8 px (text at y=105). `snapshot YYYY-MM-DD HH:MM:SS UTC` stays at y=97,
+right-aligned with a 2 px margin.
+At the bottom, `Schematic view (not in AU scale)` and `X: close` are right-aligned
+with a 2 px margin. Both keyboard shortcut rows below the main plot start at x=12
+(an 8 px shift).
 
-Sześć planet korzysta z istniejących obrazów i palet. Dodatkowy zasób
-`ROM:sidera-solar.dat` zawiera Ziemię i Neptuna.
-Deskryptory panelu zajmują XRAM `$B096–$B0EF`, obrazy `$E160–$E1DF`,
-a dwie palety `$E200–$E5FF`, w dotychczasowych wolnych obszarach.
+Six planets use the existing images and palettes. The additional resource
+`ROM:sidera-solar.dat` contains Earth and Neptune.
+Panel descriptors occupy XRAM `$B096–$B0EF`, images occupy `$E160–$E1DF`,
+and the two palettes occupy `$E200–$E5FF`, all in previously unused areas.
 
-Przy otwartym panelu działają tylko X (zamknięcie) i Q (zakończenie programu).
-Obliczenia, rysowanie nieba i symulacja są wstrzymane; w LIVE odświeżają się
-wyłącznie zegary UTC/LOCAL na górnym pasku. Sprity nieba nachodzące na panel
-są ukrywane do jego zamknięcia. X uruchamia ponowne przeliczenie i odrysowanie
-wykresu dla bieżącego czasu. Symulacja wraca do wcześniejszego stanu PLAY/PAUSE.
+Only X (close) and Q (quit the application) work while the panel is open.
+Calculations, sky drawing and simulation are suspended; in LIVE mode, only the
+UTC/LOCAL clocks in the top bar refresh. Sky sprites that overlap the panel are
+hidden until it closes. X triggers recalculation and redraw of the plot for the
+current time. Simulation returns to its previous PLAY/PAUSE state.
 
-Loader otwiera zasób przez `open/read/close`, sprawdza nagłówek, granice,
-długość i CRC32, następnie zeruje BSS. Ostatnia poprawna nakładka pozostaje
-w oknie; ponowny wybór tego samego ID pomija odczyt i zachowuje jej BSS.
-Funkcje wejścia resetują dane ekranów jak wcześniej. S używa końcowych
-256 B i nie unieważnia nakładki.
+The loader opens a resource through `open/read/close`, checks its header,
+boundaries, length and CRC32, then clears BSS. The last successfully loaded
+overlay stays in the window; selecting the same ID again skips the read and
+preserves its BSS. Entry functions reset screen data as before. S uses the final
+256 B and does not invalidate the overlay.
 
-Błąd odczytu lub weryfikacji unieważnia okno i kończy program: pliki są
-zamykane, konsola przywracana, a komunikat podaje zasób i przyczynę.
-Nie ma ponowienia ani uruchomienia częściowo załadowanego kodu.
+A read or validation error invalidates the window and ends the application:
+files are closed, the console is restored, and the message identifies the
+resource and cause. There is no retry or execution of partially loaded code.
 
-## Weryfikacja
+## Validation
 
-Zestaw testów i obrazy kontrolne opisano w [tests.md](tests.md).
+The test suite and reference images are described in [tests.md](tests.md).

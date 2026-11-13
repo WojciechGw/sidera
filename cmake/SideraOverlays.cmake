@@ -19,6 +19,9 @@ function(sidera_overlays target)
         rp6502_asset(${target} "${name}" "${asset}")
     endforeach()
     rp6502_asset(${target} help src/help.txt)
+    rp6502_asset(${target} sidera-gpl.txt LICENSE)
+    rp6502_asset(${target} sidera-notice.txt LICENSE-NOTICE.txt)
+    rp6502_asset(${target} sidera-sdk-license.txt LICENSES/RP6502-SDK.txt)
     set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/overlays/overlay.cfg" "${pack}" "${check}")
     add_custom_command(TARGET ${target} POST_BUILD

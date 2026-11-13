@@ -43,4 +43,7 @@ Standalone edition with embedded ROM resources.
 Default settings: MSC0:/sidera.cfg. Q returns to the monitor.
 
 Have fun!
-(c)2026 by WojciechGw
+
+Copyright (c) 2026 Wojciech Gwioździk (WojciechGw)
+Original code: GPL-3.0-only. No warranty.
+License: ROM:sidera-gpl.txt. Scope and third-party notices: ROM:sidera-notice.txt.

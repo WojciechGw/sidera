@@ -1,108 +1,115 @@
-# Usunięcie pozostałości RMT
+# RMT cleanup
 
-Zakres uzgodniony 13 listopada 2026: SIDERA działa samodzielnie na RP6502-PICO
-i RP6502-EMU. Z czynnego kodu usunięto obsługę RMT/razemOS oraz dawne nazwy.
-Informacje o pochodzeniu, manifest importu i licencje zachowano.
+Scope agreed on 13 November 2026: SIDERA runs standalone on RP6502-PICO and
+RP6502-EMU. RMT/razemOS support and the former names were removed from active
+code. Provenance information, the import manifest and licenses were preserved.
 
-## Zmiany
+## Changes
 
-- Usunięto API zadań, sygnałów, przełączania aplikacji i wspólnej konsoli,
-  wariant `RPMT_BARE`, puste blokady oraz `yield`.
-  Usunięto też nieużywane resetowanie katalogu gwiazd po przełączeniu zadania;
-  odświeżanie po zmianie daty lub obserwatora nadal korzysta z `cs_begin()`.
-- Z biblioteki `rpc_common` pozostawiono dekoder klawiatury w `src/platform/`.
-  Nieużywane moduły ekranów tekstowych, przekazywania stanu między programami,
-  katalogów i współdzielonego XRAM usunięto.
-- Operacje plikowe korzystają bezpośrednio z cc65. Mała warstwa platformowa
-  obsługuje zegar 125 Hz, oczekiwanie, UART i wykrywanie VGA.
-- `src/platform/argv.c` zapewnia 512-bajtowy bufor argumentów monitora.
-  Jest bezpośrednim źródłem programu: umieszczenie go wyłącznie w archiwum
-  pozwala linkerowi wybrać domyślną implementację cc65 bez bufora.
-- `src/startup.c` współdzieli start aplikacji z testami. Testy nie wycinają
-  już starego wariantu inicjalizacji z tekstu `main.c`.
-- `src/bare/` zastąpiono `src/overlays/`. Pięć nakładek, loader, sprawdzanie
-  CRC, identyfikator kompilacji, układ XRAM i formaty danych pozostają.
-- Zachowano wszystkie opcje startowe, w tym `/assets` i `/config`, zapis
-  ustawień, klawisze, LIVE/SIM, astronomię, miasta, strefy i panel X.
+- Removed task, signal, application-switching and shared-console APIs,
+  the `RPMT_BARE` variant, no-op locks and `yield`.
+  Also removed unused star-catalogue resets after task switching; refreshing
+  after a date or observer change still uses `cs_begin()`.
+- Retained the keyboard decoder from `rpc_common` in `src/platform/`.
+  Removed unused text-screen, inter-application state transfer, directory
+  and shared-XRAM modules.
+- File operations use cc65 directly. A small platform layer handles the 125 Hz
+  clock, waiting, UART and VGA detection.
+- `src/platform/argv.c` provides a 512-byte monitor argument buffer.
+  It is compiled directly into the executable: putting it only in an archive
+  allows the linker to select cc65's default implementation without a buffer.
+- `src/startup.c` shares application startup with tests. Tests no longer cut
+  the old initialization variant out of the text of `main.c`.
+- Replaced `src/bare/` with `src/overlays/`. The five overlays, loader, CRC checks,
+  build identifier, XRAM layout and data formats remain in place.
+- Preserved all startup options, including `/assets` and `/config`, settings
+  persistence, keys, LIVE/SIM, astronomy, cities, time zones and the X panel.
 
-## Porównanie z punktem odniesienia
+## Baseline comparison
 
-| Miara | Przed | Po |
+| Metric | Before | After |
 | --- | ---: | ---: |
-| Pliki `.c`, `.h`, `.inc` w `src/` | 55 | 33 |
-| Linie tych plików, włącznie z komentarzami i tabelami | 7357 | 4823 |
-| Rozmiar `sidera.rp6502` | 1 226 243 B | 1 225 825 B |
-| Koniec danych rezydentnych, adres wyłączny | `$B4B1` | `$B3F1` |
-| Wolny RAM poniżej stosu po odjęciu okna nakładek | 10 831 B | 11 023 B |
+| `.c`, `.h`, `.inc` files in `src/` | 55 | 33 |
+| Lines in those files, including comments and tables | 7357 | 4823 |
+| `sidera.rp6502` size | 1 226 243 B | 1 225 825 B |
+| End of resident data, exclusive | `$B4B1` | `$B3F1` |
+| Free RAM below the stack after reserving the overlay window | 10 831 B | 11 023 B |
 
-Ubyło 2534 linii (34,4%), ROM zmniejszył się o 418 B, a wolnego RAM przybyło
-192 B. Znaczna część usuniętych źródeł nie trafiała wcześniej do ROM-u,
-dlatego redukcja kodu źródłowego jest znacznie większa niż redukcja obrazu.
-W nakładce CITIES usunięto dodatkowo 160-bajtowy bufor zmiennej ścieżki.
+The change removed 2534 lines (34.4%), reduced the ROM by 418 B and freed 192 B
+of RAM. Much of the removed source code had not previously been included in the
+ROM, so the source reduction is much larger than the image reduction.
+A 160-byte variable-path buffer was also removed from the CITIES overlay.
 
-Wszystkie cztery ROM-y (Windows/WSL, Debug/Release) są identyczne bajtowo.
-SHA-256 wersji po refaktoryzacji:
+All four ROMs (Windows/WSL, Debug/Release) are byte-for-byte identical.
+SHA-256 after refactoring:
 
 ```text
 770902ca485a5e645273283514be52e1ee37e4bf18a9588e069c95baed3209df
 ```
 
-## Weryfikacja automatyczna
+## Automated validation
 
-Wyniki końcowe z 13 listopada 2026:
+Final results from 13 November 2026:
 
-| Środowisko | Debug | Release |
+| Environment | Debug | Release |
 | --- | --- | --- |
 | Windows, cc65 + MSVC | PASS | PASS |
 | Ubuntu 24.04 / WSL 2, cc65 + GCC | PASS | PASS |
 
-Każdy przebieg obejmuje 24 testy hosta/sim65/obrazów oraz kontrolę ROM-u,
-test rzeczywistego emulatora i odtworzenie zasobów: 27 testów i dwie fixtures SDK.
-WSL uruchamia emulator Windows przez istniejący adapter projektu; nie jest to
-test natywnego emulatora Linuksa ani test sprzętu PICO.
+Each run includes 24 host/sim65/image tests, plus ROM validation, a test in the
+actual emulator and asset reproduction: 27 tests and two SDK fixtures.
+WSL runs the Windows emulator through the existing project adapter; this is
+neither a native Linux emulator test nor a PICO hardware test.
 
-Sześć obrazów kontrolnych zgadza się ze wzorcami piksel po pikselu.
-Obejrzano też zrzuty widoku nieba i panelu X z rzeczywistego ROM-u w emulatorze.
-Porównanie bajtowe potwierdziło brak zmian w 36 plikach danych, zasobów,
-licencji, manifestu i podstawowych modułów astronomicznych. Generatory
-odtwarzają dostarczone pliki bez zmiany drzewa źródeł.
+Six reference images match their baselines pixel for pixel. Screenshots of the
+sky view and X panel from the actual ROM in the emulator were also inspected.
+Byte comparisons confirmed that 36 files containing data, assets, licenses,
+the manifest and core astronomy modules were unchanged. Generators reproduce
+the supplied files without changing the source tree.
 
-Dodany test `sidera_platform_6502` obejmuje rzeczywisty kod czasu i dekodera
-klawiatury. Emulator potwierdza działanie argumentów `/config` i `/date`,
-przełączanie nakładek, zapis S oraz wyjście Q. Zachowane testy sprawdzają
-również uszkodzone nakładki, sprzątanie po błędach i wstrzymanie symulacji
-w panelu X. Usunięto wyłącznie scenariusze dotyczące zadań i sygnałów RMT.
+The added `sidera_platform_6502` test covers the actual timing and keyboard-decoder
+code. The emulator confirms `/config` and `/date` argument handling, overlay
+switching, S saving and Q exit. Retained tests also check corrupt overlays,
+cleanup after errors and suspension of simulation in the X panel. Only scenarios
+related to RMT tasks and signals were removed.
 
-Przeszukanie czynnego kodu, testów, generatorów i CMake nie wykazuje odwołań
-do `rpmt`, `rpc_common` ani `RPMT_BARE`. `git diff --check` przechodzi.
-Punkt odniesienia i kopia stanu roboczego są w lokalnym
-`build/audit/pre-rmt-cleanup-20261113-074717/`, a logi w
-`build/audit/cleanup-*.log` i katalogach `Testing/Temporary/`.
-Nie wykonywano commitów, publikacji ani transferu na PICO.
+A search of active code, tests, generators and CMake finds no references to
+`rpmt`, `rpc_common` or `RPMT_BARE`. `git diff --check` passes.
+The baseline and working-tree backup are stored locally in
+`build/audit/pre-rmt-cleanup-20261113-074717/`, with logs in
+`build/audit/cleanup-*.log` and `Testing/Temporary/` directories.
+No commits, publication or PICO transfers were performed.
 
-## Kontrola na fizycznym PICO
+## Physical PICO checks
 
-Test na urządzeniu wykonuje właściciel. Automatyczna weryfikacja nie wysyła
-ROM-u na PICO. Plik do przeniesienia:
+On 13 November 2026, Wojciech Gwioździk (WojciechGw) confirmed that SIDERA
+had been launched successfully and was working on a physical Picocomputer 6502.
+This is an owner-reported hardware result. The tested ROM's hash and individual
+checklist results were not recorded, so this confirmation is not tied to a
+specific binary or a completed run of every check below.
+
+The following checklist is retained for detailed hardware regression testing.
+Automated validation does not upload the ROM to PICO. Release file to transfer:
 `build/cc65/release/sidera/sidera.rp6502`.
 
-1. Uruchom ROM z osobną konfiguracją, aby łatwo rozpoznać wynik zapisu:
+1. Run the ROM with a separate configuration to make the saved result easy to identify:
 
    ```text
    LOAD MSC0:/sidera.rp6502 /config MSC0:/sidera-check.cfg /date "2026-11-12 20:00:00"
    ```
 
-2. Sprawdź około pięciosekundowy ekran powitalny, widok nieba i wskazaną datę
-   w trybie SIM/PAUSE. Poczekaj na zakończenie obliczeń wschodów/zachodów.
-3. Sprawdź strzałki, Shift+strzałki, G/T/C/P oraz edycję L/D/Z: Enter zatwierdza,
-   Esc anuluje; Home/End/Backspace/Delete działają w edytorze.
-4. W K wyszukaj miasto, zatwierdź i sprawdź lokalizację oraz strefę. W X
-   sprawdź panel planet, zamknięcie X i powrót do aktualnego widoku nieba.
-5. Sprawdź Space, `+`, `-`, `[` i `]`, a następnie N i aktualizację zegara LIVE.
-6. Naciśnij S, zakończ Q i uruchom ROM ponownie z samym
-   `/config MSC0:/sidera-check.cfg`. Ustawienia powinny zostać odtworzone.
-7. Uruchom `/help` oraz błędną opcję, np. `/fov 55`: pomoc lub błąd powinny
-   wrócić do monitora. Jeśli używasz zasobów zewnętrznych, sprawdź również
-   `/assets MSC0:/sidera.dat` z niezmienionym plikiem danych.
+2. Check the roughly five-second splash screen, sky view and specified date in
+   SIM/PAUSE mode. Wait for rise/set calculations to finish.
+3. Check arrows, Shift+arrows, G/T/C/P and L/D/Z editing: Enter applies changes,
+   Esc cancels; Home/End/Backspace/Delete work in the editor.
+4. In K, find a city, confirm it and check the location and time zone. In X,
+   check the planet panel, close it with X and return to the current sky view.
+5. Check Space, `+`, `-`, `[` and `]`, then N and LIVE clock updates.
+6. Press S, quit with Q and run the ROM again with only
+   `/config MSC0:/sidera-check.cfg`. The settings should be restored.
+7. Run `/help` and an invalid option, such as `/fov 55`: help or an error should
+   return to the monitor. If you use external assets, also check
+   `/assets MSC0:/sidera.dat` with an unchanged data file.
 
-Wynik testu na PICO pozostaje do potwierdzenia przez właściciela.
+Hardware startup and operation are confirmed by the owner; completion of the
+individual checklist items has not been reported.

@@ -1,77 +1,77 @@
-# Weryfikacja SIDERY
+# SIDERA validation
 
-`ctest --preset cc65/Debug` i `ctest --preset cc65/Release` uruchamiają:
+`ctest --preset cc65/Debug` and `ctest --preset cc65/Release` run:
 
-- `sidera_host_suite`: testy hosta i sim65 oraz porównanie pikseli
-  sześciu obrazów ze wzorcami (łącznie 24 testy). Obejmują astronomię,
-  katalogi, strefy czasowe, wschody/zachody, konfigurację, grafikę, podpisy,
-  loader i pełną pętlę aplikacji z nakładkami oraz scenariusze błędów.
-  `sidera_platform_6502` sprawdza kod obsługi zegara 125 Hz, przepełnienie
-  16-bitowego licznika, oczekiwanie, wykrywanie VGA, konsolę, bufor argumentów
-  monitora i dekoder klawiatury (sekwencje VT, modyfikatory, Esc i timeout).
-  Rejestry RIA i czas są kontrolowane przez test, kod wykonuje sim65.
-- `sidera_rom`: kontrolę faktycznie zbudowanego ROM-u: tylko rdzeń i wektor
-  resetu w pamięci początkowej, pięć nakładek jako zasoby, nagłówki, CRC32,
-  wspólny identyfikator, BSS, adresy rezydentne i stos. Ta kontrola jest też
-  obowiązkowym krokiem pakowania.
-- `sidera_emu`: rzeczywisty ROM w RP6502-EMU, z ustaloną datą i ziarnem
-  losowego wypełnienia RAM. Start z ekranem powitalnym, widok nieba, panel X,
-  edycja L, miasta K, zapis S do `SAVE:` i wyjście Q. Sprawdzane są stany
-  aplikacji, brak błędu nakładki i obecność zapisanego pliku.
-  Zapisany czas musi odpowiadać opcji `/date`, co dodatkowo sprawdza odbiór
-  argumentów monitora przez rzeczywisty ROM.
-- `sidera_generated_assets`: odtworzenie katalogu, tabel, grafik, miast
-  i stref offline oraz porównanie z dostarczonymi plikami. Dla tekstów
-  normalizowane są wyłącznie końce wierszy.
+- `sidera_host_suite`: host and sim65 tests, plus pixel comparisons of six images
+  against their references (24 tests in total). They cover astronomy, catalogues,
+  time zones, rise/set times, settings, graphics, labels, the loader and the full
+  application loop with overlays, including error scenarios.
+  `sidera_platform_6502` checks the 125 Hz clock code, 16-bit counter wraparound,
+  waiting, VGA detection, console I/O, the monitor argument buffer and the
+  keyboard decoder (VT sequences, modifiers, Esc and timeout).
+  The test controls RIA registers and time; sim65 executes the code.
+- `sidera_rom`: checks the actual built ROM: only the core and reset vector in
+  initial memory, five overlays as resources, headers, CRC32, the shared build
+  identifier, BSS, resident addresses and the stack. This check is also a required
+  packing step.
+- `sidera_emu`: runs the actual ROM in RP6502-EMU with a fixed date and a fixed seed
+  for random RAM initialization. It exercises startup with the splash screen,
+  the sky view, the X panel, the L editor, K cities, S saving to `SAVE:` and Q exit.
+  It checks application states, the absence of overlay errors and the existence
+  of the saved file. The saved time must match the `/date` option, which also
+  verifies monitor argument handling by the actual ROM.
+- `sidera_generated_assets`: reproduces the catalogue, tables, graphics, cities
+  and time zones offline and compares them with the supplied files. For text,
+  only line endings are normalized.
 
-SDK dodaje dwie pomocnicze fixtures: `rp6502.build` i `rp6502.save`.
-Wszystkie asercje testów pozostają aktywne również w Release.
-Testy nie wysyłają niczego na PICO i nie pobierają danych astronomicznych.
+The SDK adds two helper fixtures: `rp6502.build` and `rp6502.save`.
+All test assertions remain enabled in Release as well.
+Tests do not upload anything to PICO or download astronomical data.
 
-Start aplikacji i testy opcji korzystają ze wspólnego `src/startup.c`
-oraz `src/overlays/boot.c`. Adaptery hosta podstawiają pliki, czas i RIA,
-bez emulowania systemu zadań lub blokad. `SIDERA_OVERLAYS` rozróżnia
-rozmieszczenie kodu w ROM-ie i natywne testy; nie wybiera wariantu systemowego.
+Application startup and option tests share `src/startup.c` and
+`src/overlays/boot.c`. Host adapters substitute files, time and RIA without
+emulating a task or lock system. `SIDERA_OVERLAYS` distinguishes ROM code
+placement from native tests; it does not select an operating-system variant.
 
-## Obrazy
+## Images
 
-Test hosta zapisuje stan XRAM rzeczywistych algorytmów renderowania.
-`reference_views.py` tworzy sześć PNG i trzy konfiguracje w
+The host test saves the XRAM state produced by the actual rendering algorithms.
+`reference_views.py` creates six PNG files and three configurations in
 `build/cc65/<debug|release>/host-native/views/`:
 
 - `sidera-testA.png`, `sidera-testB.png`, `sidera-testC.png`;
 - `sidera-solarA.png`, `sidera-solarB.png`, `sidera-solarC.png`.
 
-Oryginalne wzorce znajdują się w `src/assets/`. Są to renderingi testów
-hosta; nie należy przedstawiać ich jako zrzutów z fizycznego urządzenia.
-Osobne zrzuty rzeczywistego emulatora (`sky.png`, `solar.png`) powstają
-w `build/cc65/<debug|release>/test/sidera_emu/`.
+The original references are in `src/assets/`. These are host-test renderings;
+they must not be presented as screenshots from a physical device.
+Separate screenshots from the actual emulator (`sky.png`, `solar.png`) are
+created in `build/cc65/<debug|release>/test/sidera_emu/`.
 
-## Diagnostyka
+## Diagnostics
 
-Szczegółowy wynik pojedynczego testu hosta:
+To see detailed output from an individual host test:
 
 ```text
 ctest --test-dir build/cc65/debug/host-native -C Debug -R sidera_timezone --output-on-failure
 ```
 
-Logi CTest znajdują się w `Testing/Temporary/` głównego oraz natywnego
-katalogu budowania. Nie mieszaj katalogów Windows i WSL. Test stref czasowych
-kopiuje plik danych do natywnego katalogu tymczasowego, aby setki tysięcy
-małych odczytów nie przechodziły przez montowanie dysku Windows w WSL.
+CTest logs are in `Testing/Temporary/` within the main and native build
+directories. Do not mix Windows and WSL directories. The time-zone test copies
+its data file to a native temporary directory so that hundreds of thousands of
+small reads do not cross the Windows drive mount in WSL.
 
-Podczas debugowania pamiętaj, że pięć nakładek ma te same adresy wykonania.
-Niektóre symbole mogą być niejednoznaczne, a breakpoint pod adresem nakładki
-odnosi się do aktualnie wczytanego kodu. Testy loadera i mapy nie zastępują
-weryfikacji czasu przełączania i urządzeń na fizycznym PICO.
+When debugging, remember that all five overlays share execution addresses.
+Some symbols may be ambiguous, and a breakpoint at an overlay address refers
+to the currently loaded code. Loader and map checks do not replace verification
+of switching time and device behaviour on physical PICO hardware.
 
-## Generatory
+## Generators
 
-`scripts/regenerate.py --output build/generated --check` uruchamia lokalne
-generatory `constellations.py`, `assets.py`, `solar_assets.py`, `cities.py`
-i `timezones.py`. Bez `--check` tylko generuje wyniki. Importery katalogów
-przyjmują `--import-dir`; wynik importu pozostaje w katalogu wynikowym do
-ręcznego przeglądu. `tests/fetch_reference.py` i `fetch_planets.py` zachowano
-do świadomego odświeżania danych odniesienia; wymagają sieci i nie są częścią CI.
-Domyślnie zapisują wyniki w `build/references/`; `--output` zmienia miejsce
-zapisu. Wymiana wzorców w `tests/` wymaga przeglądu i jawnego skopiowania.
+`scripts/regenerate.py --output build/generated --check` runs the local generators
+`constellations.py`, `assets.py`, `solar_assets.py`, `cities.py` and `timezones.py`.
+Without `--check`, it only generates outputs. Catalogue importers accept
+`--import-dir`; imported results remain in the output directory for manual review.
+`tests/fetch_reference.py` and `fetch_planets.py` are retained for deliberate
+reference-data updates; they require network access and are not part of CI.
+They write to `build/references/` by default; `--output` changes the destination.
+Replacing references in `tests/` requires review and an explicit copy.

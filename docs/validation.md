@@ -1,46 +1,46 @@
-# Raport weryfikacji wydzielenia
+# Extraction validation report
 
-Ten raport dokumentuje stan z 12 listopada 2026. Aktualne wyniki po usunięciu
-warstwy RMT opisano w [raporcie refaktoryzacji](rmt-cleanup.md).
+This report documents the state on 12 November 2026. Results after removing the
+RMT layer are described in the [refactoring report](rmt-cleanup.md).
 
-Weryfikacja lokalna: 12 listopada 2026, Windows i Ubuntu 24.04 w WSL 2.
-Kompilator na obu systemach: cc65 V2.19, Git `6fd2669`. W WSL zainstalowany
-oficjalnym instalatorem wskazanym w dokumentacji SDK. Emulator: RP6502 0.43.
-Testy hosta: MSVC 2022 na Windows, GCC w Ubuntu. Python: 3.14.8 / 3.12.3.
+Local validation: 12 November 2026, Windows and Ubuntu 24.04 in WSL 2.
+Compiler on both systems: cc65 V2.19, Git `6fd2669`. In WSL, it was installed using
+the official installer linked from the SDK documentation. Emulator: RP6502 0.43.
+Host tests: MSVC 2022 on Windows, GCC on Ubuntu. Python: 3.14.8 / 3.12.3.
 
-| Środowisko | Konfiguracja | Czyste budowanie | Pełne testy |
+| Environment | Configuration | Clean build | Full test suite |
 | --- | --- | --- | --- |
 | Windows | cc65/Debug | PASS | PASS |
 | Windows | cc65/Release | PASS | PASS |
 | Ubuntu 24.04 / WSL 2 | cc65/Debug | PASS | PASS |
 | Ubuntu 24.04 / WSL 2 | cc65/Release | PASS | PASS |
 
-Każdy przebieg obejmował 23 testy hosta/sim65/obrazów oraz kontrolę ROM-u,
-rzeczywisty emulator i odtworzenie zasobów: **26 testów**, dodatkowo dwie
-fixtures SDK. Po rozszerzeniu kontroli emulatora ponownie sprawdzono wszystkie
-cztery konfiguracje: zakończenie obliczeń wschodów i zachodów, panel X,
-edycję L, otwarcie/zamknięcie miast K, zapis S i wyjście Q.
+Each run included 23 host/sim65/image tests, plus ROM validation, the actual
+emulator and asset reproduction: **26 tests**, with two additional SDK fixtures.
+After extending emulator checks, all four configurations were tested again:
+completion of rise/set calculations, the X panel, L editing, opening/closing
+K cities, S saving and Q exit.
 
-WSL kompiluje i wykonuje testy hosta oraz sim65 jako programy Linuksa.
-Zgodnie z wyborem SDK korzysta z emulatora Windows przez interop; adapter
-projektu tłumaczy ścieżki systemu plików. Natywny emulator Linuksa jest
-przewidziany dla joba Ubuntu w CI. Workflow GitHub Actions przygotowano,
-ale nie uruchamiano go na GitHub — nie wykonano push ani publikacji.
+WSL builds and runs host and sim65 tests as Linux programs. Following the SDK's
+selection, it uses the Windows emulator through interop; the project's adapter
+translates filesystem paths. The native Linux emulator is intended for the
+Ubuntu CI job. The GitHub Actions workflow was prepared but had not been run on
+GitHub; nothing was pushed or published.
 
-## Wynik
+## Results
 
-Wszystkie cztery ROM-y są identyczne bajtowo, mają **1 226 243 B** i SHA-256:
+All four ROMs are byte-for-byte identical, at **1 226 243 B**, with SHA-256:
 
 ```text
 8ac123604cd3e2e630fd80288596b732e35d176e10a8bf6f830282ab1cc8baf1
 ```
 
-Wersja Release Windows: `build/cc65/release/sidera/sidera.rp6502`.
-Wyniki WSL są w `build/linux/cc65/<debug|release>/sidera/`.
-Pakowanie standardowym SDK zachowuje rdzeń pod `$0200`, reset `$0200`,
-pięć nazwanych zasobów nakładek, ich identyfikator kompilacji i CRC32.
+Windows Release: `build/cc65/release/sidera/sidera.rp6502`.
+WSL outputs are in `build/linux/cc65/<debug|release>/sidera/`.
+Standard SDK packing preserves the core at `$0200`, reset at `$0200`, five named
+overlay resources, their build identifier and CRC32.
 
-| Nakładka | Ładunek | BSS | Zapas w 5888 B |
+| Overlay | Payload | BSS | Headroom within 5888 B |
 | --- | ---: | ---: | ---: |
 | INIT | 4591 B | 0 B | 1297 B |
 | CITIES | 3653 B | 463 B | 1772 B |
@@ -48,24 +48,31 @@ pięć nazwanych zasobów nakładek, ich identyfikator kompilacji i CRC32.
 | COVER | 846 B | 0 B | 5042 B |
 | SOLAR | 5678 B | 82 B | 128 B |
 
-Każda nakładka ma dodatkowy nagłówek 24 B. Okno kodu i BSS:
-`$C800–$DEFF`; bufor roboczy: `$DF00–$DFFF`; stos C: `$F700–$FEFF`.
-Koniec danych rezydentnych: `$B4B1` (adres wyłączny).
-Wolne RAM poniżej stosu po odjęciu okna: **10 831 B**.
+Each overlay has an additional 24-byte header. Code and BSS window:
+`$C800–$DEFF`; scratch buffer: `$DF00–$DFFF`; C stack: `$F700–$FEFF`.
+End of resident data: `$B4B1` (exclusive).
+Free RAM below the stack, after reserving the window: **10 831 B**.
 
-## Obrazy i źródła
+## Images and sources
 
-Wygenerowano i obejrzano A/B/C oraz solar A/B/C. Wszystkie sześć obrazów
-Windows i WSL ma identyczne piksele jak zachowane wzorce `src/assets/`.
-Obejrzano również zrzuty działającego ROM-u w emulatorze. Obrazy i konfiguracje
-testowe są w `build/cc65/<debug|release>/host-native/views/`.
+A/B/C and solar A/B/C were generated and visually inspected. All six Windows
+and WSL images have identical pixels to the retained references in `src/assets/`.
+Screenshots of the running ROM in the emulator were also inspected. Test images
+and configurations are in `build/cc65/<debug|release>/host-native/views/`.
 
-Generatory odtwarzają dane i tabele offline; ich wyniki zgadzają się z plikami
-dostarczonymi w `src/`. Kontrola obejmuje także brak zmian drzewa źródłowego
-podczas generowania. Sprawdzono SHA-256 wszystkich **126 plików wejściowych**
-z manifestu — pliki źródłowego mtRAM nie zostały zmienione.
+Generators reproduce data and tables offline; their outputs match the files
+supplied in `src/`. Checks also verify that generation leaves the source tree
+unchanged. SHA-256 hashes were checked for all **126 input files** in the manifest;
+the source mtRAM files were not modified.
 
-Pełne lokalne logi są w `build/audit/`, szczegółowe logi testów w
-`Testing/Temporary/` odpowiednich katalogów budowania. `git diff --check`
-nie zgłasza błędów. Nie wykonywano commitów, publikacji ani transferu na PICO.
-Obsługa PICO jest skonfigurowana; nie stanowi to testu na fizycznym urządzeniu.
+Full local logs are in `build/audit/`, with detailed test logs in
+`Testing/Temporary/` under the respective build directories. `git diff --check`
+reports no errors. No commits, publication or PICO transfers were performed.
+PICO support is configured; this does not constitute a physical-device test.
+
+## Subsequent hardware confirmation
+
+On 13 November 2026, the owner confirmed successful startup and operation on a
+physical Picocomputer 6502. This later result is recorded in the
+[hardware validation record](rmt-cleanup.md#physical-pico-checks); it does not
+change the scope or binary hashes of the 12 November validation above.
