@@ -20,45 +20,27 @@ unsigned char cities_active=0;
 static int fd=-1;
 static unsigned count,total,selected,page,ids[ROWS];
 static unsigned char rows;
-static char path[160],query[40],line[112];
+static char query[40],line[112];
 static unsigned char record[RECORD];
 static Observer candidate;
 
-void cities_init(const char *argv0)
-{
-#ifdef RPMT_BARE
-    (void)argv0;
-    strcpy(path,"ROM:sidera.cty");
-#else
-    const char *p=strrchr(argv0,'/');unsigned n;
-    if(!p)p=strchr(argv0,':');n=p?(unsigned)(p-argv0)+1:0;
-    if(n>sizeof(path)-11)n=0;
-    memcpy(path,argv0,n);strcpy(path+n,"sidera.cty");
-#endif
-}
 void cities_close(void)
 {
-    if(fd>=0)rpmt_close(fd);fd=-1;cities_active=0;
+    if(fd>=0)close(fd);fd=-1;cities_active=0;
 }
 static int bad(void)
 {
     strcpy(note,"Cannot read city catalogue (sidera.cty).");return 0;
 }
-static long seek_catalogue(long offset,int whence)
-{
-    long pos;
-    rpmt_os_lock();pos=lseek(fd,offset,whence);rpmt_os_unlock();return pos;
-}
 static int open_catalogue(void)
 {
-    cities_close();fd=rpmt_open(path,O_RDONLY);
-    if(fd<0)fd=rpmt_open("ROM:sidera.cty",O_RDONLY);
-    if(fd<0)fd=rpmt_open("MSC0:/sidera.cty",O_RDONLY);
+    cities_close();fd=open("ROM:sidera.cty",O_RDONLY);
+    if(fd<0)fd=open("MSC0:/sidera.cty",O_RDONLY);
     if(fd<0)return bad();
     if(read(fd,record,16)!=16||memcmp(record,"SIDCITY2",8))goto invalid;
     count=record[8]|((unsigned)record[9]<<8);
     if(!count||count>1000||record[10]!=RECORD||record[11]||
-       seek_catalogue(0,SEEK_END)!=16L+(long)count*RECORD)goto invalid;
+       lseek(fd,0,SEEK_END)!=16L+(long)count*RECORD)goto invalid;
     return 1;
 invalid:
     cities_close();return bad();
@@ -67,7 +49,7 @@ static int read_city(unsigned index)
 {
     long offset=16L+(long)index*RECORD;
     int16_t height;
-    if(index>=count||seek_catalogue(offset,SEEK_SET)!=offset||read(fd,record,RECORD)!=RECORD)return bad();
+    if(index>=count||lseek(fd,offset,SEEK_SET)!=offset||read(fd,record,RECORD)!=RECORD)return bad();
     if(record[2]||record[42]||record[82]||record[0]<'A'||record[0]>'Z'||
        record[1]<'A'||record[1]>'Z'||!record[3]||!record[43])return bad();
     memcpy(&candidate.latitude,record+83,4);memcpy(&candidate.longitude,record+87,4);
@@ -95,7 +77,6 @@ int cities_lookup(const char *name)
         else if(n>3&&name[2]=='/')match=!strnicmp(name,(char *)record,2)&&!stricmp(name+3,(char *)record+43);
         else match=!stricmp(name,(char *)record+43);
         if(match){++matches;found=i;}
-        rpmt_yield();
     }
     if(matches!=1) {
         cities_close();
@@ -131,7 +112,6 @@ static int fill(void)
             if(total>=page&&rows<ROWS)ids[rows++]=i;
             ++total;
         }
-        rpmt_yield();
     }
     return 1;
 }

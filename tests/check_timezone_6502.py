@@ -34,18 +34,14 @@ with zipfile.ZipFile(root/'data/tzdata-2026.6-py2.py3-none-any.whl') as archive:
             utc=dt.datetime.fromisoformat(stamp).replace(tzinfo=dt.timezone.utc)
             local=utc.astimezone(zone)
             cases.append((names.index(name),utc,local,int(local.utcoffset().total_seconds())))
-(work/'rpmt.h').write_text('#include <stdint.h>\nint rpmt_open(const char *,int);\nint rpmt_close(int);\nvoid rpmt_os_lock(void);\nvoid rpmt_os_unlock(void);\n')
+(work/'platform.h').write_text('#include <stdint.h>\n#include <fcntl.h>\n#include <unistd.h>\n')
 source='''#include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "sidera.h"
 char asset_path[160]="sidera.dat";
-static unsigned char locked;
-void rpmt_os_lock(void){assert(!locked);locked=1;}
-void rpmt_os_unlock(void){assert(locked);locked=0;}
-int rpmt_open(const char *p,int f){return open(p,f);}
-int rpmt_close(int f){return close(f);}
+
 typedef struct {unsigned id;Date utc,local;long offset;} Case;
 static const Case cases[]={
 '''
@@ -62,6 +58,6 @@ assert(d.hour==cases[i].local.hour&&d.minute==cases[i].local.minute&&d.second==c
 }tz_close();puts("PASS: 54 timezone conversions on actual 65C02");return 0;}
 '''
 (work/'test.c').write_text(source)
-subprocess.run([sys.argv[1],'-t','sim65c02','-O','-I',str(work),'-I',str(root),'-I',str(root/'common'/'rpc_common'),
+subprocess.run([sys.argv[1],'-t','sim65c02','-O','-I',str(work),'-I',str(root),'-I',str(root/'platform'),
                '-o',str(work/'check'),str(work/'test.c'),str(root/'timezone.c'),str(root/'astro.c')],check=True)
 subprocess.run([sys.argv[2],str(work/'check')],cwd=work,check=True)

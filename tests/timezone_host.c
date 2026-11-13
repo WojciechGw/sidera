@@ -7,17 +7,14 @@
 #include "sidera.h"
 
 char asset_path[160];
-static int locked;
-void rpmt_os_lock(void){assert(!locked);locked=1;}
-void rpmt_os_unlock(void){assert(locked);locked=0;}
-long host_lseek(int fd,long offset,int whence){assert(locked);return _lseek(fd,offset,whence);}
-int host_read(int fd,void *p,unsigned n){assert(!locked);return _read(fd,p,n);}
-int rpmt_open(const char *p,int f){return _open(p,f|_O_BINARY,_S_IREAD|_S_IWRITE);}
-int rpmt_close(int fd){return _close(fd);}
+
+long host_lseek(int fd,long offset,int whence){return _lseek(fd,offset,whence);}
+int host_read(int fd,void *p,unsigned n){return _read(fd,p,n);}
+int host_open(const char *p,int f){return _open(p,f|_O_BINARY,_S_IREAD|_S_IWRITE);}
+int host_close(int fd){return _close(fd);}
 int main(int argc,char **argv)
 {
     unsigned id,previous=65535;int y,mo,d,h,mi,s;Date utc,local;int32_t offset;
-    
     assert(argc==2);sprintf(asset_path,"%s/sidera.dat",argv[1]);
     while(scanf("%u %d %d %d %d %d %d",&id,&y,&mo,&d,&h,&mi,&s)==7) {
         if(id!=previous){assert(tz_select(id));previous=id;}

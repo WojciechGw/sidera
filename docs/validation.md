@@ -1,5 +1,8 @@
 # Raport weryfikacji wydzielenia
 
+Ten raport dokumentuje stan z 12 listopada 2026. Aktualne wyniki po usunięciu
+warstwy RMT opisano w [raporcie refaktoryzacji](rmt-cleanup.md).
+
 Weryfikacja lokalna: 12 listopada 2026, Windows i Ubuntu 24.04 w WSL 2.
 Kompilator na obu systemach: cc65 V2.19, Git `6fd2669`. W WSL zainstalowany
 oficjalnym instalatorem wskazanym w dokumentacji SDK. Emulator: RP6502 0.43.

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "sidera.h"
-#include "bare/overlay.h"
+#include "overlays/overlay.h"
 
 char config_path[160] = "MSC0:/sidera.cfg";
 char asset_path[160];
@@ -21,7 +21,7 @@ static char buffer[224];
 #define CONFIG_BYTES 224u /* includes UTF-8 DMS; shared with the resident save path */
 
 #ifndef SIDERA_OVERLAYS
-#include "bare/init_files.inc"
+#include "overlays/init_files.inc"
 #endif
 static char *coord_out(char *p,int32_t v,char pos,char neg,unsigned char utf8)
 {
@@ -55,17 +55,17 @@ int config_save(void)
         bearing,elevation,fov,(unsigned)grid,trails?"on":"off",planets?"on":"off",(unsigned)constellation_mode);
     if(live)strcat(buffer,"LIVE");else date_format(buffer+strlen(buffer),&moment);
     strcat(buffer,"\r\n");n=(int)strlen(buffer);
-    fd=rpmt_open(config_path,O_WRONLY|O_CREAT|O_TRUNC);if(fd<0)return 0;
-    r=write(fd,buffer,n);if(rpmt_close(fd)<0)return 0;return r==n;
+    fd=open(config_path,O_WRONLY|O_CREAT|O_TRUNC);if(fd<0)return 0;
+    r=write(fd,buffer,n);if(close(fd)<0)return 0;return r==n;
 }
-void assets_close(void) {if(asset_fd>=0)rpmt_close(asset_fd);asset_fd=-1;}
+void assets_close(void) {if(asset_fd>=0)close(asset_fd);asset_fd=-1;}
 int asset_read(int32_t offset,unsigned addr,unsigned count)
 {
     int n;
     long off;
-    rpmt_os_lock();off=lseek(asset_fd,offset,SEEK_SET);
+    off=lseek(asset_fd,offset,SEEK_SET);
     n=off==offset?read_xram(addr,count,asset_fd):-1;
-    rpmt_os_unlock();return n==(int)count;
+    return n==(int)count;
 }
 #ifdef SIDERA_OVERLAYS
 #pragma code-name ("COVER_CODE")

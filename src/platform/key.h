@@ -1,9 +1,6 @@
-/*
- * key.h -- keys from the terminal as K_ codes (key.c), for rpc and the
- * programs it starts.
- */
-#ifndef RPC_KEY_H
-#define RPC_KEY_H
+/* Terminal keys decoded by key.c. */
+#ifndef SIDERA_KEY_H
+#define SIDERA_KEY_H
 
 #define K_NONE 0
 #define K_BS 0x0100
@@ -27,9 +24,5 @@
 
 /* A key, K_NONE if nothing has come. */
 unsigned key_poll(void);
-/* A key, waiting for it. */
-unsigned key_wait(void);
-/* A byte from the terminal within ticks, or -1. */
-int key_byte_within(unsigned char ticks);
 
 #endif

@@ -9,31 +9,21 @@ endif()
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set(RP6502_EMU_VERSION 0.43)
 
-add_library(sidera_common STATIC
-    src/common/rpc_common/errtext.c src/common/rpc_common/ftype.c
-    src/common/rpc_common/hand.c src/common/rpc_common/key.c
-    src/common/rpc_common/pathx.c src/common/rpc_common/scr_dlg.c
-    src/common/rpc_common/scr_ed.c src/common/rpc_common/scr_keys.c
-    src/common/rpc_common/scr_menu.c src/common/rpc_common/scr_msg.c
-    src/common/rpc_common/scr_out.c src/common/rpc_common/scr_term.c
-    src/common/rpc_common/scr_text.c src/common/rpc_common/textcut.c
-    src/common/rpc_common/util.c src/common/rpc_common/xram.c
-    src/common/rpc_common/xr_gets.c src/common/rpc_common/xr_move.c)
-target_include_directories(sidera_common PUBLIC src/common/rpc_common src/platform)
 add_library(sidera_platform STATIC
-    src/platform/rpmt_bare.c src/platform/rpmt_os_file.c src/platform/rpmt_os_dir.c)
+    src/platform/rp6502.c src/platform/key.c)
 target_include_directories(sidera_platform PUBLIC src/platform)
-target_compile_definitions(sidera_platform PRIVATE RPMT_BARE)
 
 add_executable(sidera
-    src/main.c src/astro.c src/cities.c src/constellations.c src/cover.c
+    # Keep the mainargs override out of an archive: cc65 also supplies a default.
+    src/platform/argv.c
+    src/main.c src/startup.c src/astro.c src/cities.c src/constellations.c src/cover.c
     src/editor.c src/files.c src/graphics.c src/riseset.c src/timezone.c
     src/solar_draw.c src/solar_labels.c src/solar_math.c src/solar_ui.c
-    src/bare/boot.c src/bare/init_files.c src/bare/overlay.c)
-target_compile_definitions(sidera PRIVATE RPMT_BARE SIDERA_OVERLAYS)
-target_link_libraries(sidera PRIVATE sidera_common sidera_platform)
+    src/overlays/boot.c src/overlays/init_files.c src/overlays/overlay.c)
+target_compile_definitions(sidera PRIVATE SIDERA_OVERLAYS)
+target_link_libraries(sidera PRIVATE sidera_platform)
 target_link_options(sidera PRIVATE
-    -C "${CMAKE_CURRENT_SOURCE_DIR}/src/bare/overlay.cfg"
+    -C "${CMAKE_CURRENT_SOURCE_DIR}/src/overlays/overlay.cfg"
     -Ln "${CMAKE_CURRENT_BINARY_DIR}/sidera/sidera.lbl")
 include(cmake/SideraOverlays.cmake)
 sidera_overlays(sidera)

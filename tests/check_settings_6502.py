@@ -5,9 +5,9 @@ import sys
 
 root=(Path(__file__).resolve().parents[1] / 'src')
 work=Path(sys.argv[3]).resolve();work.mkdir(parents=True,exist_ok=True)
-(work/'rpmt.h').write_text('''#include <stdint.h>
-int rpmt_open(const char *,int); int rpmt_close(int);
-void rpmt_os_lock(void); void rpmt_os_unlock(void);
+(work/'platform.h').write_text('''#include <stdint.h>
+#include <fcntl.h>
+#include <unistd.h>
 int read_xram(unsigned,unsigned,int);
 ''')
 (work/'test.c').write_text(r'''#include <assert.h>
@@ -20,8 +20,7 @@ Observer observer={3240000L,-6480000L,10000};Date moment={2200,12,31,23,59,59};
 int bearing=359,elevation=-54,fov=160;
 unsigned char grid=3,trails=0,planets=0,constellation_mode=4,live=0,playing=1;
 char zone_name[40]="Europe/Warsaw";
-void rpmt_os_lock(void){} void rpmt_os_unlock(void){} void tz_close(void){}
-int rpmt_open(const char *p,int f){return open(p,f);} int rpmt_close(int f){return close(f);}
+  void tz_close(void){}
 int read_xram(unsigned a,unsigned n,int f){return -1;}
 void gx_read(unsigned a,void *p,unsigned char n){}
 int gx_zoom(int step){fov+=step;return 1;}
@@ -52,7 +51,7 @@ assert(config_load()==-1&&live&&bearing==65);
 remove(config_path);puts("PASS: 65C02 settings ranges, signs, full disk round trip and LIVE/PAUSE");return 0;}
 ''')
 subprocess.run([sys.argv[1],'-t','sim65c02','-O','-I',str(work),'-I',str(root),
-                '-I',str(root/'common'/'rpc_common'),'-o',str(work/'check'),
+                '-I',str(root/'platform'),'-o',str(work/'check'),
                 str(work/'test.c'),str(root/'files.c'),str(root/'astro.c')],check=True)
 result=subprocess.run([sys.argv[2],'-c',str(work/'check')],cwd=work,text=True,capture_output=True,check=True)
 print(result.stdout);print(result.stderr)

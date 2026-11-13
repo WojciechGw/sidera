@@ -47,4 +47,5 @@ with rp6502.Emu() as emu:
     emu.cmd('wait exit 120')
     emu.cmd('expect exit 0')
 assert (Path('save')/'sidera.cfg').is_file(), 'S must save the configuration'
+assert 'Time 2026-11-12 20:00:00' in (Path('save')/'sidera.cfg').read_text(), 'Monitor argv must preserve /date'
 print('PASS: ROM startup, overlay switching, SAVE configuration and exit')

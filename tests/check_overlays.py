@@ -41,10 +41,9 @@ for number, name in enumerate(NAMES, 1):
     assert len(raw) == 24 + size and 0 < size <= bss <= LIMIT and bss + zeros <= LIMIT
     assert zlib.crc32(raw[24:]) == crc
     assert raw[24:] == (work / f'sidera.linked.bin.{name}').read_bytes()
-for name in ('_rpmt_os_lock', '_rpmt_os_unlock', '_rpmt_yield'):
-    assert rom.data[symbols[name]] == 0x60
 for name in ('_ovl_select', '_ovl_loaded', '_ovl_failed', '_ovl_build_id', '_note',
-             '_observer', '_moment', '_config_save', '_assets_close', '_tz_close'):
+             '_observer', '_moment', '_config_save', '_assets_close', '_tz_close',
+             '_startup', '_location_view', '_platform_ticks', '_platform_vga_ready', '___argv_mem'):
     assert symbols[name] < BASE, name
 assert BASE <= symbols['_solar_draw'] < BASE + LIMIT
 assert BASE <= symbols['_solar_orbit'] < BASE + LIMIT

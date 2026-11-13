@@ -12,6 +12,13 @@ wzorce obrazów, źródłowy BMP oraz lokalną kopię `rpc_common`, `rpmt_bare.c
 `rpmt.h`, `rpmt_os_file.c` i `rpmt_os_dir.c`. Biblioteki sieciowe i system mtRAM
 nie są potrzebne do linkowania SIDERY.
 
+13 listopada 2026 usunięto warstwę zgodności RMT oraz nieużywany kod wspólny.
+Z `rpc_common` zachowano dekoder klawiatury jako `src/platform/key.c` i `key.h`.
+Obsługa RP6502 znajduje się w `src/platform/`, a dawny katalog `src/bare/`
+otrzymał nazwę `src/overlays/`. Manifest pozostaje niezmienionym zapisem
+pierwotnego importu; jego pola docelowe nie są indeksem obecnego drzewa.
+Zakres i weryfikację refaktoryzacji opisuje [raport](rmt-cleanup.md).
+
 Narzędzia w `tools/` pochodzą z RP6502-SDK (`picocomputer/rp6502`). Były już
 pobrane w repozytorium docelowym przed migracją; nie wprowadzono do nich
 własnych zmian. Ich licencję zachowano w [LICENSES/RP6502-SDK.txt](../LICENSES/RP6502-SDK.txt).

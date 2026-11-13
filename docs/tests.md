@@ -2,10 +2,14 @@
 
 `ctest --preset cc65/Debug` i `ctest --preset cc65/Release` uruchamiają:
 
-- `sidera_host_suite`: 22 zachowane testy hosta i sim65 oraz porównanie pikseli
-  sześciu obrazów ze wzorcami (łącznie 23 testy). Obejmują astronomię,
+- `sidera_host_suite`: testy hosta i sim65 oraz porównanie pikseli
+  sześciu obrazów ze wzorcami (łącznie 24 testy). Obejmują astronomię,
   katalogi, strefy czasowe, wschody/zachody, konfigurację, grafikę, podpisy,
   loader i pełną pętlę aplikacji z nakładkami oraz scenariusze błędów.
+  `sidera_platform_6502` sprawdza kod obsługi zegara 125 Hz, przepełnienie
+  16-bitowego licznika, oczekiwanie, wykrywanie VGA, konsolę, bufor argumentów
+  monitora i dekoder klawiatury (sekwencje VT, modyfikatory, Esc i timeout).
+  Rejestry RIA i czas są kontrolowane przez test, kod wykonuje sim65.
 - `sidera_rom`: kontrolę faktycznie zbudowanego ROM-u: tylko rdzeń i wektor
   resetu w pamięci początkowej, pięć nakładek jako zasoby, nagłówki, CRC32,
   wspólny identyfikator, BSS, adresy rezydentne i stos. Ta kontrola jest też
@@ -14,6 +18,8 @@
   losowego wypełnienia RAM. Start z ekranem powitalnym, widok nieba, panel X,
   edycja L, miasta K, zapis S do `SAVE:` i wyjście Q. Sprawdzane są stany
   aplikacji, brak błędu nakładki i obecność zapisanego pliku.
+  Zapisany czas musi odpowiadać opcji `/date`, co dodatkowo sprawdza odbiór
+  argumentów monitora przez rzeczywisty ROM.
 - `sidera_generated_assets`: odtworzenie katalogu, tabel, grafik, miast
   i stref offline oraz porównanie z dostarczonymi plikami. Dla tekstów
   normalizowane są wyłącznie końce wierszy.
@@ -21,6 +27,11 @@
 SDK dodaje dwie pomocnicze fixtures: `rp6502.build` i `rp6502.save`.
 Wszystkie asercje testów pozostają aktywne również w Release.
 Testy nie wysyłają niczego na PICO i nie pobierają danych astronomicznych.
+
+Start aplikacji i testy opcji korzystają ze wspólnego `src/startup.c`
+oraz `src/overlays/boot.c`. Adaptery hosta podstawiają pliki, czas i RIA,
+bez emulowania systemu zadań lub blokad. `SIDERA_OVERLAYS` rozróżnia
+rozmieszczenie kodu w ROM-ie i natywne testy; nie wybiera wariantu systemowego.
 
 ## Obrazy
 

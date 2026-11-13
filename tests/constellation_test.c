@@ -21,7 +21,6 @@ static unsigned pixels,label_calls;
 static int minx,maxx,miny,maxy,lastx;
 static unsigned char drawn[480][640];
 static unsigned named_calls;
-void rpmt_yield(void){}
 int gx_project(const Position *p,int *x,int *y){*x=(int16_t)p->az;*y=p->alt;return *x>=28&&*x<628&&*y>=VIEW_TOP&&*y<VIEW_BOTTOM;}
 void gx_label(int x,int y,const char *p,unsigned char white)
 {
@@ -76,8 +75,6 @@ static void check_labels(void)
 int main(int argc,char **argv)
 {
     int x,y,x1,y1;unsigned i,j,c;Position p;uint16_t edge[2];FILE *f;
-    
-    
     assert(argc==2);f=fopen(argv[1],"rb");assert(f);
     assert(!fseek(f,DATA_EDGES,SEEK_SET));assert(fread(star_xram+XR_EDGES,1,CATALOGUE_RECORD_BYTES,f)==CATALOGUE_RECORD_BYTES);assert(!fseek(f,DATA_META,SEEK_SET));assert(fread(star_xram+XR_META,1,3576,f)==3576);fclose(f);
     bottom=VIEW_BOTTOM-1;

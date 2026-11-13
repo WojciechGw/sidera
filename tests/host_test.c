@@ -20,31 +20,29 @@ uint8_t xram[65536];
 static uint8_t before_clock[65536];
 HostRIA RIA;
 static unsigned ticks;
-static int locked;
-static char solar_asset_path[512];
+static char rom_dir[512];
+static const char *city_file;
+static unsigned char fail_rom_zones;
 static int fail_star_seek;
 static unsigned file_reads;
 static int checking_cities;
 static unsigned char city_allowed[480];
 long host_lseek(int fd,long offset,int whence)
 {
-    if(!locked)return -1; /* A competing task may corrupt an unguarded RIA call. */
     if(fail_star_seek&&offset>=DATA_VECTORS&&offset<DATA_EDGES){fail_star_seek=0;return -1;}
     return _lseek(fd,offset,whence);
 }
-int host_read(int fd,void *p,unsigned n){assert(!locked);++file_reads;return _read(fd,p,n);}
+int host_read(int fd,void *p,unsigned n){++file_reads;return _read(fd,p,n);}
 static unsigned planet_mode;
 static unsigned portal_writes;
 static unsigned vector_reads;
 static unsigned header_writes;
 static int checking_header;
-void rpmt_os_lock(void){assert(!locked);locked=1;}
-void rpmt_os_unlock(void){assert(locked);locked=0;}
-void rpmt_yield(void){++ticks;++RIA.vsync;}
-unsigned rpmt_ticks(void){return ticks;}
+
+unsigned platform_ticks(void){++ticks;++RIA.vsync;return ticks;}
 void xr_write0(unsigned v)
 {
-    assert(locked && RIA.addr0<XR_END);
+    assert(RIA.addr0<XR_END);
     if(checking_cities)assert(RIA.addr0<480*80&&city_allowed[RIA.addr0/80]);
     if(checking_header && RIA.addr0<63*80) {
         assert(xram[XR_SUN_HEADER_CFG]==0xC0&&xram[XR_SUN_HEADER_CFG+1]==0xFF);
@@ -53,16 +51,24 @@ void xr_write0(unsigned v)
     }
     ++portal_writes;xram[RIA.addr0]=(uint8_t)v;RIA.addr0+=RIA.step0;
 }
-unsigned char xr_read0(void){unsigned char v;assert(locked);v=xram[RIA.addr0];RIA.addr0+=RIA.step0;return v;}
-unsigned char xr_read1(void){unsigned char v;assert(locked);v=xram[RIA.addr1];RIA.addr1+=RIA.step1;return v;}
-int rpmt_open(const char *p,int flags){if(!strcmp(p,"ROM:sidera-solar.dat"))p=solar_asset_path;return _open(p,flags|_O_BINARY,_S_IREAD|_S_IWRITE);}
-int rpmt_close(int fd){return _close(fd);}
-void rpmt_con_puts(const char *p){}
-int read_xram(unsigned a,unsigned n,int fd){assert(locked&&a+n<=XR_END);if(a==XR_VECTORS)++vector_reads;return _read(fd,xram+a,n);}
+unsigned char xr_read0(void){unsigned char v;v=xram[RIA.addr0];RIA.addr0+=RIA.step0;return v;}
+unsigned char xr_read1(void){unsigned char v;v=xram[RIA.addr1];RIA.addr1+=RIA.step1;return v;}
+int host_open(const char *p,int flags)
+{
+    char path[1024];
+    if(!strncmp(p,"ROM:",4)) {
+        if(!strcmp(p,"ROM:sidera.tz")&&fail_rom_zones)return -1;
+        if(!strcmp(p,"ROM:sidera.cty")&&city_file)p=city_file;
+        else {sprintf(path,"%s/%s",rom_dir,p+4);p=path;}
+    }
+    return _open(p,flags|_O_BINARY,_S_IREAD|_S_IWRITE);
+}
+int host_close(int fd){return _close(fd);}
+void platform_puts(const char *p){}
+int read_xram(unsigned a,unsigned n,int fd){assert(a+n<=XR_END);if(a==XR_VECTORS)++vector_reads;return _read(fd,xram+a,n);}
 int xreg(int a,int b,int c,...)
 {
     va_list ap;int mode,options,length,plane,top,bottom;unsigned cfg;
-    assert(locked);
     if(c==1) {
         va_start(ap,c);mode=va_arg(ap,int);options=va_arg(ap,int);cfg=va_arg(ap,unsigned);
         if(cfg==XR_BODY_CFG) {
@@ -90,8 +96,8 @@ static int pixel(int x,int y){return !!(xram[y*80+x/8]&(0x80u>>(x&7)));}
 static void gx_scene(void) { gx_scene_begin();while(gx_busy())gx_scene_step(); }
 #include "editor_host.inc"
 /* The full loop test uses a controlled clock; CLI-only tests use east. */
-static void location_view(void){bearing=90;}
-#include "cli_host.inc"
+void location_view(void){bearing=90;}
+static int command_line(int argc,char **argv) { return startup(argc,argv)<0; }
 static void corrected_date(void)
 {
     Date original=moment;unsigned i;
@@ -142,17 +148,17 @@ static void timezone_settings(void)
     assert(config_load()==-1&&!strcmp(zone_name,"Asia/Tokyo")&&observer.latitude==saved.latitude);
     f=fopen(config_path,"wb");assert(f);fprintf(f,"%s\r\n",line);fclose(f);
     assert(tz_set("Europe/Warsaw"));assert(config_load()==-1);remove(config_path);
-    strcpy(original_asset,asset_path);strcpy(asset_path,"missing-zone-folder/sidera.dat");tz_close();
+    strcpy(original_asset,asset_path);strcpy(asset_path,"missing-zone-folder/sidera.dat");tz_close();fail_rom_zones=1;
     gx_clear(0,63);gx_clock();expect_text(38,31,"---- -- -- --:--:-- LOCAL",0);
     for(i=188;i<196;++i)assert(!pixel(i,31));
-    strcpy(asset_path,original_asset);assert(tz_set("Europe/Warsaw"));note[0]=0;
+    fail_rom_zones=0;strcpy(asset_path,original_asset);assert(tz_set("Europe/Warsaw"));note[0]=0;
 }
-static void restore_upper_xram(void)
+static void reload_assets(void)
 {
     constellation_mode=3;cs_begin();while(cs_busy())cs_step();gx_scene();
     memcpy(before_clock,xram,sizeof(xram));
-    memset(xram+0xC000,0,XR_END-0xC000); /* shell only preserves below $C000 */
-    assert(assets_base());cs_forget();cs_begin();while(cs_busy())cs_step();gx_scene();
+    memset(xram+0xC000,0,XR_END-0xC000); /* Simulate lost resource bytes before an explicit reload. */
+    assert(assets_base());cs_begin();while(cs_busy())cs_step();gx_scene();
     assert(!memcmp(before_clock,xram,480*80));
     assert(!memcmp(before_clock+XR_PLANETS,xram+XR_PLANETS,XR_END-XR_PLANETS));
     constellation_mode=0;
@@ -177,7 +183,7 @@ static void catalogue_recovery(void)
 static void catalogue_freshness(void)
 {
     Date saved=moment;Observer place=observer;unsigned char was_live=live;
-    live=1;assert(date_parse("2026-12-31 23:58:00",&moment));cs_forget();
+    live=1;assert(date_parse("2026-12-31 23:58:00",&moment));
     assert(!cs_current());cs_begin();assert(cs_current()&&cs_busy());
     while(cs_busy())cs_step();assert(cs_current());
     assert(date_step(&moment,299)&&cs_current()); /* across midnight and year */
@@ -192,7 +198,7 @@ static void catalogue_freshness(void)
     live=0;assert(cs_current());assert(date_step(&moment,1)&&!cs_current());
     assert(date_parse("1900-01-01 00:00:00",&moment)&&!cs_current());
     assert(date_parse("2200-12-31 23:59:59",&moment)&&!cs_current());
-    moment=saved;live=was_live;cs_forget();assert(!cs_current());
+    moment=saved;live=was_live;assert(!cs_current());
     cs_begin();while(cs_busy())cs_step();
 }
 static void header_layout(void)
@@ -661,7 +667,7 @@ static void city_catalogue(const char *asset,const char *output)
     unsigned modes,i;
     char name[180],config[]="sidera-cities-test.cfg";
     char *args[5];FILE *f;
-    cities_init(asset);
+    city_file=NULL;
     city_incremental();
     assert(cities_lookup("pl"));saved=observer;
     assert(!strcmp(location_name,"Warsaw [PL]"));
@@ -703,7 +709,7 @@ static void city_catalogue(const char *asset,const char *output)
     assert(cities_key(K_ESC)==2);
     assert(!strcmp(location_name,"Sosnowiec [PL]"));
     args[1]="/location";assert(command_line(2,args)==1);
-    cities_init(asset);observer=saved;
+    city_file=NULL;observer=saved;
     assert(cities_start()&&cities_active);modes=planet_mode;
     assert(gx_canvas()&&planet_mode==modes); /* no sprites on the menu */
     cities_draw();assert(!cities_key(K_PGDN));expect_text(28,412,"19 / 345",0);
@@ -732,13 +738,13 @@ static void city_catalogue(const char *asset,const char *output)
     assert(fwrite(xram,1,65536,f)==65536);fclose(f);
     remove(config);
     /* Missing and corrupt catalogues must not alter the observer. */
-    _mkdir("cities-test-bad");cities_init("cities-test-bad/sidera.com");
+    _mkdir("cities-test-bad");city_file="cities-test-bad/sidera.cty";
     assert(!cities_start()&&!cities_active);
     f=fopen("cities-test-bad/sidera.cty","wb");assert(f);
     assert(fwrite("broken",1,6,f)==6);fclose(f);
     assert(!cities_lookup("PL")&&!cities_active&&observer.latitude==chosen.latitude);
     remove("cities-test-bad/sidera.cty");_rmdir("cities-test-bad");
-    cities_init(asset);assert(gx_canvas());
+    city_file=NULL;assert(gx_canvas());
     for(i=XR_END;i<65536;++i)assert(xram[i]==0xA5);
     puts("PASS: Cities CLI/config precedence, ambiguity, paging/search, apply/cancel/save, missing/corrupt files, VGA menu");
 }
@@ -796,7 +802,7 @@ static void reference_views(const char *output)
         assert(bearing==azimuths[i]&&elevation==altitudes[i]&&fov==(i==2?70:160));note[0]=0;
         sky_compute(&moment,&observer,&sky);planets_compute(&moment,&observer,planet_positions);
         rs_sync();while(rs_busy())rs_step();
-        cs_forget();cs_begin();while(cs_busy())cs_step();
+        cs_begin();while(cs_busy())cs_step();
         time=moment;time.hour=time.minute=time.second=0;
         for(n=0;n<TRAIL_COUNT;++n) {
             sky_positions(&time,&observer,&path);gx_write(XR_TRAILS+n*8,&path,8);
@@ -830,10 +836,8 @@ static void reference_views(const char *output)
 int main(int argc,char **argv)
 {
     char buf[160];Observer o;Date d;FILE *f;unsigned i,bit,changes=0,below;int x,y;
-    
-    
     assert(argc==3);
-    strcpy(solar_asset_path,argv[1]);strcpy(strrchr(solar_asset_path,'/')+1,"sidera-solar.dat");
+    strcpy(rom_dir,argv[1]);*strrchr(rom_dir,'/')=0;
     solar_hide();
     /* Shared line renderer preserves Moon dashes and continuous five-pixel
        constellation spacing even after crossing an 8-bit counter boundary. */
@@ -917,7 +921,7 @@ int main(int argc,char **argv)
     grid_modes(argv[2]);
     grid_incremental();
     zoom_projection(argv[2]);
-    restore_upper_xram();
+    reload_assets();
     catalogue_recovery();
     catalogue_freshness();
     staged_scene();
@@ -956,7 +960,9 @@ int main(int argc,char **argv)
     assert(date_parse("2026-11-10 23:00:00",&moment));assert(rs_sync());gx_riseset();
     expect_text(250,53,"Rise ..:.. Set ..:..",0);assert(rs_busy());
     startup_settings(argv[1]);reference_views(argv[2]);
-    assets_close();assert(!locked);
+    assets_close();
     puts("PASS: DMS/UTF-8, date/config round-trip, XRAM bounds, projection, sprite layout, drawing, clock-only update");
     return 0;
 }
+
+unsigned char platform_vga_ready(void){return 1;}

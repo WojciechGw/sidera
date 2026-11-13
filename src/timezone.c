@@ -14,12 +14,12 @@ static int32_t first_day,first_sec,last_day,last_sec,utc_offset;
 
 void tz_close(void)
 {
-    if(zone_fd>=0)rpmt_close(zone_fd);zone_fd=-1;table=0;cached=0;
+    if(zone_fd>=0)close(zone_fd);zone_fd=-1;table=0;cached=0;
 }
 static int fetch(long at,void *to,unsigned size)
 {
     long pos;
-    rpmt_os_lock();pos=lseek(zone_fd,at,SEEK_SET);rpmt_os_unlock();
+    pos=lseek(zone_fd,at,SEEK_SET);
     return pos==at&&read(zone_fd,to,size)==(int)size;
 }
 static int open_zones(void)
@@ -28,9 +28,9 @@ static int open_zones(void)
     if(zone_fd>=0)return 1;
     strcpy(path,asset_path);p=strrchr(path,'/');if(!p)p=strchr(path,':');
     strcpy(p?p+1:path,"sidera.tz");
-    zone_fd=rpmt_open(path,O_RDONLY);
-    if(zone_fd<0)zone_fd=rpmt_open("ROM:sidera.tz",O_RDONLY);
-    if(zone_fd<0)zone_fd=rpmt_open("MSC0:/sidera.tz",O_RDONLY);
+    zone_fd=open(path,O_RDONLY);
+    if(zone_fd<0)zone_fd=open("ROM:sidera.tz",O_RDONLY);
+    if(zone_fd<0)zone_fd=open("MSC0:/sidera.tz",O_RDONLY);
     if(zone_fd<0)return 0;
     if(!fetch(0,record,24)||memcmp(record,"SIDTZ001",8)||record[10]!=48||record[11])goto bad;
     zone_count=record[8]|((unsigned)record[9]<<8);

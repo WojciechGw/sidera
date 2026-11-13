@@ -14,6 +14,3 @@ start=main.index("case 'p':case 'P':")
 case=main[start:main.index('break;',start)+6]
 editor+='\nstatic int planet_key(unsigned k) { unsigned char refresh=0,scene=0; switch(k) {'+case+'} return refresh&&scene; }\n'
 Path(sys.argv[1]).with_name('editor_host.inc').write_text(editor)
-cli=main[main.index('#ifndef SIDERA_OVERLAYS\nstatic void help('):main.index('    if(!assets_open())')]
-cli=cli.replace('int main(int argc,char **argv)','static int command_line(int argc,char **argv)')
-Path(sys.argv[1]).with_name('cli_host.inc').write_text(cli+'    return 0;\n}\n')

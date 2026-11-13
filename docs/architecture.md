@@ -11,26 +11,32 @@ kod, stałe, zainicjalizowane dane i BSS aktywnej nakładki. `$DF00–$DFFF`
 
 | Zasób `ROM:` | Zawartość | Odczyt do okna | BSS | Wolne w 5888 B |
 | --- | --- | ---: | ---: | ---: |
-| `sidera-init.ovl` | Opcje, konfiguracja, otwarcie danych | 4591 B | 0 B | 1297 B |
-| `sidera-cities.ovl` | Wyszukiwanie i wybór miasta | 3653 B | 463 B | 1772 B |
+| `sidera-init.ovl` | Opcje, konfiguracja, otwarcie danych | 4517 B | 0 B | 1371 B |
+| `sidera-cities.ovl` | Wyszukiwanie i wybór miasta | 3579 B | 303 B | 2006 B |
 | `sidera-edit.ovl` | Edycja lokalizacji, daty i strefy | 3106 B | 112 B | 2670 B |
-| `sidera-cover.ovl` | Splash i początkowe zasoby VGA | 846 B | 0 B | 5042 B |
-| `sidera-solar.ovl` | Orbity i panel Układu Słonecznego pod X | 5678 B | 82 B | 128 B |
+| `sidera-cover.ovl` | Splash i początkowe zasoby VGA | 829 B | 0 B | 5059 B |
+| `sidera-solar.ovl` | Orbity i panel Układu Słonecznego pod X | 5672 B | 82 B | 134 B |
 
 Rozmiary po bieżącej kompilacji cc65; każdy zasób ma dodatkowo 24 B nagłówka,
 czytanego poza oknem. Kontrola podczas budowania odrzuca przekroczenie granic.
 
-Kod rezydentny, jego stałe i BSS kończą się na `$B4B1` (adres wyłączny).
-Po odjęciu całego okna pozostaje **10831 B niezajętego RAM** poniżej stosu C:
-4943 B w `$B4B1–$C7FF` i 5888 B w `$E000–$F6FF`.
+Kod rezydentny, jego stałe i BSS kończą się na `$B3F1` (adres wyłączny).
+Po odjęciu całego okna pozostaje **11023 B niezajętego RAM** poniżej stosu C:
+5135 B w `$B3F1–$C7FF` i 5888 B w `$E000–$F6FF`.
 Stos C zachowuje `$F700–$FEFF`, 2048 B. Górny wolny obszar nie jest obecnie
 segmentem linkera ani stertą; wykorzystanie go przez przyszły kod wymaga
 osobnego segmentu i uwzględnienia go w pakowaniu obrazu.
 
 Dla porównywanej oryginalnej kompilacji standalone koniec danych wynosi
-`$D5B1`, a wolna przestrzeń 8527 B. Po dodaniu funkcji X pozostaje **2304 B**
+`$D5B1`, a wolna przestrzeń 8527 B. Po dodaniu funkcji X i usunięciu warstwy RMT pozostaje **2496 B**
 więcej wolnego RAM niż w oryginale, po odjęciu okna, loadera i obsługi panelu.
 Wolne miejsca wewnątrz nakładek nie są dodawane do tego wyniku.
+
+Samodzielna obsługa sprzętu znajduje się w `src/platform/`. Bufor argumentów
+monitora ma 512 B i jest rezydentny. `argv.c` jest bezpośrednim źródłem celu
+`sidera`, aby linker nie zastąpił go domyślną implementacją cc65.
+Pliki nakładek i konfiguracja linkera są w `src/overlays/`; ich układ
+pamięci nie zależy od dawnego systemu RMT.
 
 ## Wywołania i trwałość danych
 

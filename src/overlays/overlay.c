@@ -6,9 +6,7 @@
 #include <unistd.h>
 #include "overlay.h"
 #ifdef SIDERA_OVERLAY_HOST
-#include "rpmt.h"
-#define open rpmt_open
-#define close rpmt_close
+#include "platform.h"
 #endif
 
 extern char note[100];

@@ -76,7 +76,7 @@ Pomoc i instrukcja są też zasobami `ROM:help` oraz `ROM:manual`.
 
 | Katalog | Zawartość |
 | --- | --- |
-| `src/` | Aplikacja, lokalny kod wspólny i platformowy, linker, dane, zasoby |
+| `src/` | Aplikacja, obsługa RP6502 w `platform/`, nakładki i linker w `overlays/`, dane, zasoby |
 | `scripts/` | Generatory, przygotowanie nakładek i adapter testów WSL |
 | `cmake/` | Integracja nakładek i testów ze standardowym SDK |
 | `tests/` | Testy hosta, sim65, całego ROM-u i renderery kontrolne |
@@ -117,6 +117,7 @@ Debug/Release oraz zachowuje artefakty. Nie publikuje strony ani wydań.
 - [Testy, generatory i sześć widoków](docs/tests.md)
 - [Pochodzenie źródeł](docs/provenance.md)
 - [Raport lokalnej weryfikacji](docs/validation.md)
+- [Usunięcie pozostałości RMT i kontrola na PICO](docs/rmt-cleanup.md)
 - [Informacje licencyjne](LICENSE-NOTICE.txt)
 
 Wydzielenie nie nadaje nowej licencji własnemu kodowi autora. Zachowano

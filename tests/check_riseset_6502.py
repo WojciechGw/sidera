@@ -17,7 +17,7 @@ for i in range(count):
     compact.extend(blob[pos:pos+n*12])
 assert len(compact)<65536
 (work/'sidera.tz').write_bytes(compact)
-(work/'rpmt.h').write_text('#include <stdint.h>\nint rpmt_open(const char *,int);\nint rpmt_close(int);\nvoid rpmt_os_lock(void);\nvoid rpmt_os_unlock(void);\n')
+(work/'platform.h').write_text('#include <stdint.h>\n#include <fcntl.h>\n#include <unistd.h>\n')
 (work/'test.c').write_text('''#include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -26,8 +26,6 @@ assert len(compact)<65536
 #include "sidera.h"
 Date moment={2026,11,10,12,0,0};Observer observer={1880272L,756424L,0};
 char asset_path[160]="sidera.dat";
-void rpmt_os_lock(void){} void rpmt_os_unlock(void){}
-int rpmt_open(const char *p,int f){return open(p,f);} int rpmt_close(int f){return close(f);}
 int main(void){unsigned steps=0;char text[40];
 assert(tz_set("Europe/Warsaw"));assert(rs_sync());
 rs_text(0,text);assert(!strcmp(text,"Rise ..:.. Set ..:.."));
@@ -42,7 +40,7 @@ rs_text(1,text);assert(!strcmp(text,"Rise ..:.. Set ..:.."));
 tz_close();printf("PASS: 65C02 rises/sets, %u batches; same-day reuse, date/location/zone cancellation\\n",steps);
 return 0;}
 ''')
-subprocess.run([sys.argv[1],'-t','sim65c02','-O','-I',str(work),'-I',str(root),'-I',str(root/'common'/'rpc_common'),
+subprocess.run([sys.argv[1],'-t','sim65c02','-O','-I',str(work),'-I',str(root),'-I',str(root/'platform'),
                '-o',str(work/'check'),str(work/'test.c'),str(root/'riseset.c'),str(root/'timezone.c'),str(root/'astro.c')],check=True)
 result=subprocess.run([sys.argv[2],'-c',str(work/'check')],cwd=work,text=True,capture_output=True,check=True)
 print(result.stdout);print(result.stderr)

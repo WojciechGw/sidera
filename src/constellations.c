@@ -46,8 +46,6 @@ static Label label; /* Shared XRAM transfer record; drawing is non-reentrant. */
 static int bottom;
 static const char catalogue_error[]="Cannot read star catalogue.";
 
-void cs_forget(void){active=ready=cache_valid=labels_valid=0;next_star=STAR_COUNT;}
-
 void cs_cycle(void) { if(++constellation_mode==5)constellation_mode=0; }
 unsigned char cs_busy(void) { return next_star<STAR_COUNT; }
 unsigned char cs_current(void)
@@ -84,7 +82,6 @@ unsigned char cs_step(void)
     for(n=0;n<count;++n,++next_star) {
         star_position(&frame,vectors[n],&p);
         gx_write((active?XR_STARS0:XR_STARS1)+next_star*4u,&p,4);
-        rpmt_yield();
     }
     if(cs_busy())return 0;
     if(!strcmp(note,catalogue_error))note[0]=0;

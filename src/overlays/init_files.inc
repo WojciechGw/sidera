@@ -1,18 +1,7 @@
 /* Compiled in INIT for the ROM build and in files.c for host checks. */
-void paths_init(const char *argv0)
+void paths_init(void)
 {
-#ifdef RPMT_BARE
-    (void)argv0;
     strcpy(asset_path,"ROM:sidera.dat");
-#else
-    const char *p = strrchr(argv0,'/');
-    unsigned n;
-    if (!p) p = strchr(argv0,':');
-    n = p ? (unsigned)(p-argv0)+1 : 0;
-    if (n < sizeof(asset_path)-12) memcpy(asset_path,argv0,n);
-    else n=0;
-    strcpy(asset_path+n,"sidera.dat");
-#endif
     tz_close();strcpy(zone_name,"Europe/Warsaw");
 }
 #define PARSE_SCOPE
@@ -72,9 +61,9 @@ int config_load(void)
     int fd,n;char *line[5],*values[6],*p;
     unsigned char i,mode;
     Observer parsed;
-    fd=rpmt_open(config_path,O_RDONLY);
+    fd=open(config_path,O_RDONLY);
     if(fd<0)return errno==ENOENT?0:-1;
-    n=read(fd,buffer,CONFIG_BYTES-1);rpmt_close(fd);
+    n=read(fd,buffer,CONFIG_BYTES-1);close(fd);
     if(n<=0||n==(int)CONFIG_BYTES-1)return -1;
     buffer[n]=0;p=buffer;
     for(i=0;i<5;++i){line[i]=p;p=next_line(p);}
@@ -96,9 +85,9 @@ int config_load(void)
 int assets_open(void)
 {
     static const char magic[8]={'S','I','D','E','R','A','5',0};
-    asset_fd=rpmt_open(asset_path,O_RDONLY);
-    if(asset_fd<0)asset_fd=rpmt_open("ROM:sidera.dat",O_RDONLY);
-    if(asset_fd<0)asset_fd=rpmt_open("MSC0:/sidera.dat",O_RDONLY);
+    asset_fd=open(asset_path,O_RDONLY);
+    if(asset_fd<0)asset_fd=open("ROM:sidera.dat",O_RDONLY);
+    if(asset_fd<0)asset_fd=open("MSC0:/sidera.dat",O_RDONLY);
     if(asset_fd<0)return 0;
     if(read(asset_fd,buffer,8)!=8||memcmp(buffer,magic,8)) {assets_close();return 0;}
     return 1;

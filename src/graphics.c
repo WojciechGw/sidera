@@ -42,19 +42,17 @@ int gx_label_damaged(int x,int y,int w)
 void gx_read(unsigned addr,void *data,unsigned char count)
 {
     unsigned char *p=data;
-    rpmt_os_lock();RIA.step1=1;RIA.addr1=addr;
+    RIA.step1=1;RIA.addr1=addr;
     while(count--)*p++=RIA.rw1;
-    rpmt_os_unlock();
 }
 void gx_write(unsigned addr,const void *data,unsigned char count)
 {
     const unsigned char *p=data;
-    rpmt_os_lock();RIA.step0=1;RIA.addr0=addr;
+    RIA.step0=1;RIA.addr0=addr;
     while(count--)RIA.rw0=*p++;
-    rpmt_os_unlock();
 }
 
-/* Portals belong to all tasks. Never leave a read/modify/write unlocked. */
+/* Read/modify/write through the RIA portals. */
 static void put16(unsigned v) { RIA.rw0=(unsigned char)v;RIA.rw0=(unsigned char)(v>>8); }
 void gx_clear(int y,int rows)
 {
@@ -63,9 +61,8 @@ void gx_clear(int y,int rows)
     for(;rows>0;--rows,++y) {
         if(y<0||y>=480)continue;
         a=(unsigned)y*80u;
-        rpmt_os_lock();RIA.step0=1;RIA.addr0=a;
+        RIA.step0=1;RIA.addr0=a;
         for(i=0;i<80;++i)RIA.rw0=0;
-        rpmt_os_unlock();
     }
 }
 void gx_pixel(int x,int y)
@@ -73,8 +70,8 @@ void gx_pixel(int x,int y)
     unsigned a;unsigned char b;
     if(x<0||x>=640||y<0||y>=480)return;
     a=(unsigned)y*80u+(unsigned)x/8;
-    rpmt_os_lock();RIA.step0=0;RIA.addr0=a;b=RIA.rw0;
-    RIA.rw0=b|(0x80u>>(x&7));rpmt_os_unlock();
+    RIA.step0=0;RIA.addr0=a;b=RIA.rw0;
+    RIA.rw0=b|(0x80u>>(x&7));
 }
 void gx_dot(int x,int y)
 {
@@ -87,10 +84,9 @@ void gx_dot(int x,int y)
     a=(unsigned)y*80u+(unsigned)x/8;
     for(row=0;row<4;++row,a+=80) {
         bits=(row==1||row==2)?0x6000u>>shift:0;
-        rpmt_os_lock();RIA.step0=0;
+        RIA.step0=0;
         RIA.addr0=a;v=RIA.rw0;RIA.rw0=(v&~(mask>>8))|(bits>>8);
         RIA.addr0=a+1;v=RIA.rw0;RIA.rw0=(v&~mask)|bits;
-        rpmt_os_unlock();
     }
 }
 void gx_line(int x0,int y0,int x1,int y1,unsigned char dashed)
@@ -119,7 +115,7 @@ static void draw_text(int x,int y,const char *p,unsigned char inverse)
         if(c>=128)c='?';
         if(x>=0 && y>=0 && y<=472) {
             shift=(unsigned char)(x&7);
-            rpmt_os_lock();RIA.step1=1;RIA.addr1=XR_FONT+(unsigned)c*8;
+            RIA.step1=1;RIA.addr1=XR_FONT+(unsigned)c*8;
             RIA.step0=0;
             for(row=0;row<8;++row) {
                 b=RIA.rw1;a=(unsigned)(y+row)*80u+(unsigned)x/8;
@@ -127,7 +123,6 @@ static void draw_text(int x,int y,const char *p,unsigned char inverse)
                 RIA.addr0=a;v=RIA.rw0;RIA.rw0=(v&~(0xFCu>>shift))|(b>>shift);
                 if(shift>2) {RIA.addr0=a+1;v=RIA.rw0;RIA.rw0=(v&~(0xFCu<<(8-shift)))|(b<<(8-shift));}
             }
-            rpmt_os_unlock();
         }
         x+=6;
         if(inverse)--inverse;
@@ -150,14 +145,13 @@ void gx_label(int x,int y,const char *p,unsigned char white)
         first=(unsigned)(x-1)/8;last=(unsigned)(x+w)/8;
         for(row=0;row<10;++row) {
             a=(unsigned)(y-1+row)*80u;
-            rpmt_os_lock();RIA.step0=0;
+            RIA.step0=0;
             for(b=first;b<=last;++b) {
                 mask=255;
                 if(b==first)mask>>=(x-1)&7;
                 if(b==last)mask&=255u<<(7-((x+w)&7));
                 RIA.addr0=a+b;v=RIA.rw0;RIA.rw0=v&~mask;
             }
-            rpmt_os_unlock();
         }
     }
     draw_text(x,y,p,white?255:0);
@@ -199,16 +193,15 @@ int gx_project(const Position *p,int *x,int *y)
 static void header_icons(unsigned char show)
 {
     header_visible=show;
-    rpmt_os_lock();RIA.step0=1;RIA.addr0=XR_SUN_HEADER_CFG;
+    RIA.step0=1;RIA.addr0=XR_SUN_HEADER_CFG;
     put16(show?195:-64);RIA.addr0=XR_MOON_HEADER_CFG+12;put16(show?379:-64);
-    rpmt_os_unlock();
 }
 static void wait_vsync(void)
 {
     unsigned char v=RIA.vsync;
-    unsigned start=rpmt_ticks();
+    unsigned start=platform_ticks();
     /* A disconnected VGA must never hang the application. */
-    while(v==RIA.vsync && (unsigned)(rpmt_ticks()-start)<4)rpmt_yield();
+    while(v==RIA.vsync && (unsigned)(platform_ticks()-start)<4) {}
 }
 int gx_canvas(void)
 {
@@ -216,11 +209,11 @@ int gx_canvas(void)
     unsigned char i;
     header_icons(0);
     status_drawn=255;
-    rpmt_os_lock();RIA.step0=1;RIA.addr0=XR_CFG;
+    RIA.step0=1;RIA.addr0=XR_CFG;
     put16(0);put16(0);put16(0);put16(640);put16(480);put16(0);put16(0xFFFF);
     r=xreg(1,0,0,3);
     if(r>=0)r=xreg(1,0,1,3,0,XR_CFG,0,0,0);
-    if(cities_active){rpmt_os_unlock();return r>=0;}
+    if(cities_active)return r>=0;
     /* Positions are supplied after the next calculation/scene refresh. */
     RIA.addr0=XR_MOON_CFG+12;put16(-64);
     for(i=0;i<=PLANET_COUNT;++i){RIA.addr0=XR_BODY_CFG+i*10;put16(-64);}
@@ -228,11 +221,11 @@ int gx_canvas(void)
     if(r>=0)r=xreg(1,0,1,4,1,XR_MOON_CFG,1,2,VIEW_TOP,VIEW_BOTTOM);
     if(r>=0)r=xreg(1,0,1,5,19,XR_SUN_HEADER_CFG,1,0,0,VIEW_TOP);
     if(r>=0)r=xreg(1,0,1,4,1,XR_MOON_HEADER_CFG,1,1,0,VIEW_TOP);
-    rpmt_os_unlock();return r>=0;
+    return r>=0;
 }
 void gx_console(void)
 {
-    rpmt_os_lock();xreg(1,0,0,0);rpmt_os_unlock();
+    xreg(1,0,0,0);
 }
 int gx_objects(void)
 {
@@ -247,7 +240,7 @@ int gx_objects(void)
     if(!gx_project(&sky.moon,&mx,&my)||solar_hit(mx-16,my-16,32,32))mx=-64;
     c=as_cos(sky.tilt)/64;s=as_sin(sky.tilt)/64;
     wait_vsync();
-    rpmt_os_lock();RIA.step0=1;RIA.addr0=XR_SUN_HEADER_CFG;
+    RIA.step0=1;RIA.addr0=XR_SUN_HEADER_CFG;
     put16(header_visible?195:-64);put16(35);put16(XR_SUN);put16(XR_PAL);
     for(i=0;i<2;++i) {
         RIA.addr0=i?XR_MOON_HEADER_CFG:XR_MOON_CFG;
@@ -257,7 +250,6 @@ int gx_objects(void)
         put16(i?(header_visible?379:-64):mx-16);put16(i?35:my-16);
         put16(moon_image);RIA.rw0=5;RIA.rw0=0;
     }
-    rpmt_os_unlock();
     for(i=0;i<=PLANET_COUNT;++i) {
         /* Equal distances keep catalogue order. The nearest sprite goes last. */
         rank=0;distance=body_distance[i];
@@ -267,12 +259,11 @@ int gx_objects(void)
            (i<PLANET_COUNT&&!planets))sx=-64;
         c=i==PLANET_COUNT?16:4;
         if(solar_hit(sx-c,sy-c,c*2,c*2))sx=-64;
-        rpmt_os_lock();RIA.step0=1;RIA.addr0=XR_BODY_CFG+rank*10;
+        RIA.step0=1;RIA.addr0=XR_BODY_CFG+rank*10;
         put16(sx-c);put16(sy-c);
         put16(i==PLANET_COUNT?XR_SUN:XR_PLANETS+i*PLANET_BYTES);
         put16(i==PLANET_COUNT?XR_PAL:XR_PLANET_PAL+i*512u);
         RIA.rw0=i==PLANET_COUNT?0x77:0x11;RIA.rw0=3; /* 32x32 / 8x8, 8 bpp */
-        rpmt_os_unlock();
     }
     return 1;
 }
@@ -341,9 +332,8 @@ void gx_status(unsigned char busy)
     status_drawn=state;
     /* Clear only the top-right status, including the old LIVE bar. */
     for(row=0;row<9;++row) {
-        rpmt_os_lock();RIA.step0=1;RIA.addr0=(unsigned)row*80+60;
+        RIA.step0=1;RIA.addr0=(unsigned)row*80+60;
         for(i=0;i<20;++i)RIA.rw0=0;
-        rpmt_os_unlock();
     }
     label=live?" LIVE ":playing?"SIM / PLAY":"SIM / PAUSE";
     x=640-(int)strlen(label)*6;
@@ -507,7 +497,7 @@ void gx_scene_begin(void)
 unsigned char gx_busy(void) { return drawing!=0; }
 void gx_scene_step(void)
 {
-    unsigned start=rpmt_ticks();unsigned char n;
+    unsigned start=platform_ticks();unsigned char n;
     /* At most eight small units or two ticks before returning to the keyboard.
      * A single unit (e.g. label placement) always finishes atomically. */
     for(n=0;n<8&&drawing;++n) {
@@ -526,6 +516,6 @@ void gx_scene_step(void)
         case 6:grid_axes();horizon_label();drawing=7;break;
         case 7:gx_planet_labels();drawing=0;break;
         }
-        if((unsigned)(rpmt_ticks()-start)>=2)break;
+        if((unsigned)(platform_ticks()-start)>=2)break;
     }
 }

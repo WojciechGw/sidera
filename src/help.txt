@@ -17,7 +17,7 @@ Additional options:
 /live             Current UTC time; overrides saved simulation
 Defaults < configuration < command line. Last repeated option wins.
 /location selects a local-hour direction unless /view is also given.
-Use /config for complete presets: the shell command limit is 127 bytes.
+Use /config to load and save complete presets.
 
 Keys:
 Arrows           Pan the view

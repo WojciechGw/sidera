@@ -1,9 +1,12 @@
 #ifndef SIDERA_H
 #define SIDERA_H
 #include "astro.h"
-#include "rpmt.h"
+#include "platform.h"
 #include "key.h"
 #include "tables/catalogue.h"
+
+int startup(int argc,char **argv);
+void location_view(void);
 
 extern char zone_name[40];
 int tz_set(const char *name);
@@ -11,11 +14,7 @@ int tz_select(unsigned id);
 int tz_local(const Date *utc,Date *local,int32_t *offset);
 void tz_close(void);
 
-#ifdef RPMT_BARE
-#define rpmt_con_puts rpmt_puts
-#endif
-
-/* Everything VGA reads is in the saved foreground XRAM range. */
+/* XRAM layout for VGA resources and astronomical working data. */
 #define XR_FONT 0x9600u
 #define XR_PAL 0x9A00u
 #define XR_SUN 0x9C00u
@@ -75,7 +74,7 @@ unsigned char rs_step(void);
 void rs_text(unsigned char body,char *text);
 void gx_riseset(void);
 
-void paths_init(const char *argv0);
+void paths_init(void);
 int config_load(void); /* 0 missing, 1 read, -1 invalid/I/O */
 int config_save(void);
 enum { OPT_VIEW=1,OPT_FOV,OPT_GRID,OPT_PATHS,OPT_PLANETS,OPT_CONSTELLATIONS,
@@ -96,7 +95,6 @@ extern unsigned char editing;
 void edit_start(unsigned char type);
 unsigned char edit_key(unsigned k);
 extern unsigned char cities_active;
-void cities_init(const char *argv0);
 int cities_lookup(const char *query);
 int cities_start(void);
 unsigned char cities_key(unsigned k);
@@ -136,6 +134,5 @@ unsigned char cs_current(void);
 void cs_draw_begin(void);
 unsigned char cs_draw_step(void);
 void cs_labels(unsigned char repair);
-void cs_forget(void);
 void cs_cycle(void);
 #endif

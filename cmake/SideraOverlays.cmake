@@ -20,7 +20,7 @@ function(sidera_overlays target)
     endforeach()
     rp6502_asset(${target} help src/help.txt)
     set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/bare/overlay.cfg" "${pack}" "${check}")
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/overlays/overlay.cfg" "${pack}" "${check}")
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${Python3_EXECUTABLE}" -B "${pack}" "${work}"
         BYPRODUCTS ${outputs} "${work}/sidera.lbl"

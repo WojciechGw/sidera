@@ -14,12 +14,13 @@ extern unsigned char ovl_memory[6144];
 #define OVL_HEADER_BYTES 24u
 enum { OVL_NONE, OVL_INIT, OVL_CITIES, OVL_EDIT, OVL_COVER, OVL_SOLAR };
 
-#ifdef SIDERA_OVERLAYS
-extern unsigned char ovl_failed;
 extern const char *boot_location;
 extern int boot_config;
 int boot_prepare(int argc,char **argv);
 void boot_apply(int argc,char **argv);
+
+#ifdef SIDERA_OVERLAYS
+extern unsigned char ovl_failed;
 extern const unsigned char ovl_build_id[8];
 unsigned char ovl_select(unsigned char id);
 unsigned char ovl_loaded(unsigned char id);

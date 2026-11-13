@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "sidera.h"
-#include "bare/overlay.h"
+#include "overlays/overlay.h"
 #ifdef SIDERA_OVERLAYS
 #pragma bss-name ("EDIT_BSS")
 #pragma data-name ("EDIT_DATA")
@@ -23,7 +23,7 @@ extern unsigned char editing;
 #define PARSE_SCOPE static
 #define location_parse edit_location_parse
 #define date_parse edit_date_parse
-#include "bare/parse.inc"
+#include "overlays/parse.inc"
 #undef PARSE_SCOPE
 #endif
 static void edit_draw(void)

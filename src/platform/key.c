@@ -8,32 +8,26 @@
  * PuTTY ESC [ 29 ~, F16, for Shift+F6. All of them are taken.
  *
  * A sequence arrives as one burst, so a byte that does not follow ESC
- * within ESC_TICKS means the ESC was the key itself -- unless it is in the
- * UART already, the shell not yet round to it, another task having held
- * the CPU meanwhile (rpmt_rx_waiting): then the wait starts again, and
- * F10 does not come as ESC [ 2 and "1~" typed. ESC and a digit is
+ * within ESC_TICKS means the ESC was the key itself. ESC and a digit is
  * F1-F10, as in Midnight Commander, for terminals without function keys;
  * ESC and another character is Alt with it; ESC ESC is Esc.
  */
-#include "rpmt.h"
+#include <platform.h>
 #include "key.h"
 
 #define ESC_TICKS 8 /* 64 ms */
 
-int key_byte_within(unsigned char ticks)
+static int key_byte_within(unsigned char ticks)
 {
-    unsigned start = rpmt_ticks();
+    unsigned start = platform_ticks();
     int c;
     for (;;)
     {
-        c = rpmt_getc_nb();
+        c = platform_getc_nb();
         if (c >= 0)
             return c;
-        if (rpmt_rx_waiting())
-            start = rpmt_ticks();
-        else if ((unsigned)(rpmt_ticks() - start) >= ticks)
+        if ((unsigned)(platform_ticks() - start) >= ticks)
             return -1;
-        rpmt_yield();
     }
 }
 
@@ -167,18 +161,7 @@ static unsigned decode(int c)
 
 unsigned key_poll(void)
 {
-    int c = rpmt_getc_nb();
+    int c = platform_getc_nb();
     return c < 0 ? K_NONE : decode(c);
 }
 
-unsigned key_wait(void)
-{
-    unsigned k;
-    for (;;)
-    {
-        k = key_poll();
-        if (k != K_NONE)
-            return k;
-        rpmt_sleep_ticks(1);
-    }
-}

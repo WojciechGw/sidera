@@ -114,12 +114,11 @@ int main(int argc,char **argv) {
 }
 ''')
 subprocess.run([compiler, '-t', 'sim65c02', '-O', '-DSIDERA_OVERLAYS',
-                '-I', str(app / 'bare'), '-C', str(work / 'test.cfg'),
+                '-I', str(app / 'overlays'), '-C', str(work / 'test.cfg'),
                 '-Ln', str(work / 'test.lbl'), '-o', str(work / 'check'),
                 *[str(work / f'{n}.c') for n in ('test', 'loader', 'one', 'two')]], check=True)
 labels = {n: int(a, 16) for a, n in re.findall(r'^al ([0-9A-F]+) \.(\S+)$',
                                              (work / 'test.lbl').read_text(), re.M)}
-
 
 def asset(number, name):
     data = (work / f'check.{name}').read_bytes()
@@ -127,7 +126,6 @@ def asset(number, name):
     zeros = labels[f'__{name.upper()}_BSS_SIZE__']
     return struct.pack('<4sBBHHH8sI', b'SOV1', number, 1, len(data), bss, zeros,
                        bytes(8), zlib.crc32(data)) + data
-
 
 (work / 'sidera-init.ovl').write_bytes(asset(1, 'one'))
 good = asset(2, 'two')

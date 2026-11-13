@@ -48,12 +48,10 @@ int solar_draw(void)
     uint16_t longitude;
     SolarOrbit orbit;
     char stamp[48];
-    fd=rpmt_open("ROM:sidera-solar.dat",O_RDONLY);
+    fd=open("ROM:sidera-solar.dat",O_RDONLY);
     if(fd<0)goto bad;
-    rpmt_os_lock();
     r=read_xram(XR_SOLAR_IMAGES,128,fd)==128&&read_xram(XR_SOLAR_PAL,1024,fd)==1024;
-    rpmt_os_unlock();
-    if(rpmt_close(fd)<0)r=0;
+    if(close(fd)<0)r=0;
     if(!r)goto bad;
     solar_hide();
     memset(row,0,sizeof(row));
@@ -85,7 +83,6 @@ int solar_draw(void)
         src=k<6?XR_PLANETS+(unsigned)k*64:XR_SOLAR_IMAGES+(unsigned)(k-6)*64;
         pal=k<6?XR_PLANET_PAL+(unsigned)k*512:XR_SOLAR_PAL+(unsigned)(k-6)*512;
         sprite(8-i,x-4,y-4,src,pal,0x11);
-        rpmt_yield();
     }
     longitude=moon_longitude(&solar_date);
     solar_moon_x=solar_labels[2].x+coordinate(as_cos(longitude),8)-1;
