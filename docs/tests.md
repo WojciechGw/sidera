@@ -136,9 +136,8 @@ ctest --test-dir build/cc65/debug/host-native -C Debug -R sidera_timezone --outp
 ```
 
 CTest logs are in `Testing/Temporary/` within the main and native build
-directories. Do not mix Windows and WSL directories. The time-zone test copies
-its data file to a native temporary directory so that hundreds of thousands of
-small reads do not cross the Windows drive mount in WSL.
+directories. Native tests use MSVC on Windows. The time-zone test copies
+its data file into an isolated temporary directory for its file-read checks.
 
 When debugging, remember that all six overlays share execution addresses.
 Some symbols may be ambiguous, and a breakpoint at an overlay address refers

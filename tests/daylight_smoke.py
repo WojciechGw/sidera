@@ -1,17 +1,6 @@
 """Exercise actual-ROM daylight transitions without a full chart redraw."""
-from pathlib import Path
-import os
-import shlex
-import sys
 import rp6502
 
-emulator = Path(os.environ['RP6502_EMU'])
-if sys.platform == 'linux' and emulator.read_bytes()[:2] == b'MZ':
-    wrapper = Path('emu-wsl.sh').resolve()
-    bridge = Path(__file__).resolve().parents[1]/'scripts/emu_wsl.py'
-    wrapper.write_text('#!/bin/sh\nexec '+shlex.join([sys.executable,str(bridge),str(emulator)])+' "$@"\n')
-    wrapper.chmod(0o755)
-    os.environ['RP6502_EMU'] = str(wrapper)
 
 with rp6502.Emu() as emu:
     def chart():

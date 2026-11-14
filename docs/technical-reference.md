@@ -408,9 +408,9 @@ buffer and validates fields before applying the configuration.
 ## Building and validating changes
 
 The build requires CMake 3.28+, Ninja, Python 3.12+, Git and a cc65 installation
-with RP6502 support, including sim65. Native tests additionally need MSVC on
-Windows or GCC on Linux. See the [README](../README.md) for environment setup,
-WSL build directories and device launch instructions.
+with RP6502 support, including sim65. Builds require Windows; native tests
+additionally need MSVC.
+See the [README](../README.md) for environment setup and device launch instructions.
 
 From the repository root:
 

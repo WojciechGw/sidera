@@ -49,7 +49,8 @@ SHA-256 after refactoring:
 
 ## Automated validation
 
-Final results from 13 November 2026:
+Final results from 13 November 2026 (historical; Linux/WSL build support was
+removed on 14 November 2026):
 
 | Environment | Debug | Release |
 | --- | --- | --- |
@@ -58,7 +59,7 @@ Final results from 13 November 2026:
 
 Each run includes 24 host/sim65/image tests, plus ROM validation, a test in the
 actual emulator and asset reproduction: 27 tests and two SDK fixtures.
-WSL runs the Windows emulator through the existing project adapter; this is
+WSL ran the Windows emulator through the adapter available at that time; this was
 neither a native Linux emulator test nor a PICO hardware test.
 
 Six reference images match their baselines pixel for pixel. Screenshots of the

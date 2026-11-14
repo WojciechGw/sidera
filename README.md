@@ -10,11 +10,10 @@ Picocomputer 6502. See the [hardware validation record](docs/rmt-cleanup.md#phys
 
 ## Requirements
 
-- CMake 3.28+, Ninja, Python 3.12+, Git.
+- Windows with PowerShell, CMake 3.28+, Ninja, Python 3.12+, Git.
 - A current cc65 version with RP6502 support, including `cl65`, `ca65`, `ld65`, `ar65`, `sim65`.
   Follow the [SDK installation instructions](https://picocomputer.github.io/sdk.html#installing-the-prerequisites).
-- For host tests: on Windows, Visual Studio 2022 Build Tools with C++ and the Windows SDK;
-  on Linux, GCC and Make (`build-essential` on Ubuntu).
+- For host tests: Visual Studio 2022 Build Tools with C++ and the Windows SDK.
 
 Tests and generators use the Python standard library. Reference data, source
 artwork and the pinned tzdata package are stored locally. The first SDK configure
@@ -23,7 +22,7 @@ The WEB emulator is not downloaded.
 
 ## Building and testing
 
-From the project directory, in PowerShell or a Linux shell:
+From the project directory, in PowerShell:
 
 ```text
 cmake --preset cc65/Debug
@@ -45,18 +44,6 @@ Both presets retain the original `-O` optimization, since overlay sizes are part
 of the architecture. Debug uses `-g`, Release uses `-DNDEBUG`; the SDK also provides
 debugger information for Release outputs. Native test assertions remain enabled
 in both configurations.
-
-Windows and WSL must use separate output directories. In WSL, for the same checkout:
-
-```text
-cmake --preset cc65/Debug -B build/linux/cc65/debug
-cmake --build build/linux/cc65/debug
-ctest --test-dir build/linux/cc65/debug --output-on-failure
-```
-
-For Release, use the `cc65/Release` preset and `build/linux/cc65/release` directory.
-In WSL, the SDK selects the Windows emulator; the test uses the project's path
-adapter, `scripts/emu_wsl.py`. On native Linux, the SDK selects the Linux emulator.
 
 ## Running
 
@@ -80,7 +67,7 @@ Help and the manual are also available as `ROM:help` and `ROM:manual` resources.
 | Directory | Contents |
 | --- | --- |
 | `src/` | Application, RP6502 support in `platform/`, overlays and linker configuration in `overlays/`, data and resources |
-| `scripts/` | Generators, overlay packing and the WSL test adapter |
+| `scripts/` | Generators and overlay packing |
 | `cmake/` | Overlay and test integration with the standard SDK |
 | `tests/` | Host, sim65 and complete-ROM tests, plus reference renderers |
 | `tools/` | Tools supplied and updated by the SDK |
@@ -112,7 +99,7 @@ WEB is disabled: there is no `rp6502_web()` call, package or active configuratio
 The original files are retained as `.github/workflows/web.yml.disabled` and
 `.vscode/launch-web.json.disabled`. Do not restore their active filenames without
 a separate decision to enable WEB. The `ci.yml` workflow builds and tests
-Windows/Linux × Debug/Release and retains artifacts. It does not publish a site
+the Debug and Release configurations on Windows and retains artifacts. It does not publish a site
 or releases.
 
 ## Documentation and licenses

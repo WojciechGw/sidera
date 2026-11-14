@@ -1,13 +1,8 @@
 """Exercise the CITIES locator in the actual ROM at 8 MHz."""
-import json,os,shlex,sys,struct,zlib
+import json,struct,zlib
 from pathlib import Path
 import rp6502
 root=Path(__file__).resolve().parents[1]
-emulator=Path(os.environ['RP6502_EMU'])
-if sys.platform=='linux' and emulator.read_bytes()[:2]==b'MZ':
-    wrapper=Path('emu-wsl.sh').resolve()
-    wrapper.write_text('#!/bin/sh\nexec '+shlex.join([sys.executable,str(root/'scripts/emu_wsl.py'),str(emulator)])+' "$@"\n')
-    wrapper.chmod(0o755);os.environ['RP6502_EMU']=str(wrapper)
 catalogue=json.loads((root/'src/data/cities.json').read_text())['cities']
 raw=(root/'src/rom/sidera.map').read_bytes()
 city_data=(root/'src/rom/sidera.cty').read_bytes()

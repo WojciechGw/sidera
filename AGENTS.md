@@ -156,8 +156,9 @@ ctest --preset cc65/Debug
 
 Use `cc65/Release` for Release. ROM output is
 `build/cc65/<debug|release>/sidera/sidera.rp6502`. Both presets use `-O`.
-Windows host tests use MSVC; Linux uses GCC. Keep Windows and WSL build directories
-separate; the [README](README.md) gives WSL commands and emulator path handling.
+Builds and tests require Windows; native host tests use MSVC. CI runs Windows
+Debug and Release. Linux/WSL build support was removed on 14 November 2026;
+retain earlier validation results as historical evidence, not current instructions.
 In PowerShell, read UTF-8 documentation with `Get-Content -Encoding utf8`.
 
 - Documentation only: check meaning, relative links and `git diff --check`.

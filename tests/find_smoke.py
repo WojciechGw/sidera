@@ -1,18 +1,9 @@
 """Run FIND in the shipped ROM at 8 MHz, across overlay swaps and simulation."""
 import json
-import os
 from pathlib import Path
-import shlex
-import sys
 import rp6502
 
 root = Path(__file__).resolve().parents[1]
-emulator = Path(os.environ['RP6502_EMU'])
-if sys.platform == 'linux' and emulator.read_bytes()[:2] == b'MZ':
-    wrapper = Path('emu-wsl.sh').resolve()
-    wrapper.write_text('#!/bin/sh\nexec '+shlex.join([sys.executable,str(root/'scripts/emu_wsl.py'),str(emulator)])+' "$@"\n')
-    wrapper.chmod(0o755)
-    os.environ['RP6502_EMU'] = str(wrapper)
 catalogue = json.loads((root/'src/data/constellations.json').read_text(encoding='utf8'))
 stars = catalogue['stars']
 sirius = 8+next(i for i,s in enumerate(stars) if s[0]==32349)

@@ -41,7 +41,6 @@ with zipfile.ZipFile(root/'data/tzdata-2026.6-py2.py3-none-any.whl') as wheel:
             local=utc.astimezone(zone)
             expected.append(f'{int(local.utcoffset().total_seconds())} {local:%Y-%m-%d %H:%M:%S}')
 # Keep the many small, real file reads on the native temporary filesystem.
-# In WSL the checkout may be on a mounted Windows drive.
 with tempfile.TemporaryDirectory(prefix='sidera-timezones-') as directory:
     shutil.copyfile(root/'rom/sidera.tz',Path(directory)/'sidera.tz')
     result=subprocess.run([sys.argv[1],directory],input=''.join(cases),text=True,capture_output=True,check=True)

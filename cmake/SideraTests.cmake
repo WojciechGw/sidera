@@ -1,16 +1,11 @@
 # Native host tests use their own compiler, never the cc65 toolchain.
 include(ExternalProject)
-if(CMAKE_HOST_WIN32)
-    set(SIDERA_HOST_GENERATOR "Visual Studio 17 2022" CACHE STRING "Native test CMake generator")
-    set(host_platform CMAKE_GENERATOR_PLATFORM x64)
-else()
-    set(SIDERA_HOST_GENERATOR "Ninja" CACHE STRING "Native test CMake generator")
-endif()
+set(SIDERA_HOST_GENERATOR "Visual Studio 17 2022" CACHE STRING "Native test CMake generator")
 ExternalProject_Add(sidera_host_tests
     SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests"
     BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/host-native"
     CMAKE_GENERATOR "${SIDERA_HOST_GENERATOR}"
-    ${host_platform}
+    CMAKE_GENERATOR_PLATFORM x64
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DSIDERA_PAYLOAD_DIR=${CMAKE_CURRENT_BINARY_DIR}/sidera
         -DPython3_EXECUTABLE=${Python3_EXECUTABLE}

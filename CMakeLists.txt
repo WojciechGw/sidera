@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.28)
 
+if(NOT CMAKE_HOST_WIN32)
+    message(FATAL_ERROR "SIDERA builds require a Windows host.")
+endif()
+
 include(${CMAKE_CURRENT_LIST_DIR}/tools/rp6502.cmake)
 
 project(SIDERA C ASM)

@@ -13,22 +13,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, ubuntu-24.04]
         configuration: [Debug, Release]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install cc65 using the SDK installer (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/picocomputer/.github/main/install/cc65.sh | sh
-          echo "$HOME/.rp6502/cc65/bin" >> "$GITHUB_PATH"
       - name: Install cc65 using the SDK installer (Windows)
-        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           irm https://raw.githubusercontent.com/picocomputer/.github/main/install/cc65.ps1 | iex
@@ -43,7 +35,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sidera-${{ matrix.os }}-${{ matrix.configuration }}
+          name: sidera-windows-2022-${{ matrix.configuration }}
           path: |
             build/cc65/*/sidera/sidera*
             build/cc65/*/host-native/views/

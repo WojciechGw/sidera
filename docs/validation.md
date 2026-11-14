@@ -2,6 +2,8 @@
 
 This report documents the state on 12 November 2026. Results after removing the
 RMT layer are described in the [refactoring report](rmt-cleanup.md).
+Linux/WSL build support and local build outputs were removed on 14 November 2026.
+The results below are historical; current build instructions are in the [README](../README.md).
 
 Local validation: 12 November 2026, Windows and Ubuntu 24.04 in WSL 2.
 Compiler on both systems: cc65 V2.19, Git `6fd2669`. In WSL, it was installed using
@@ -21,10 +23,10 @@ After extending emulator checks, all four configurations were tested again:
 completion of rise/set calculations, the X panel, L editing, opening/closing
 K cities, S saving and Q exit.
 
-WSL builds and runs host and sim65 tests as Linux programs. Following the SDK's
-selection, it uses the Windows emulator through interop; the project's adapter
-translates filesystem paths. The native Linux emulator is intended for the
-Ubuntu CI job. The GitHub Actions workflow was prepared but had not been run on
+WSL built and ran host and sim65 tests as Linux programs. Following the SDK's
+selection, it used the Windows emulator through interop; the then-existing adapter
+translated filesystem paths. At that time, the native Linux emulator was intended
+for the Ubuntu CI job. The GitHub Actions workflow was prepared but had not been run on
 GitHub; nothing was pushed or published.
 
 ## Results
@@ -36,7 +38,6 @@ All four ROMs are byte-for-byte identical, at **1 226 243 B**, with SHA-256:
 ```
 
 Windows Release: `build/cc65/release/sidera/sidera.rp6502`.
-WSL outputs are in `build/linux/cc65/<debug|release>/sidera/`.
 Standard SDK packing preserves the core at `$0200`, reset at `$0200`, five named
 overlay resources, their build identifier and CRC32.
 

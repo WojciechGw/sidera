@@ -1,17 +1,8 @@
 """Check early panels in the actual ROM with a saved, full-detail preset."""
 from pathlib import Path
-import os
-import shlex
-import sys
 import rp6502
 
 root = Path(__file__).resolve().parents[1]
-emulator = Path(os.environ['RP6502_EMU'])
-if sys.platform == 'linux' and emulator.read_bytes()[:2] == b'MZ':
-    wrapper = Path('emu-wsl.sh').resolve()
-    wrapper.write_text('#!/bin/sh\nexec '+shlex.join([sys.executable,str(root/'scripts/emu_wsl.py'),str(emulator)])+' "$@"\n')
-    wrapper.chmod(0o755)
-    os.environ['RP6502_EMU'] = str(wrapper)
 Path('save').mkdir(exist_ok=True)
 Path('save/startup.cfg').write_bytes((root/'src/assets/sidera-testC.cfg').read_bytes())
 
