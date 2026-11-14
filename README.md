@@ -126,10 +126,34 @@ the top-level CMake file; review the diff and run tests after updating.
 Keep the WEB launch directory and stable port when reviewing SDK updates.
 `rp6502_web()` packages SIDERA with player 0.43. The `ci.yml` workflow builds and
 tests Debug and Release on Windows and retains the ROM and WEB ZIP artifacts.
-The historical publishing template remains `.github/workflows/web.yml.disabled`;
-it is not part of the supported Windows build workflow. No workflow publishes
-a site or releases. To host WEB, serve the contents of the generated ZIP over
-HTTP(S), together with the matching source distribution required by GPLv3.
+The separate [Build and deploy web player](.github/workflows/web.yml) workflow
+builds and tests Release on Windows, including the Chromium smoke test. It stages
+only SIDERA using `scripts/package_pages.py`; an Ubuntu job uploads these static
+files to Pages. Ubuntu does not build the application. The player is served at
+`https://wojciechgw.github.io/sidera/sidera/`; the site root redirects there.
+The published folder includes `screenshot.png` for the README and `source.zip`
+from the exact checkout used to build the ROM, linked in the player's footer.
+
+### Enable GitHub Pages
+
+1. Commit and push `.github/workflows/web.yml`, `scripts/package_pages.py` and
+   the accompanying documentation changes to `main`.
+2. Open the repository's **Settings > Pages > Build and deployment** and set
+   **Source** to **GitHub Actions**. Skip the offered starter workflows; this
+   repository already supplies one. Do not select **Deploy from a branch**.
+3. Under **Actions**, select **Build and deploy web player**, click **Run workflow**,
+   select **main**, and run it. If the first automatic run reached deployment
+   before Pages was enabled, rerun it after changing the setting.
+4. Wait for both `build` and `deploy` to succeed. The `github-pages` environment
+   and the deployment job show the site URL; append `sidera/` for the player.
+
+Subsequent pushes to `main` publish automatically. Manual runs on other branches
+are skipped. The workflow uses `GITHUB_TOKEN` with Pages/OIDC permissions; no
+personal access token or custom secret is needed. If repository policies restrict
+Actions or deployment branches, allow the actions used by this workflow and
+`main` in the `github-pages` environment. The deployment explicitly rejects a
+branch-based Pages source, preventing a separate Jekyll build from replacing it.
+See [GitHub's Pages setup instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
 
 ## Documentation and licenses
 

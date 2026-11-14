@@ -1,0 +1,87 @@
+name: Build and deploy web player
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install cc65 using the SDK installer (Windows)
+        shell: pwsh
+        run: |
+          irm https://raw.githubusercontent.com/picocomputer/.github/main/install/cc65.ps1 | iex
+          "$env:USERPROFILE/.rp6502/cc65/bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Configure Release
+        run: cmake --preset cc65/Release
+      - name: Build Release
+        run: cmake --build --preset cc65/Release
+      - name: Test Release
+        run: ctest --preset cc65/Release
+      - name: Install browser test tools
+        run: |
+          python -m pip install playwright==1.65.2
+          python -m playwright install chromium
+      - name: Test WEB in Chromium
+        timeout-minutes: 5
+        run: python tests/web_smoke.py build/cc65/release
+      - name: Prepare Pages with matching sources and preview
+        run: python scripts/package_pages.py build/cc65/release build/pages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pages-site
+          path: build/pages/
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Require GitHub Actions as the Pages source
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const { data } = await github.rest.repos.getPages({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              if (data.build_type !== 'workflow') {
+                core.setFailed('Settings > Pages > Build and deployment > Source must be GitHub Actions.');
+              }
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              core.setFailed('Enable Pages in Settings > Pages and select GitHub Actions as the source, then rerun this workflow.');
+            }
+      - uses: actions/configure-pages@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: pages-site
+          path: site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
+        id: deployment

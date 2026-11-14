@@ -22,8 +22,11 @@
   active-code names were removed. Preserve historical provenance and attribution.
 - WEB uses SDK player 0.43 and the same ROM through `rp6502_web()`; builds produce
   `web/sidera.zip` and `web/sidera/`. F5 serves the latter on `127.0.0.1:8000`;
-  keep the origin stable for IndexedDB saves (`SAVE:/sidera.cfg`). The disabled
-  WEB publishing workflow is a historical SDK template, not an active deployment.
+  keep the origin stable for IndexedDB saves (`SAVE:/sidera.cfg`). `web.yml` builds
+  and tests Release on Windows, then deploys Pages after pushes to `main` or a
+  manual run on `main`. Ubuntu only uploads/deploys the prepared static files.
+  `scripts/package_pages.py` stages the player at `sidera/`, a browser preview
+  and a source ZIP from the same checkout. Pages must use GitHub Actions as source.
 - Original project code and documentation use **GPL-3.0-only**.
   Copyright (c) 2026 Wojciech Gwioździk (WojciechGw).
   Third-party materials retain their own terms: see [LICENSE](LICENSE) and

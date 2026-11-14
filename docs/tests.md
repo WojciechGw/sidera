@@ -141,6 +141,21 @@ GitHub Actions workflow were not rerun for this packaging change.
 
 ## Other validation tools
 
+`scripts/package_pages.py build/cc65/release build/pages` prepares the GitHub
+Pages artifact after a Release build and browser smoke test. Use an empty output
+directory. It publishes only the SIDERA player, the browser's SOLAR preview and
+a `git archive HEAD` source ZIP, with a source link in the player footer and a
+root redirect to `sidera/`. For deployment, run from the clean checkout that
+produced the ROM; local uncommitted changes are not included in the source ZIP.
+
+Local Pages validation on 14 November 2026: Release build and the ROM, EMU and
+WEB-package checks passed (three checks plus two SDK fixtures). The staged file
+set, ROM equality, source archive commit and license files were checked. Chromium
+confirmed the root redirect, player startup, visible source link and successful
+source/preview downloads. The workflow YAML was parsed and its triggers, job
+dependency and permissions checked. Remote Actions execution and deployment
+still require pushing the workflow and enabling Pages in the repository settings.
+
 `tests/benchmark_simulation.py` is an optional real-ROM measurement tool, separate
 from the pass/fail suite. It samples emulated frames without modifying application
 memory. Reproduction commands and results are in
