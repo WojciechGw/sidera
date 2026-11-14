@@ -31,14 +31,23 @@ jobs:
         run: cmake --build --preset cc65/${{ matrix.configuration }}
       - name: Test
         run: ctest --preset cc65/${{ matrix.configuration }}
-      - name: Keep ROM, symbols, reports and reference views
+      - name: Install browser test tools
+        run: |
+          python -m pip install playwright==1.65.2
+          python -m playwright install chromium
+      - name: Test WEB in Chromium
+        timeout-minutes: 5
+        run: python tests/web_smoke.py build/cc65/${{ matrix.configuration }}
+      - name: Keep ROM, WEB package, symbols, reports and reference views
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sidera-windows-2022-${{ matrix.configuration }}
           path: |
             build/cc65/*/sidera/sidera*
+            build/cc65/*/web/sidera.zip
             build/cc65/*/host-native/views/
             build/cc65/*/test/sidera_emu/*.png
+            build/cc65/*/test/sidera_web/
             build/cc65/*/Testing/Temporary/
             build/cc65/*/host-native/Testing/Temporary/

@@ -12,6 +12,7 @@ if(NOT CMAKE_C_COMPILER_ID STREQUAL "cc65")
 endif()
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set(RP6502_EMU_VERSION 0.43)
+set(RP6502_WEB_VERSION 0.43)
 
 add_library(sidera_platform STATIC
     src/platform/rp6502.c src/platform/key.c)
@@ -32,8 +33,12 @@ target_link_options(sidera PRIVATE
 include(cmake/SideraOverlays.cmake)
 sidera_overlays(sidera)
 
-# WEB is deliberately inactive. Its SDK/template files remain available.
-# No rp6502_web() call: no WEB download, package, or launch target.
+rp6502_web(sidera CONFIG "
+    title: 'SIDERA - The Celestial Observatory',
+    db: 'wojciechgw-sidera',
+    autoplay: 'muted',
+    args: ['/config', 'SAVE:/sidera.cfg']
+")
 add_custom_target(sidera_assets
     COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/scripts/regenerate.py"
         --output "${CMAKE_CURRENT_BINARY_DIR}/generated"

@@ -27,6 +27,12 @@ plot follows when its data is ready.
 Wait for Working... to disappear before judging a fully calculated view.
 Use Q to return to the monitor. The computer clock supplies LIVE time.
 
+RP6502-WEB runs the same ROM in a desktop browser with WebAssembly and WebGL2.
+Open the served WEB page and click the emulator to focus the keyboard. The
+controls below also apply in the browser. S stores settings in browser storage;
+return to the same site in the same browser profile to restore them. Clearing
+site data removes saves. After loading, calculations need no network connection.
+
 Without saved settings, the observer is Warsaw [PL], 113 m AMSL. FOV is 120
 degrees, the view centre is 24 degrees above the horizon, and G/T/C/P are off.
 The initial direction follows the current local hour: E at 04:00-09:59,

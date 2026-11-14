@@ -47,6 +47,9 @@
   vector in initial memory, six overlays as resources, headers, CRC32, the shared build
   identifier, BSS, resident addresses and the stack. This check is also a required
   packing step.
+- `sidera_web_package`: checks the WEB ZIP's integrity and complete file set,
+  byte equality with the served directory, current ROM and configured SDK player,
+  and the WebAssembly header. This packaging check does not execute a browser.
 - `sidera_emu`: runs the actual ROM in RP6502-EMU with a fixed date and a fixed seed
   for random RAM initialization. It exercises startup with the splash screen,
   the sky view, physical LCtrl-only FOV, Shift+arrow directions, retired H keys,
@@ -99,6 +102,44 @@
 The SDK adds two helper fixtures: `rp6502.build` and `rp6502.save`.
 All test assertions remain enabled in Release as well.
 Tests do not upload anything to PICO or download astronomical data.
+
+## WEB browser smoke test
+
+CI additionally runs `tests/web_smoke.py` for Debug and Release in headless
+Chromium. It serves the generated WEB directory on localhost in an isolated
+browser context, exercises startup, physical left/right Ctrl, saves through S
+to IndexedDB and verifies restoration after reloading the page. It captures
+sky, CITIES, FIND, SOLAR and restored-view screenshots for visual review;
+these screenshots are not automatic pixel comparisons. Browser exceptions and
+console errors fail the check. This test is separate from the standard CTest
+suite so native development does not require a browser installation.
+
+To reproduce from PowerShell after a build:
+
+```text
+python -m pip install --target build/web-test-tools playwright==1.65.2
+$env:PYTHONPATH = "$PWD/build/web-test-tools"
+$env:PLAYWRIGHT_BROWSERS_PATH = "$PWD/build/web-browsers"
+python -m playwright install chromium
+python tests/web_smoke.py build/cc65/release
+```
+
+The browser download requires network access. Reports and screenshots go to
+`build/cc65/<debug|release>/test/sidera_web/`. The test uses a temporary browser
+profile and does not access the user's normal WEB settings. Firefox, Safari,
+mobile browsers and VS Code's F5 integration are not covered by this test.
+
+Local WEB validation on 14 November 2026: Windows Debug and Release configure
+and build passed, as did `ctest --preset cc65/<configuration> -R
+"^sidera_(rom|emu|web_package)$"` (three checks plus two SDK fixtures per preset).
+The browser smoke test passed in Chromium 159.0.8154.6 for both builds, including
+FOV 120 to 110 with left Ctrl, unchanged FOV with right Ctrl and restoration of
+110 after reload. CITIES, FIND and SOLAR screenshots were reviewed. The ROM
+packing checks reported 1843 resident bytes unallocated below the C stack and
+134 bytes spare in SOLAR. The full CTest suite, physical PICO and the hosted
+GitHub Actions workflow were not rerun for this packaging change.
+
+## Other validation tools
 
 `tests/benchmark_simulation.py` is an optional real-ROM measurement tool, separate
 from the pass/fail suite. It samples emulated frames without modifying application

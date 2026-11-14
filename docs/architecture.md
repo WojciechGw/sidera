@@ -1,6 +1,6 @@
 # SIDERA architecture
 
-A standalone ROM for RP6502-PICO and RP6502-EMU. [Building](../README.md).
+A standalone ROM for RP6502-PICO, RP6502-EMU and RP6502-WEB. [Building](../README.md).
 
 ## Memory window and layout
 

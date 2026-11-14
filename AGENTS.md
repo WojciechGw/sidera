@@ -16,11 +16,14 @@
 
 ## Established decisions
 
-- SIDERA is an offline sky observatory for **RP6502-PICO and RP6502-EMU**, built
+- SIDERA is an offline sky observatory for **RP6502-PICO, RP6502-EMU and RP6502-WEB**, built
   with cc65 and RP6502-SDK into one `sidera.rp6502` containing code and resources.
 - Only standalone operation is supported. RMT/razemOS compatibility and obsolete
   active-code names were removed. Preserve historical provenance and attribution.
-- WEB support is disabled; files ending in `.disabled` are retained SDK templates.
+- WEB uses SDK player 0.43 and the same ROM through `rp6502_web()`; builds produce
+  `web/sidera.zip` and `web/sidera/`. F5 serves the latter on `127.0.0.1:8000`;
+  keep the origin stable for IndexedDB saves (`SAVE:/sidera.cfg`). The disabled
+  WEB publishing workflow is a historical SDK template, not an active deployment.
 - Original project code and documentation use **GPL-3.0-only**.
   Copyright (c) 2026 Wojciech Gwioździk (WojciechGw).
   Third-party materials retain their own terms: see [LICENSE](LICENSE) and
@@ -168,6 +171,9 @@ In PowerShell, read UTF-8 documentation with `Get-Content -Encoding utf8`.
 - ROM resources, packaging or overlays: build and run
   `ctest --preset cc65/Release -R "^sidera_(rom|emu)$"` (or the matching Debug preset).
   Inspect memory headroom when code or layout changes.
+- WEB packaging/launch changes: also run `sidera_web_package` and the separate
+  Chromium smoke test in `tests/web_smoke.py`; setup and coverage are in
+  [the test guide](docs/tests.md#web-browser-smoke-test). CI runs it for both presets.
 - Graphics changes: include the six reference-image checks in `sidera_host_suite`.
   Review intended visual differences before replacing reference images.
 - Generator or source-data changes: run

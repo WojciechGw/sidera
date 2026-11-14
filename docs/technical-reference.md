@@ -7,7 +7,7 @@ For controls and command-line options, see the
 
 ## Application and target
 
-SIDERA is an offline sky observatory for RP6502-PICO and RP6502-EMU, written in C
+SIDERA is an offline sky observatory for RP6502-PICO, RP6502-EMU and RP6502-WEB, written in C
 and compiled with cc65. It displays the Sun, Moon, six planets and stars from all
 88 constellations on a 640 × 480 VGA display. Users can change the observing
 location, explore dates from 1900 through 2200, animate time, display daily paths
@@ -15,8 +15,14 @@ and inspect local rise/set times. A separate panel shows a schematic Solar Syste
 
 The deliverable is one `sidera.rp6502` file containing resident code, six code
 overlays and the data resources. All astronomical calculations run on the 6502;
-the application needs no network service. The RP6502 interface supplies console,
-clock, filesystem and VGA access. The supported execution model is standalone.
+the application needs no network service.
+
+WEB wraps this same ROM with SDK player 0.43 in `web/sidera.zip`; there is no
+separate C compilation or application platform layer for the browser. Its
+`/config SAVE:/sidera.cfg` uses the player's `wojciechgw-sidera` IndexedDB database,
+scoped to the page origin. The local launcher uses a fixed port for stable saves.
+The RP6502 interface supplies console, clock, filesystem and VGA access.
+The supported execution model is standalone.
 
 ## Source map
 

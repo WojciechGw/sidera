@@ -32,5 +32,28 @@
                 "${command:cmake.launchTargetPath}.rp6502"
             ],
         },
+        {
+            "name": "RP6502-WEB",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "internalConsole",
+            "module": "http.server",
+            "args": [
+                "--bind",
+                "127.0.0.1",
+                "--directory",
+                "${command:cmake.buildDirectory}/web/sidera",
+                "8000"
+            ],
+            "env": {
+                "PYTHONUNBUFFERED": "1"
+            },
+            "preLaunchTask": "CMake: build",
+            "serverReadyAction": {
+                "pattern": "\\((https?://\\S+)\\)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            }
+        },
     ]
 }

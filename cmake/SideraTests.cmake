@@ -17,6 +17,9 @@ add_test(NAME sidera_host_suite
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_CURRENT_BINARY_DIR}/host-native"
         -C "${CMAKE_BUILD_TYPE}" --output-on-failure)
 set_tests_properties(sidera_host_suite PROPERTIES TIMEOUT 300)
+add_test(NAME sidera_web_package
+    COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/tests/check_web.py"
+        "${CMAKE_CURRENT_BINARY_DIR}")
 add_test(NAME sidera_rom
     COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/tests/check_overlays.py"
         "${RP6502_TOOLS_DIR}/rp6502.py" "${CMAKE_CURRENT_BINARY_DIR}/sidera"

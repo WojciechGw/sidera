@@ -1,9 +1,18 @@
 # SIDERA
 
-A standalone sky observatory for **RP6502-PICO and RP6502-EMU**. The project
+<!-- rp6502
+preset: cc65/Release
+publish: sidera.zip
+-->
+
+A standalone sky observatory for **RP6502-PICO, RP6502-EMU and RP6502-WEB**. The project
 uses cc65 and the [RP6502-SDK](https://picocomputer.github.io/sdk.html)
 to produce a single `sidera.rp6502` containing all data and six overlays.
-It does not require the mtRAM repository or razemOS.
+
+
+[![Play Sidera](https://wojciechgw.github.io/sidera/sidera/screenshot.png)](https://wojciechgw.github.io/sidera/sidera/)
+
+**[Play in your browser](https://wojciechgw.github.io/sidera/sidera/)** · **[Download the ROM](https://wojciechgw.github.io/sidera/sidera/sidera.rp6502)**
 
 On 13 November 2026, the owner confirmed that SIDERA starts and runs on a physical
 Picocomputer 6502. See the [hardware validation record](docs/rmt-cleanup.md#physical-pico-checks).
@@ -15,10 +24,11 @@ Picocomputer 6502. See the [hardware validation record](docs/rmt-cleanup.md#phys
   Follow the [SDK installation instructions](https://picocomputer.github.io/sdk.html#installing-the-prerequisites).
 - For host tests: Visual Studio 2022 Build Tools with C++ and the Windows SDK.
 
-Tests and generators use the Python standard library. Reference data, source
+Core tests and generators use the Python standard library. The separate WEB
+browser smoke test uses Playwright and Chromium (also run by CI). Reference data, source
 artwork and the pinned tzdata package are stored locally. The first SDK configure
-step may download emulator 0.43; subsequent builds use the local copy.
-The WEB emulator is not downloaded.
+step may download the native emulator and WEB player 0.43; subsequent builds use
+the local copies. WEB runs in a desktop browser with WebAssembly, WebGL2 and a keyboard.
 
 ## Building and testing
 
@@ -39,6 +49,9 @@ Outputs: `build/cc65/debug/sidera/sidera.rp6502` and
 `.sym`, the resident images and six `.ovl` files. Do not mix files from different builds.
 The build automatically checks the ROM structure, CRC, build identifier,
 BSS and memory boundaries. Each configuration also builds native test executables.
+Each build also writes `web/sidera.zip` and its unpacked `web/sidera/` directory
+under the selected build directory. The package contains the same ROM, an HTML
+page and the SDK JavaScript/WebAssembly player.
 
 Both presets retain the original `-O` optimization, since overlay sizes are part
 of the architecture. Debug uses `-g`, Release uses `-DNDEBUG`; the SDK also provides
@@ -47,8 +60,8 @@ in both configurations.
 
 ## Running
 
-In VS Code, select a preset, the `sidera` target and either the `RP6502-EMU` or
-`RP6502-PICO` launch configuration. F5 for PICO **uploads the program to the device**;
+In VS Code, select a preset, the `sidera` target and the `RP6502-EMU`,
+`RP6502-PICO` or `RP6502-WEB` launch configuration. F5 for PICO **uploads the program to the device**;
 use it deliberately. PICO connection settings (`device`, `key`, `workdir`, `args`)
 are stored in the local, ignored `.rp6502` file, as specified by the SDK.
 Do not store keys in the repository.
@@ -58,6 +71,23 @@ to select another path. The VS Code EMU configuration passes
 `/config SAVE:/sidera.cfg` to enable persistent saves in the emulator.
 When launching from the command line, pass the same arguments after `--`.
 The emulator test uses its own empty save directory and does not access the device.
+
+For WEB, F5 builds the application, serves `web/sidera/` and opens
+`http://127.0.0.1:8000/`. It requires the VS Code Python Debugger and CMake Tools
+extensions. Alternatively, after building Debug, run:
+
+```text
+python -m http.server --bind 127.0.0.1 --directory build/cc65/debug/web/sidera 8000
+```
+
+Open `http://127.0.0.1:8000/` and click the emulator to focus the keyboard.
+The page starts silently; SIDERA uses its normal controls. Opening `index.html`
+directly with `file://` does not work. Stop the server with Ctrl+C (or stop F5).
+WEB passes `/config SAVE:/sidera.cfg`; S saves settings to the browser's IndexedDB.
+Return using the same browser profile, hostname and port to restore them.
+Private browsing and clearing site data may discard saves. The fixed port keeps
+the local origin stable; close another server using port 8000 before launching.
+After the page and ROM have loaded, astronomy runs locally without network data.
 
 The [user manual](src/rom/sidera-manual-en.txt) describes keys and options.
 Help and the manual are also available as `ROM:help` and `ROM:manual` resources.
@@ -93,14 +123,13 @@ but do not run during builds or tests.
 `cmake -P tools/rp6502.cmake` updates the SDK tools. Project-specific extensions
 live outside `tools/`. The updater may also change `.vscode/`, `.gitignore` and
 the top-level CMake file; review the diff and run tests after updating.
-In particular, it may restore the WEB launch configuration.
-
-WEB is disabled: there is no `rp6502_web()` call, package or active configuration.
-The original files are retained as `.github/workflows/web.yml.disabled` and
-`.vscode/launch-web.json.disabled`. Do not restore their active filenames without
-a separate decision to enable WEB. The `ci.yml` workflow builds and tests
-the Debug and Release configurations on Windows and retains artifacts. It does not publish a site
-or releases.
+Keep the WEB launch directory and stable port when reviewing SDK updates.
+`rp6502_web()` packages SIDERA with player 0.43. The `ci.yml` workflow builds and
+tests Debug and Release on Windows and retains the ROM and WEB ZIP artifacts.
+The historical publishing template remains `.github/workflows/web.yml.disabled`;
+it is not part of the supported Windows build workflow. No workflow publishes
+a site or releases. To host WEB, serve the contents of the generated ZIP over
+HTTP(S), together with the matching source distribution required by GPLv3.
 
 ## Documentation and licenses
 
