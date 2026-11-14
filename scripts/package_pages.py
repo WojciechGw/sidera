@@ -19,9 +19,9 @@ def main():
     repo = Path(__file__).resolve().parents[1]
     if output.exists() and any(output.iterdir()):
         parser.error('output directory must be empty')
-    preview = build / 'test/sidera_web/solar.png'
+    preview = repo / 'src/assets/screenshot.png'
     if not preview.read_bytes().startswith(b'\x89PNG\r\n\x1a\n'):
-        parser.error('browser preview is not a PNG')
+        parser.error('src/assets/screenshot.png is not a PNG')
     with zipfile.ZipFile(build / 'web/sidera.zip') as package:
         names = {'index.html', 'rp6502.js', 'rp6502.wasm', 'sidera.rp6502'}
         if set(package.namelist()) != names:

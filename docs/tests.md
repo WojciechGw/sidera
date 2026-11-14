@@ -143,9 +143,9 @@ GitHub Actions workflow were not rerun for this packaging change.
 
 `scripts/package_pages.py build/cc65/release build/pages` prepares the GitHub
 Pages artifact after a Release build and browser smoke test. Use an empty output
-directory. It publishes only the SIDERA player, the browser's SOLAR preview and
-a `git archive HEAD` source ZIP, with a source link in the player footer and a
-root redirect to `sidera/`. For deployment, run from the clean checkout that
+directory. It publishes only the SIDERA player, `src/assets/screenshot.png` as
+`sidera/screenshot.png` and a `git archive HEAD` source ZIP, with a source link
+in the player footer and a root redirect to `sidera/`. For deployment, run from the clean checkout that
 produced the ROM; local uncommitted changes are not included in the source ZIP.
 
 Local Pages validation on 14 November 2026: Release build and the ROM, EMU and

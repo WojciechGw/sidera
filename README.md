@@ -131,8 +131,10 @@ builds and tests Release on Windows, including the Chromium smoke test. It stage
 only SIDERA using `scripts/package_pages.py`; an Ubuntu job uploads these static
 files to Pages. Ubuntu does not build the application. The player is served at
 `https://wojciechgw.github.io/sidera/sidera/`; the site root redirects there.
-The published folder includes `screenshot.png` for the README and `source.zip`
-from the exact checkout used to build the ROM, linked in the player's footer.
+The published folder includes `screenshot.png` for the README, copied from
+`src/assets/screenshot.png`, and `source.zip` from the exact checkout used to
+build the ROM, linked in the player's footer. To update the preview, replace and
+commit `src/assets/screenshot.png`; the next deploy publishes it at the same URL.
 
 ### Enable GitHub Pages
 

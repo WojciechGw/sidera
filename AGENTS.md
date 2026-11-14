@@ -25,7 +25,8 @@
   keep the origin stable for IndexedDB saves (`SAVE:/sidera.cfg`). `web.yml` builds
   and tests Release on Windows, then deploys Pages after pushes to `main` or a
   manual run on `main`. Ubuntu only uploads/deploys the prepared static files.
-  `scripts/package_pages.py` stages the player at `sidera/`, a browser preview
+  `scripts/package_pages.py` stages the player at `sidera/`, the preview from
+  `src/assets/screenshot.png` as `sidera/screenshot.png`,
   and a source ZIP from the same checkout. Pages must use GitHub Actions as source.
 - Original project code and documentation use **GPL-3.0-only**.
   Copyright (c) 2026 Wojciech Gwioździk (WojciechGw).
