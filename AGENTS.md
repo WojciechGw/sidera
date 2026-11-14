@@ -60,7 +60,8 @@
   saved settings. Sun/Moon fields start as placeholders with header icons hidden.
   Publish their first results before planet/star preparation; keep plot sprites
   hidden until the prepared scene. Later time updates retain their existing order.
-- Space cycles LIVE → SIM/PAUSE → SIM/PLAY → LIVE; Shift+Right/Left select the
+- Space enters SIM/PAUSE from LIVE, then toggles SIM/PAUSE ↔ SIM/PLAY.
+  N returns to LIVE and immediately reads the clock; Shift+Right/Left select the
   next/previous compass direction. Only physical LCtrl+Left/Right changes FOV;
   RCtrl and the former H shortcuts do not. The USB HID bitmap occupies XRAM
   `$FFC0–$FFDF` and must be unmapped on exit. VGA is required.
@@ -68,6 +69,13 @@
   footer, with no outer margin, a 1-pixel frame and 20 rows per page. Preserve
   the header and show only city controls. Closing clears the panel and
   invalidates axes and footer so the sky and its shortcuts are restored.
+  SOLAR uses the same 640x409 bounds and frame, with an enlarged centred orbit
+  diagram and unchanged sprite/text sizes. S opens SOLAR (X is unused).
+  Esc alone closes SOLAR; S and plain Q are ignored there. Closing clears the
+  panel and restores axes and footer.
+  Ctrl+Q (either Ctrl) is the only application quit shortcut, including inside
+  panels and editors. Plain Q and Esc in the sky view do not quit.
+  Ctrl+S (either Ctrl) saves only in the main sky view; panels/editors ignore it.
   CITIES reserves x=334..633, y=77..226 for a 300x150 geographic locator;
   the 20-row list stays left of x=328. Full city/country names sit below the map.
   `world_map.c` streams three rows per `cities_step()` and moves only the sprite
@@ -80,7 +88,8 @@
   sprite on plane 0, below the header Sun. Its descriptor occupies `$B0F0–$B0F9`
   and image/palette `$E700–$E70B`; hide it on close and no matches. No results
   shows contours alone. Natural Earth provenance is in sidera-map-license.txt.
-- F opens FIND with the same bounds as CITIES and 20 rows. The offline catalogue
+- Ctrl+F (either Ctrl) opens FIND; plain F is inactive. The panel uses the same
+  bounds as CITIES and 20 rows. The offline catalogue
   includes Sun, Moon, six planets, all 759 HIP stars and 88 constellations.
   The 312 px table on the left has Type/HIP/HD/Designation/Name columns and a
   full-row highlight; complete names, aliases and positions appear on the right.
@@ -108,10 +117,22 @@
   star calculations before drawing once. Repeated C presses replace the pending
   selection; preserve the immediate response of arrows and FOV.
   G/T/P/C update their footer highlights before calculation or chart drawing.
-  The second shortcut line uses two spaces between entries and 17 px side
-  margins; K/F/X/Q also have a space after the colon. Keep highlight coordinates
-  aligned with the text when changing this layout.
-  Cache footer highlights and note text; unchanged content must cause no bitmap
+  Three shortcut lines at y=441/451/461 have 8 px side margins and gaps
+  differing by at most one pixel within each row. Row 1:
+  "Arrows/+Shift/+Ctrl: view/NWSE/FOV", "Ctrl+S: save", "Ctrl+F: find object",
+  "Ctrl+Q: quit". Row 2: N, Space, +/-, [/], D, Z; Space reads
+  "SIM PAUSE/PLAY". Row 3: "L: location", "K: cities", "S: Solar system",
+  "P: planets", "T: paths", "G: grid", "C: constellations".
+  Row 2 gaps are 48 px; row 3 gaps are 27 px. FIND appears only in row 1.
+  Notes remain at y=472. At x=473, G1/G2/G3 show "scale"/"cross"/"full";
+  at x=542, C1/C2/C3/C4 show "stars"/"charts"/"charts & names"/
+  "navigational", white on black. G0/C0 leave their fields blank.
+  Keep ordinary notes short enough to end before these persistent mode labels.
+  The busy label reads "Working, please wait...",
+  one character cell before the right-aligned LIVE/SIM status.
+  The compass ends at y=438; keep y=439..440 blank. Scene clearing stops before
+  FOOTER_TOP (441); editors clear from there. Keep highlights aligned.
+  Cache footer highlights, mode labels and note text; unchanged content must cause no bitmap
   writes. Clear operations invalidate the affected rows; Ctrl+L and canvas setup
   invalidate the whole footer. Editors overwrite it and require restoration.
   The inactive star buffer doubles as a screen-coordinate cache: invalidate it

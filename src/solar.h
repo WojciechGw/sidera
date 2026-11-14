@@ -1,15 +1,12 @@
 #ifndef SIDERA_SOLAR_H
 #define SIDERA_SOLAR_H
 #include "astro.h"
-#define SOLAR_SIZE 317
-#define SOLAR_LEFT (628-10-SOLAR_SIZE)
-/* Last upper-compass tick is at y=82; leave ten empty rows below it. */
-#define SOLAR_TOP 93
-#define SOLAR_RIGHT (SOLAR_LEFT+SOLAR_SIZE)
-#define SOLAR_BOTTOM (SOLAR_TOP+SOLAR_SIZE)
-#define SOLAR_ROW_BYTES ((SOLAR_RIGHT-1)/8-SOLAR_LEFT/8+1)
-#define SOLAR_CX (SOLAR_LEFT+SOLAR_SIZE/2)
-#define SOLAR_CY (SOLAR_TOP+(SOLAR_SIZE+14)/2)
+#define SOLAR_LEFT 0
+#define SOLAR_TOP 71
+#define SOLAR_RIGHT 640 /* exclusive; same panel bounds as CITIES */
+#define SOLAR_BOTTOM 480 /* exclusive */
+#define SOLAR_CX ((SOLAR_LEFT+SOLAR_RIGHT)/2)
+#define SOLAR_CY ((SOLAR_TOP+24+SOLAR_BOTTOM-14)/2)
 #define XR_SOLAR_CFG 0xB096u /* Nine descriptors, ends at $B0F0. */
 #define XR_SOLAR_IMAGES 0xE160u /* Earth and Neptune 8x8. */
 #define XR_SOLAR_PAL 0xE200u /* Two 512-byte palettes, ends at $E600. */

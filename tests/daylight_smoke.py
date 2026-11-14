@@ -13,7 +13,7 @@ with rp6502.Emu() as emu:
     emu.cmd('key space')
     emu.cmd('wait _compass_inverted 1 7200')  # SIM advances across local 06:47.
     day = chart()
-    assert all(b == (a ^ (255 if (426-71)*80 <= i < (441-71)*80 else 0))
+    assert all(b == (a ^ (255 if (424-71)*80 <= i < (439-71)*80 else 0))
                for i,(a,b) in enumerate(zip(night,day)))
     emu.cmd('key minus')  # Pause and go back before sunrise.
     emu.cmd('wait _playing 0 120')
@@ -23,7 +23,7 @@ with rp6502.Emu() as emu:
     emu.cmd('key equal+shift')
     emu.cmd('wait _compass_inverted 1 7200')
     assert chart() == day
-    emu.cmd('key q')
+    emu.cmd('key q+ctrl')
     emu.cmd('wait exit 120')
     emu.cmd('expect exit 0')
 print('PASS: SIM sunrise, backward/forward manual time, exact band inversion; plot and V unchanged')

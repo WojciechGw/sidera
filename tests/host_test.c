@@ -61,7 +61,7 @@ void xr_write0(unsigned v)
         unsigned row=RIA.addr0/80,col=RIA.addr0%80,mask=0;
         if((preserved_axes&1)&&row>=71&&row<84&&col>=3&&col<=78)
             mask|=col==3?0x0F:col==78?0xF0:255;
-        if((preserved_axes&2)&&row>=420&&row<448)mask=255;
+        if((preserved_axes&2)&&row>=418&&row<441)mask=255;
         if((preserved_axes&4)&&row>=78&&row<418)
             mask|=col<3||col>78?255:col==3?0xF0:col==78?0x0F:0;
         /* Shared bytes may be updated, but protected pixels must never blink.
@@ -113,6 +113,10 @@ int xreg(int a,int b,int c,...)
             length=va_arg(ap,int);plane=va_arg(ap,int);top=va_arg(ap,int);bottom=va_arg(ap,int);
             assert(mode==4&&options==1&&length==1&&plane==2&&top==VIEW_TOP&&bottom==416);
         }
+        if(cfg==XR_SOLAR_CFG) {
+            length=va_arg(ap,int);plane=va_arg(ap,int);top=va_arg(ap,int);bottom=va_arg(ap,int);
+            assert(mode==5&&options==56&&length==9&&plane==1&&top==416&&bottom==480);
+        }
         if(cfg==XR_CITY_CFG) {
             length=va_arg(ap,int);plane=va_arg(ap,int);top=va_arg(ap,int);bottom=va_arg(ap,int);
             assert(mode==5&&options==56&&length==1&&plane==0&&top==75&&bottom==229);
@@ -149,7 +153,7 @@ static void corrected_date(void)
     assert(edit_key('\r')==1&&!editing);
     assert(!note[0]&&!live&&!playing);
     assert(moment.year==original.year&&moment.month==original.month&&moment.day==original.day);
-    gx_footer();for(i=472*80;i<480*80;++i)assert(!xram[i]);
+    gx_footer();for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));
     live=old_live;playing=old_playing;
 }
 static void expect_text(int x,int y,const char *p,unsigned inverse)
@@ -211,10 +215,10 @@ static void catalogue_recovery(void)
     cs_begin();assert(!cs_step());assert(note[0]); /* do not hide an unresolved error */
     while(cs_busy())cs_step();assert(!note[0]);
     gx_footer();
-    {unsigned i;for(i=472*80;i<480*80;++i)assert(!xram[i]);}
-    strcpy(note,"Location/zone changed (press S to save location)");
+    {unsigned i;for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));}
+    strcpy(note,"Location/zone changed (press Ctrl+S to save location)");
     cs_begin();while(cs_busy())cs_step();
-    assert(!strcmp(note,"Location/zone changed (press S to save location)"));
+    assert(!strcmp(note,"Location/zone changed (press Ctrl+S to save location)"));
     note[0]=0;constellation_mode=0;
 }
 static void catalogue_freshness(void)
@@ -320,7 +324,7 @@ static void location_names(void)
     f=fopen(config_path,"rb");assert(f);n=(unsigned)fread(contents,1,255,f);contents[n]=0;fclose(f);
     assert(strstr(contents,"m AMSL")&&!strstr(contents,"n.p.m."));
     remove(config_path);bearing=saved_bearing;location_name[0]=note[0]=0;gx_header();gx_footer();
-    for(i=472*80;i<480*80;++i)assert(!xram[i]);
+    for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));
 }
 static void header_sprites(void)
 {
@@ -359,35 +363,57 @@ static void calculation_status(void)
         live=mode==0;playing=mode==1;gx_status(0);gx_header();
         memcpy(before_clock,xram,sizeof(xram));
         portal_writes=0;gx_status(1);assert(portal_writes<2000);
-        x=(mode==0?604:mode==1?580:574)-66;
-        expect_text(x,1,"Working...",0);
-        expect_text(x+60,1," ",0);
-        expect_text(x+66,1,mode==0?" LIVE ":mode==1?"SIM / PLAY":"SIM / PAUSE",mode==0?6:0);
+        x=(mode==0?604:mode==1?580:574)-144;
+        expect_text(x,1,"Working, please wait...",0);
+        expect_text(x+138,1," ",0);
+        expect_text(x+144,1,mode==0?" LIVE ":mode==1?"SIM / PLAY":"SIM / PAUSE",mode==0?6:0);
         for(i=0;i<sizeof(xram);++i)
-            if(i>=9*80||i%80<60)assert(xram[i]==before_clock[i]);
+            if(i>=9*80||i%80<53)assert(xram[i]==before_clock[i]);
         writes=portal_writes;gx_status(1);assert(writes==portal_writes);
-        gx_header();expect_text(x,1,"Working...",0); /* redraw keeps busy state */
+        gx_header();expect_text(x,1,"Working, please wait...",0); /* redraw keeps busy state */
         gx_status(0);assert(!memcmp(before_clock,xram,sizeof(xram)));
     }
     live=1;gx_status(1);live=0;playing=1;gx_status(1);playing=0;gx_status(1);
-    expect_text(508,1,"Working...",0);expect_text(574,1,"SIM / PAUSE",0);
-    for(i=480;i<640;++i)assert(!pixel(i,0)); /* LIVE bar is erased */
+    expect_text(430,1,"Working, please wait...",0);expect_text(574,1,"SIM / PAUSE",0);
+    for(i=424;i<640;++i)assert(!pixel(i,0)); /* LIVE bar is erased */
     gx_status(0);gx_header();
 }
 static void footer_states(void)
 {
-    unsigned g,c,flags;
+    const char *label_chars="scale cross full stars charts & names navigational";
+    static const char *const grid_labels[]={"     ","scale","cross","full "};
+    static const char *const constellation_labels[]={
+        "              ","stars         ","charts        ","charts & names","navigational  "
+    };
+    unsigned g,c,flags,x,y;
     unsigned char saved_grid=grid,saved_c=constellation_mode,saved_t=trails,saved_p=planets;
+    /* Comparing text against the loaded font alone also accepts missing glyphs. */
+    while(*label_chars) {
+        unsigned ink=0,row;
+        for(row=0;row<8;++row)ink|=xram[XR_FONT+(unsigned char)*label_chars*8+row];
+        assert(*label_chars==' '||ink);++label_chars;
+    }
     for(g=0;g<4;++g)for(c=0;c<5;++c)for(flags=0;flags<4;++flags) {
         grid=g;constellation_mode=c;trails=flags&1;planets=flags&2;gx_footer();
-        expect_text(113,462," grid ",g?255:0);
-        expect_text(167,462," paths ",trails?255:0);
-        expect_text(299,462," constellations ",c?255:0);
-        expect_text(227,462," Planets ",planets?255:0);
-        expect_text(101,462,"G:",0);expect_text(155,462,"T:",0);
-        expect_text(287,462,"C:",0);expect_text(215,462,"P:",0);
-        expect_text(498,450,"Z: Timezone",0);
-        expect_text(401,462,"K: Cities  F: Find  X: Solar  Q: quit",0);
+        expect_text(473,472,grid_labels[g],0);
+        expect_text(542,472,constellation_labels[c],0);
+        expect_text(473,461," grid ",g?255:0);
+        expect_text(398,461," paths ",trails?255:0);
+        expect_text(542,461," constellations",c?255:0);
+        expect_text(311,461," planets ",planets?255:0);
+        expect_text(461,461,"G:",0);expect_text(386,461,"T:",0);
+        expect_text(530,461,"C:",0);expect_text(299,461,"P:",0);
+        expect_text(566,451,"Z: Timezone",0);
+        expect_text(101,461,"K: cities",0);expect_text(392,441,"Ctrl+F: find object",0);
+        expect_text(182,461,"S: Solar system",0);
+        expect_text(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV",0);
+        expect_text(8,451,"N: now",0);expect_text(92,451,"Space: SIM PAUSE/PLAY",0);
+        expect_text(266,451,"+/-: 15 min",0);expect_text(380,451,"[/]: day",0);
+        expect_text(476,451,"D: date",0);expect_text(8,461,"L: location",0);
+        expect_text(266,441,"Ctrl+S: save",0);expect_text(560,441,"Ctrl+Q: quit",0);
+        for(y=439;y<441;++y)for(x=0;x<640;++x)assert(!pixel(x,y));
+        for(y=441;y<480;++y)for(x=0;x<8;++x)
+            assert(!pixel(x,y)&&!pixel(632+x,y));
     }
     grid=saved_grid;constellation_mode=saved_c;trails=saved_t;planets=saved_p;gx_footer();
 }
@@ -398,7 +424,7 @@ static void footer_region(unsigned x,unsigned y,unsigned w,unsigned h)
 }
 static void footer_updates(void)
 {
-    static const unsigned x[]={113,167,227,299},w[]={36,42,54,96};
+    static const unsigned x[]={473,398,311,542},y[]={461,461,461,461},w[]={36,42,54,90};
     static unsigned char expected[480*80];
     unsigned char saved_g=grid,saved_t=trails,saved_p=planets,saved_c=constellation_mode;
     unsigned i,on,full,writes[4];
@@ -411,8 +437,8 @@ static void footer_updates(void)
         case 0:grid=on==1;break;case 1:trails=on==1;break;
         case 2:planets=on==1;break;case 3:constellation_mode=on==1;break;
         }
-        footer_region(x[i],462,w[i],8);
-        assert(portal_writes&&portal_writes<=w[i]/6*16);
+        footer_region(x[i],y[i],w[i],i==0||i==3?19:8);
+        assert(portal_writes&&portal_writes<=w[i]/6*16+(i==0?80:i==3?224:0));
         if(on==1)writes[i]=portal_writes;
         memcpy(expected,xram,sizeof(expected));
         gx_footer_invalidate();gx_footer();assert(!memcmp(expected,xram,sizeof(expected)));
@@ -420,21 +446,30 @@ static void footer_updates(void)
     }
     grid=constellation_mode=1;gx_footer();
     for(i=2;i<=4;++i) {
-        if(i<4)grid=i;
-        constellation_mode=i;portal_writes=0;gx_footer();assert(!portal_writes);
+        if(i<4) {
+            grid=i;footer_region(473,472,30,8);assert(portal_writes);
+        }
+        constellation_mode=i;footer_region(542,472,84,8);assert(portal_writes);
+        memcpy(expected,xram,sizeof(expected));
+        gx_footer_invalidate();gx_footer();assert(!memcmp(expected,xram,sizeof(expected)));
+        portal_writes=0;gx_footer();assert(!portal_writes);
     }
     strcpy(note,"Saved");footer_region(0,472,640,8);assert(portal_writes);
     expect_text(20,472,"Saved",0);
-    for(i=0;i<8*640;++i)if(i%640>=50)assert(!pixel(i%640,472+i/640));
+    expect_text(473,472,"full ",0);expect_text(542,472,"navigational  ",0);
+    for(i=0;i<8*640;++i)if(i%640>=50&&i%640<473)assert(!pixel(i%640,472+i/640));
     note[0]=0;footer_region(0,472,640,8);
-    for(i=472*80;i<480*80;++i)assert(!xram[i]);
+    expect_text(473,472,"full ",0);expect_text(542,472,"navigational  ",0);
+    for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));
     portal_writes=0;gx_footer();assert(!portal_writes);
     /* Rebuild only the cleared region, or both after an editor owns the footer. */
     gx_clear(474,1);footer_region(0,472,640,8);assert(portal_writes);
-    gx_clear(450,1);footer_region(0,448,640,24);assert(portal_writes);
-    memcpy(expected,xram,sizeof(expected));edit_start(2);assert(edit_key(K_ESC)==2);
-    gx_footer();assert(!memcmp(expected+448*80,xram+448*80,32*80));
-    gx_footer_invalidate();gx_footer();assert(!memcmp(expected+448*80,xram+448*80,32*80));
+    gx_clear(441,1);footer_region(0,441,640,31);assert(portal_writes);
+    memcpy(expected,xram,sizeof(expected));edit_start(2);
+    for(i=441*80;i<450*80;++i)assert(!xram[i]); /* No first-row fragments above the editor. */
+    assert(edit_key(K_ESC)==2);
+    gx_footer();assert(!memcmp(expected+441*80,xram+441*80,39*80));
+    gx_footer_invalidate();gx_footer();assert(!memcmp(expected+441*80,xram+441*80,39*80));
     printf("PASS: partial footer, messages and editor/forced restoration; G/T/P/C %u/%u/%u/%u writes vs full %u\n",
         writes[0],writes[1],writes[2],writes[3],full);
     grid=saved_g;trails=saved_t;planets=saved_p;constellation_mode=saved_c;strcpy(note,saved_note);gx_footer();
@@ -506,10 +541,10 @@ static void planet_display(const char *path)
         assert(word(XR_PLANET_PAL+i*512)==0); /* transparent background */
     }
     assert(!memcmp(before_clock,xram,64*80));
-    expect_text(227,462," Planets ",255); /* P feedback precedes the scene. */
+    expect_text(311,461," planets ",255); /* P feedback precedes the scene. */
     for(i=416*80;i<480*80;++i)for(c=0;c<8;++c)
         if((before_clock[i]^xram[i])&(128>>c))
-        assert(i/80>=462&&i/80<470&&(i%80)*8+c>=227&&(i%80)*8+c<281);
+        assert(i/80>=461&&i/80<469&&(i%80)*8+c>=311&&(i%80)*8+c<365);
     sprintf(file,"%s.planet-icons",path);f=fopen(file,"wb");assert(f);
     assert(fwrite(xram,1,65536,f)==65536);fclose(f);
     assert(planet_key('P')&&!planets);assert(gx_objects());gx_scene();
@@ -563,10 +598,10 @@ static void grid_modes(const char *path)
         if(mode>=2)assert(pixel(328,120)&&pixel(328,118)&&pixel(328,122)&&
                          pixel(326,120)&&pixel(330,120)&&!pixel(329,119));
         if(mode==3)assert(pixel(338,120)&&pixel(328,130)&&!pixel(328,129)&&!pixel(338,130));
-        assert(pixel(378,428)&&pixel(378,430)&&!pixel(378,431));
-        assert(pixel(328,426)&&pixel(328,431)&&!pixel(328,432));
-        assert(!pixel(328,432)&&pixel(326,433));
-        assert(pixel(328,424)&&!pixel(328,425));
+        assert(pixel(378,426)&&pixel(378,428)&&!pixel(378,429));
+        assert(pixel(328,424)&&pixel(328,429)&&!pixel(328,430));
+        assert(!pixel(328,430)&&pixel(326,431));
+        assert(pixel(328,422)&&!pixel(328,423));
         gx_footer();sprintf(name,"%s.g%u",path,mode);f=fopen(name,"wb");assert(f);
         assert(fwrite(xram,1,65536,f)==65536);fclose(f);
         gx_grid_cycle();
@@ -748,7 +783,7 @@ static void check_axes_scene(unsigned char keep)
 {
     preserved_axes=keep;gx_scene();preserved_axes=0;
     memcpy(before_clock,xram,480*80);
-    gx_clear(71,377);gx_scene();
+    gx_clear(71,370);gx_scene();
     assert(!memcmp(before_clock,xram,480*80));
 }
 static void preserved_scales(void)
@@ -795,8 +830,8 @@ static void daylight_compass(void)
     int zoom,saved_fov=fov,saved_bearing=bearing;
     static unsigned char daytime[480*80];
     assert(rs_daylight());
-    assert(!pixel(0,425)&&pixel(0,426)&&pixel(639,440)&&!pixel(639,441)&&pixel(VIEW_CENTER,424));
-    expect_text(VIEW_CENTER-3,433,"S",1);
+    assert(!pixel(0,423)&&pixel(0,424)&&pixel(639,438)&&!pixel(639,439)&&pixel(VIEW_CENTER,422));
+    expect_text(VIEW_CENTER-3,431,"S",1);
     memcpy(daytime,xram,sizeof(daytime));
     /* Exact minute boundaries from the Warsaw fixture, expressed in UTC.
      * Updating daylight alone must touch only the 15-row compass band. */
@@ -805,11 +840,11 @@ static void daylight_compass(void)
     assert(date_step(&moment,1));assert(!rs_daylight());gx_daylight();
     assert(portal_writes==15*80);
     for(i=0;i<sizeof(daytime);++i)
-        assert(xram[i]==(i>=426*80&&i<441*80?(daytime[i]^255):daytime[i]));
-    expect_text(VIEW_CENTER-3,433,"S",0);
+        assert(xram[i]==(i>=424*80&&i<439*80?(daytime[i]^255):daytime[i]));
+    expect_text(VIEW_CENTER-3,431,"S",0);
     assert(date_step(&moment,-1));gx_daylight();assert(!memcmp(daytime,xram,sizeof(daytime)));
     moment.hour=5;moment.minute=46;moment.second=59;gx_daylight();
-    assert(!pixel(0,426)&&pixel(VIEW_CENTER,424));
+    assert(!pixel(0,424)&&pixel(VIEW_CENTER,422));
     assert(date_step(&moment,1));gx_daylight();assert(!memcmp(daytime,xram,sizeof(daytime)));
     /* Daytime view changes and interrupted clears must never double-invert. */
     for(zoom=50;zoom<=160;zoom+=10) {
@@ -817,10 +852,10 @@ static void daylight_compass(void)
         gx_scene_interactive();gx_scene_step();
         moment.hour=20;gx_daylight();moment.hour=12;gx_daylight();
         gx_scene_interactive();while(gx_busy())gx_scene_step();
-        assert(!pixel(0,425)&&pixel(0,426)&&pixel(639,440)&&!pixel(639,441));
-        memcpy(daytime,xram,sizeof(daytime));gx_clear(71,377);gx_scene();
+        assert(!pixel(0,423)&&pixel(0,424)&&pixel(639,438)&&!pixel(639,439));
+        memcpy(daytime,xram,sizeof(daytime));gx_clear(71,370);gx_scene();
         assert(!memcmp(daytime,xram,sizeof(daytime)));
-        gx_clear(440,1);gx_scene(); /* The white padding is cached content too. */
+        gx_clear(438,1);gx_scene(); /* The white padding is cached content too. */
         assert(!memcmp(daytime,xram,sizeof(daytime)));
     }
     moment=saved;bearing=saved_bearing;gx_zoom(saved_fov-fov);gx_scene();
@@ -975,7 +1010,7 @@ static void city_catalogue(const char *asset,const char *output)
     args[4]="PL/Radziechowy";assert(command_line(5,args)==0&&observer.altitude==437);
     assert(cities_start());cities_draw();type_city("Sosnowiec");
     assert(cities_key('\r')==1&&observer.latitude==1810326L&&observer.altitude==256);
-    assert(!strcmp(note,"Sosnowiec [PL] (press S to save location)"));
+    assert(!strcmp(note,"Sosnowiec [PL] (press Ctrl+S to save location)"));
     assert(!strcmp(location_name,"Sosnowiec [PL]"));
     assert(cities_start());cities_draw();type_city("Poland");
     assert(!cities_key(K_END));city_count("20 / 20");
@@ -991,7 +1026,7 @@ static void city_catalogue(const char *asset,const char *output)
     assert(!cities_key(K_END));city_count("345 / 345");
     assert(!cities_key(K_HOME));assert(!cities_key(K_DOWN));
     assert(cities_key('\r')==1&&!cities_active&&observer.latitude==albania.latitude);
-    assert(!strcmp(note,"Tirana [AL] (press S to save location)"));
+    assert(!strcmp(note,"Tirana [AL] (press Ctrl+S to save location)"));
     assert(gx_objects()&&planet_mode==modes); /* restore sky sprites without resetting VGA */
     assert(config_load()==1&&observer.latitude==saved.latitude); /* no implicit save */
     assert(cities_start());assert(gx_objects());cities_draw();type_city("United States");
@@ -1003,7 +1038,7 @@ static void city_catalogue(const char *asset,const char *output)
     assert(cities_key(K_ESC)==2&&observer.latitude==saved.latitude);
     assert(cities_start());cities_draw();type_city("Los Angeleq");assert(!cities_key(K_BS));type_city("s");
     assert(cities_key('\r')==1&&observer.latitude==chosen.latitude);
-    assert(!strcmp(note,"Los Angeles [US] (press S to save location)"));
+    assert(!strcmp(note,"Los Angeles [US] (press Ctrl+S to save location)"));
     assert(config_save());observer=saved;location_name[0]=0;
     assert(config_load()==1&&observer.latitude==chosen.latitude&&!strcmp(location_name,"Los Angeles [US]"));
     sky_compute(&moment,&observer,&sky);planets_compute(&moment,&observer,planet_positions);
@@ -1026,13 +1061,17 @@ static void city_catalogue(const char *asset,const char *output)
 #include "settings_test.inc"
 static void solar_layout(void)
 {
-    static const int radii[]={134,117,100,83,66,54,42,30};
+    static const int radii[]={176,154,131,109,87,71,55,39};
     char title[48];unsigned i,j,cfg;int x[9],y[9],size[9],dx,dy,rr;
+    assert(SOLAR_LEFT==CITIES_LEFT&&SOLAR_TOP==CITIES_TOP&&
+           SOLAR_RIGHT==CITIES_RIGHT&&SOLAR_BOTTOM==CITIES_BOTTOM);
+    for(i=0;i<640;++i)assert(pixel(i,SOLAR_TOP)&&pixel(i,SOLAR_BOTTOM-1));
+    for(i=SOLAR_TOP;i<SOLAR_BOTTOM;++i)assert(pixel(0,i)&&pixel(639,i));
     expect_text(SOLAR_LEFT+2,SOLAR_TOP+12," SOLAR SYSTEM ",255);
     strcpy(title,"snapshot ");date_format(title+strlen(title),&solar_date);strcat(title," UTC");
     expect_text(SOLAR_RIGHT-2-(int)strlen(title)*6,SOLAR_TOP+4,title,0);
     expect_text(SOLAR_LEFT+2,SOLAR_BOTTOM-11,"Schematic view (not in AU scale)",0);
-    expect_text(SOLAR_RIGHT-2-48,SOLAR_BOTTOM-11,"X: close",0);
+    expect_text(SOLAR_RIGHT-2-60,SOLAR_BOTTOM-11,"Esc: close",0);
     for(i=0;i<8;++i)expect_text(solar_labels[i].left,solar_labels[i].top,solar_names[i],0);
     for(i=0;i<4;++i)for(j=0;j<4;++j)
         assert(pixel(solar_moon_x-1+i,solar_moon_y-1+j)==(i>0&&i<3&&j>0&&j<3));
@@ -1112,7 +1151,8 @@ static void reference_views(const char *output)
         assert(gx_objects());
         snprintf(name,sizeof(name),"%s.solar%c",output,'A'+i);
         file=fopen(name,"wb");assert(file);assert(fwrite(xram,1,sizeof(xram),file)==sizeof(xram));fclose(file);
-        solar_hide();gx_scene();assert(gx_objects());
+        solar_hide();gx_scene();assert(gx_objects());gx_footer();
+        assert(!memcmp(before_clock,xram,480*80));
     }
     puts("PASS: reference views A/B/C, Gdansk/Los Angeles/Rio de Janeiro, G1 T1 P1 C4");
 }
@@ -1122,6 +1162,7 @@ static void reference_views(const char *output)
 int main(int argc,char **argv)
 {
     char buf[160];Observer o;Date d;FILE *f;unsigned i,bit,changes=0,below;int x,y;
+    host_assert_stderr();
     assert(argc==3);
     strcpy(rom_dir,argv[1]);*strrchr(rom_dir,'/')=0;
     solar_hide();
@@ -1193,7 +1234,7 @@ int main(int argc,char **argv)
         gx_footer();
         sprintf(buf,"%s.%u",argv[2],bit);f=fopen(buf,"wb");assert(f);
         assert(fwrite(xram,1,65536,f)==65536);fclose(f);
-        memcpy(xram+448*80,before_clock+448*80,32*80);
+        memcpy(xram+441*80,before_clock+441*80,39*80);
         gx_footer_invalidate(); /* Raw test snapshot restore bypasses gx_clear. */
     }
     cs_cycle();assert(!constellation_mode);gx_scene();assert(!memcmp(before_clock,xram,sizeof(xram)));

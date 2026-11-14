@@ -41,6 +41,7 @@ static unsigned simulation_test,simulation_step,simulation_polls,simulation_limi
 static unsigned constellation_test,constellation_step,constellation_target,constellation_round;
 static unsigned constellation_polls,constellation_stars,constellation_scenes;
 static unsigned startup_test,startup_seen;
+static unsigned quit_test,quit_step;
 static unsigned simulation_sky,simulation_planets,simulation_stars,simulation_scenes;
 static Date simulation_at,simulation_next;
 static Date frozen_date;
@@ -59,7 +60,7 @@ static unsigned char keyboard_mapped;
 unsigned char platform_keyboard_start(void){keyboard_mapped=1;return 1;}
 void platform_keyboard_stop(void){keyboard_mapped=0;}
 static unsigned cover_active,cover_start,cover_duration,cover_keys=4,cover_shown;
-int platform_getc_nb(void){if(cover_keys){--cover_keys;return 'Q';}return -1;}
+int platform_getc_nb(void){if(cover_keys){--cover_keys;return CTRL('Q');}return -1;}
 long host_lseek(int fd,long offset,int whence){return _lseek(fd,offset,whence);}
 int host_read(int fd,void *p,unsigned n){return _read(fd,p,n);}
 static unsigned sky_checks,planet_checks,star_checks,idle_steps;
@@ -74,7 +75,7 @@ static time_t fake_time;
 static time_t test_time(time_t *p){if(p)*p=fake_time;return fake_time;}
 static const char *rom_dir,*save_path;
 static char output[4096];
-static const unsigned keys[]={'P','K',K_ESC,'G','G','G','G','C','K','W','a','r','s','a','w','\r','S','Z',K_ESC,'T','Q'};
+static const unsigned keys[]={'P','K',K_ESC,'G','G','G','G','C','K','W','a','r','s','a','w','\r',CTRL('S'),'Z',K_ESC,'T',CTRL('Q')};
 static void expect_text_at(unsigned x,unsigned y,const char *p,unsigned inverse)
 {
     unsigned c,row,col,bits;
@@ -96,7 +97,7 @@ static void expect_header_icons(unsigned char visible)
 }
 static void expect_busy(unsigned char busy)
 {
-    const char *p="Working...";unsigned x=(live?604:playing?580:574)-66,row,col,c;
+    const char *p="Working, please wait...";unsigned x=(live?604:playing?580:574)-144,row,col,c;
     while(*p) {
         c=(unsigned char)*p++;
         for(row=0;row<8;++row)for(col=0;col<6;++col) {
@@ -118,13 +119,13 @@ static void checked_sky_compute(const Date *d,const Observer *o,Sky *s)
         expect_text_at(202,21,"Location ",0);
         expect_text_at(226,43,"Sun AZ ... ALT ...",0);
         expect_text_at(412,43,"Moon AZ ... ALT ... LIT ...",0);
-        expect_text_at(12,450,"N: now",0);expect_text_at(17,462,"Arrows: view",0);
-        expect_text_at(113,462," grid ",grid?255:0);
-        expect_text_at(167,462," paths ",trails?255:0);
-        expect_text_at(227,462," Planets ",planets?255:0);
-        expect_text_at(299,462," constellations ",constellation_mode?255:0);
+        expect_text_at(8,451,"N: now",0);expect_text_at(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV",0);
+        expect_text_at(473,461," grid ",grid?255:0);
+        expect_text_at(398,461," paths ",trails?255:0);
+        expect_text_at(311,461," planets ",planets?255:0);
+        expect_text_at(542,461," constellations",constellation_mode?255:0);
         expect_header_icons(0);
-        for(i=71*80;i<448*80;++i)assert(!xram[i]);
+        for(i=71*80;i<441*80;++i)assert(!xram[i]);
     }
     expect_busy(1);++sky_checks;sky_compute(d,o,s);
 }
@@ -168,9 +169,9 @@ static unsigned constellation_keys(void)
     if(constellation_step==1) {
         if(constellation_mode&&cs_busy()) {
             assert(!gx_busy()&&scene_checks==constellation_scenes);
-            assert(!memcmp(frozen_frame+71*80,xram+71*80,377*80));
+            assert(!memcmp(frozen_frame+71*80,xram+71*80,370*80));
             expect_busy(1);
-            assert(xram[462*80+299/8]&(128>>(299&7))); /* Selected C, immediately. */
+            assert(xram[461*80+542/8]&(128>>(542&7))); /* Selected C, immediately. */
             if(constellation_mode!=constellation_target)return 'C';
             return 0;
         }
@@ -178,7 +179,7 @@ static unsigned constellation_keys(void)
         assert(constellation_mode==constellation_target);
         assert(scene_checks==constellation_scenes+1);
         if(constellation_target)assert(star_checks==constellation_stars+SIDERA_STAR_COUNT*4);
-        if(constellation_round||!constellation_target){constellation_step=99;return 'Q';}
+        if(constellation_round||!constellation_target){constellation_step=99;return CTRL('Q');}
         constellation_step=2;
     }
     if(constellation_step==2) {
@@ -196,7 +197,7 @@ static unsigned simulation_keys(void)
     if(simulation_step==1) {
         if(simulation_limit&&!playing) {
             assert(!memcmp(&moment,&simulation_at,sizeof(Date)));
-            simulation_step=99;return 'Q';
+            simulation_step=99;return CTRL('Q');
         }
         if(!memcmp(&moment,&simulation_at,sizeof(Date)))return 0;
         assert(!memcmp(&moment,&simulation_next,sizeof(Date)));
@@ -204,7 +205,7 @@ static unsigned simulation_keys(void)
     }
     if(simulation_step==5&&constellation_mode&&cs_busy()) {
         /* Quit is polled during catalogue preparation, before drawing. */
-        simulation_step=99;return 'Q';
+        simulation_step=99;return CTRL('Q');
     }
     if(!sky_checks||gx_busy()||rs_busy()||(constellation_mode&&cs_busy())||(!trail_end&&trail_done<TRAIL_COUNT))return 0;
     switch(simulation_step) {
@@ -236,16 +237,16 @@ static unsigned simulation_keys(void)
         if(!memcmp(&moment,&simulation_next,sizeof(Date)))return 0;
         assert(date_step(&simulation_next,300));
         assert(!memcmp(&moment,&simulation_next,sizeof(Date)));
-        simulation_step=99;return 'Q';
+        simulation_step=99;return CTRL('Q');
     default:return 0;
     }
 }
 static unsigned control_keys(void)
 {
-    static const int bearings[]={50,45,0,315,0,45,315,0,0,0,0,0};
+    static const int bearings[]={50,45,0,315,0,45,315,0,0,0,0,0,0,0,0,0,0,0,0};
     static const unsigned direction_keys[]={K_LEFT|K_SHIFT,K_LEFT|K_SHIFT,K_LEFT|K_SHIFT,
         K_RIGHT|K_SHIFT,K_RIGHT|K_SHIFT,K_LEFT|K_SHIFT,K_RIGHT|K_SHIFT,
-        'h','H',K_LEFT|K_CTRL,K_RIGHT|K_CTRL,'Q'};
+        'h','H',K_LEFT|K_CTRL,K_RIGHT|K_CTRL,'q','Q','x','X','f','F',K_ESC,CTRL('Q')};
     struct tm *utc;
     if(gx_busy())return 0;
     switch(control_step) {
@@ -266,18 +267,28 @@ static unsigned control_keys(void)
         ticks+=PLATFORM_TICK_HZ;++control_step;return 0;
     case 5:
         assert(!live&&playing&&moment.minute==frozen_date.minute+5);
+        frozen_date=moment;
         ++control_step;return ' ';
     case 6:
-        utc=gmtime(&fake_time);
-        assert(live&&!playing&&moment.hour==utc->tm_hour&&moment.minute==utc->tm_min);
-        frozen_date=moment;++control_step;return ' ';
+        assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
+        fake_time+=60;ticks+=2*PLATFORM_TICK_HZ;++control_step;return 0;
     case 7:
         assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
         ++control_step;return ' ';
     case 8:
-        assert(!live&&playing);fake_time=(time_t)-1;frozen_date=moment;
-        ++control_step;return ' ';
+        assert(!live&&playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
+        ++control_step;return 'N';
     case 9:
+        utc=gmtime(&fake_time);
+        assert(live&&!playing&&moment.hour==utc->tm_hour&&moment.minute==utc->tm_min);
+        frozen_date=moment;++control_step;return ' ';
+    case 10:
+        assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
+        ++control_step;return ' ';
+    case 11:
+        assert(!live&&playing);fake_time=(time_t)-1;frozen_date=moment;
+        ++control_step;return 'N';
+    case 12:
         assert(!live&&!playing&&!memcmp(&moment,&frozen_date,sizeof(Date)));
         assert(strstr(note,"Cannot read system clock"));
         bearing=50;++control_step;return 0;
@@ -290,7 +301,7 @@ static unsigned control_keys(void)
 }
 static unsigned solar_keys(void)
 {
-    static const unsigned ignored[]={'+','K','D','S',K_LEFT,'G',' ','N',K_ESC,12,'L','Z','P','T','C','[',']','-'};
+    static const unsigned ignored[]={'+','K','D','S',K_LEFT,'G',' ','N','q','Q','x','X',CTRL('S'),12,'L','Z','P','T','C','[',']','-'};
     static unsigned ignored_index,clock_changes;
     unsigned a,x,y;
     if(!solar_visible&&(solar_step==0||solar_step==4)&&gx_busy())return 0;
@@ -310,7 +321,7 @@ static unsigned solar_keys(void)
     }
     switch(solar_step) {
     case 0:++solar_step;return solar_test==2?'N':' ';
-    case 1:++solar_step;return 'X';
+    case 1:++solar_step;return 'S';
     case 2:
         assert(solar_visible&&ovl_loaded(OVL_SOLAR));frozen_date=solar_date;
         memcpy(frozen_frame,xram,sizeof(xram));
@@ -322,14 +333,14 @@ static unsigned solar_keys(void)
         if(ignored_index<sizeof(ignored)/sizeof(ignored[0])) {
             ++fake_time;ticks+=PLATFORM_TICK_HZ;return ignored[ignored_index++];
         }
-        assert(solar_test==1||clock_changes);++solar_step;return 'X';
+        assert(solar_test==1||clock_changes);++solar_step;return K_ESC;
     case 4:
         assert(!solar_visible&&sky_checks>frozen_sky); /* full recalculation on close */
-        assert(solar_test==2?live:playing);++solar_step;return 'X';
+        assert(solar_test==2?live:playing);++solar_step;return 'S';
     case 5:
         assert(solar_visible&&overlay_reads==frozen_overlays);
-        assert(!memcmp(&solar_date,&moment,sizeof(Date)));++solar_step;return 'Q';
-    default:assert(0);return 'Q';
+        assert(!memcmp(&solar_date,&moment,sizeof(Date)));++solar_step;return CTRL('Q');
+    default:assert(0);return CTRL('Q');
     }
 }
 #endif
@@ -337,19 +348,26 @@ unsigned key_poll(void)
 {
     unsigned i;
 #ifdef SIDERA_OVERLAY_HOST
+    if(quit_test) {
+        if(!quit_step){++quit_step;return quit_test=='F'?CTRL('F'):quit_test;}
+        assert(quit_test=='K'?cities_active:quit_test=='F'?find_active:editing);
+        if(quit_step==1){++quit_step;return CTRL('S');}
+        assert(quit_step==2&&_access(save_path,0)!=0);
+        ++quit_step;return CTRL('Q');
+    }
     if(startup_test) {
         if(!sky_checks)return 0;
         if(cs_busy()) {
             expect_header_icons(1);assert(!scene_checks&&!gx_busy());++startup_seen;
         }
         if(gx_busy()||cs_busy()||rs_busy()||(trails&&trail_done<TRAIL_COUNT))return 0;
-        assert(startup_seen&&scene_checks==1);return 'Q';
+        assert(startup_seen&&scene_checks==1);return CTRL('Q');
     }
     if(constellation_test)return constellation_keys();
     if(simulation_test)return simulation_keys();
     if(control_test)return control_keys();
     if(solar_test)return solar_keys();
-    if(failed_overlay)return strstr(failed_overlay,"solar")?'X':strstr(failed_overlay,"find")?'F':strstr(failed_overlay,"edit")?'Z':'K';
+    if(failed_overlay)return strstr(failed_overlay,"solar")?'S':strstr(failed_overlay,"find")?CTRL('F'):strstr(failed_overlay,"edit")?'Z':'K';
 #endif
     if(gx_busy()&&!editing&&!cities_active) {
         ++render_polls;expect_busy(1);
@@ -363,7 +381,7 @@ unsigned key_poll(void)
         case 9:
             assert(moment.second==1); /* clock serviced between drawing batches */
             assert(star_checks==previous_stars&&sky_checks==previous_sky&&planet_checks==previous_planets);
-            assert(trail_done==TRAIL_COUNT);++render_test;++key_index;return 'Q';
+            assert(trail_done==TRAIL_COUNT);++render_test;++key_index;return CTRL('Q');
         }
         return 0;
     }
@@ -447,16 +465,16 @@ unsigned key_poll(void)
         assert(!memcmp(saved_overlay,ovl_memory,OVL_BYTES));
     }
 #endif
-    if(key_index==16)assert(!strcmp(note,"Warsaw [PL] (press S to save location)"));
+    if(key_index==16)assert(!strcmp(note,"Warsaw [PL] (press Ctrl+S to save location)"));
     if(key_index==17) {
         assert(!note[0]);
         assert(!strcmp(location_name,"Warsaw [PL]"));
-        for(i=472*80;i<480*80;++i)assert(!xram[i]);
+        for(i=472*80;i<480*80;++i)if(i%80<59)assert(!xram[i]);
     }
     if(key_index>=4&&key_index<=6)assert(portal_writes<30000);
     if(key_index==7)assert(portal_writes>=25000); /* G off still clears the plot. */
-    if(key_index>=4&&key_index<=7)for(i=113;i<119;++i)
-        assert(!!(xram[462*80+i/8]&(128>>(i&7)))==!!grid);
+    if(key_index>=4&&key_index<=7)for(i=473;i<479;++i)
+        assert(!!(xram[461*80+i/8]&(128>>(i&7)))==!!grid);
     portal_writes=0;
     if(cities_active)++menu_seen;
     assert(key_index<sizeof(keys)/sizeof(keys[0]));return keys[key_index++];
@@ -532,6 +550,13 @@ int main(int argc,char **argv)
     assert(argc==3||argc==4);rom_dir=argv[1];save_path=argv[2];run_args[6]=argv[2];
     remove(save_path);
 #ifdef SIDERA_OVERLAY_HOST
+    if(argc==4&&!strncmp(argv[3],"quit-",5)) {
+        quit_test=(unsigned char)argv[3][5];vga=1;fake_time=0;
+        assert(!sidera_main(7,run_args));
+        assert(quit_step==3&&!opened&&!keyboard_mapped&&console_restored==1);
+        puts("PASS: Ctrl+S ignored in modal panels; global Ctrl+Q cleans up files/keyboard");
+        return 0;
+    }
     if(argc==4&&(!strcmp(argv[3],"startup-saved")||!strcmp(argv[3],"startup-default"))) {
         char *initial_args[]={"sidera.rp6502","/config",argv[2],"/constellations","4"};
         startup_test=1;vga=1;start.tm_year=126;start.tm_mon=10;start.tm_mday=9;start.tm_hour=12;
@@ -571,15 +596,15 @@ int main(int argc,char **argv)
         simulation_test=1;vga=1;fake_time=0;
         assert(!sidera_main(13,sim_args));
         assert(simulation_step==99&&!opened&&!keyboard_mapped&&console_restored==1);
-        puts("PASS: five-minute SIM, one draw, exact sky, day rollover, manual +15/pause/resume, time limit, Q during work");
+        puts("PASS: five-minute SIM, one draw, exact sky, day rollover, manual +15/pause/resume, time limit, Ctrl+Q during work");
         return 0;
     }
     if(argc==4&&!strcmp(argv[3],"controls")) {
         control_test=1;vga=1;start.tm_year=126;start.tm_mon=10;start.tm_mday=9;start.tm_hour=4;
         fake_time=_mkgmtime(&start);
         assert(!sidera_main(7,run_args));
-        assert(control_step==10&&direction_step==12&&!opened&&console_restored==1&&!keyboard_mapped);
-        puts("PASS: Space LIVE/PAUSE/PLAY cycle, frozen/resumed time, clock failure and Shift+arrows wrapping, retired H and rejected generic/right Ctrl");
+        assert(control_step==13&&direction_step==19&&!opened&&console_restored==1&&!keyboard_mapped);
+        puts("PASS: Space LIVE-to-PAUSE and PAUSE/PLAY toggle, N resync/failure, Shift+arrows, inactive F/H/X and rejected generic/right Ctrl");
         return 0;
     }
     if(argc==4&&(!strcmp(argv[3],"solar-loop")||!strcmp(argv[3],"solar-live"))) {
@@ -587,8 +612,8 @@ int main(int argc,char **argv)
         fake_time=_mkgmtime(&start);
         assert(!sidera_main(7,run_args));
         assert(solar_step==6&&!opened&&console_restored==1);
-        assert(_access(save_path,0)!=0); /* S was ignored. */
-        puts("PASS: modal X/Q, clocks-only LIVE, frozen simulation/sky, ignored keys and recalculation on close");
+        assert(_access(save_path,0)!=0); /* S and Ctrl+S were ignored. */
+        puts("PASS: modal Esc/Ctrl+Q, clocks-only LIVE, frozen simulation/sky, ignored keys and recalculation on close");
         return 0;
     }
     if(argc==4) {
@@ -605,7 +630,7 @@ int main(int argc,char **argv)
     }
 #endif
     assert(sidera_main(2,help_args)==0);
-    assert(strstr(output,"Q returns to the monitor")&&!strstr(output,"Alt+Tab"));
+    assert(strstr(output,"Ctrl+Q returns to the monitor")&&!strstr(output,"Alt+Tab"));
     assert(!opened&&rom_reads==overlay_reads);
     output[0]=0;
     assert(sidera_main(7,run_args)==1); /* No VSYNC: fail before touching files. */
@@ -615,7 +640,7 @@ int main(int argc,char **argv)
     assert(sidera_main(7,run_args)==0);
     assert(cover_shown&&!cover_keys&&cover_duration>=625&&cover_duration<=629);
     assert(key_index==21&&menu_seen==8&&console_restored==1&&!grid);
-    assert(render_test==10&&cache_test==7&&gx_busy()); /* Q exited a partial frame. */
+    assert(render_test==10&&cache_test==7&&gx_busy()); /* Ctrl+Q exited a partial frame. */
     assert(trail_checks>=TRAIL_COUNT&&sky_checks&&planet_checks&&star_checks&&idle_steps>1&&render_polls>1);
     assert(trail_done==TRAIL_COUNT&&!cs_busy());
     assert(!opened&&rom_reads-overlay_reads==7&&planets&&constellation_mode==1); /* Two CITIES openings each load the map. */
@@ -631,7 +656,7 @@ int main(int argc,char **argv)
     tz_close();
     f=fopen(save_path,"rb");assert(f);fclose(f);remove(save_path);
     local_directions();assert(!opened);
-    puts("PASS: application loop, LCtrl+arrows FOV/bounds without astronomy recalculation, cities, G/P/K/C/S, Q cleanup");
+    puts("PASS: application loop, LCtrl+arrows FOV/bounds without astronomy recalculation, cities, G/P/K/C/S, Ctrl+Q cleanup");
     return 0;
 }
 

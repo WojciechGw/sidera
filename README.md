@@ -83,7 +83,7 @@ python -m http.server --bind 127.0.0.1 --directory build/cc65/debug/web/sidera 8
 Open `http://127.0.0.1:8000/` and click the emulator to focus the keyboard.
 The page starts silently; SIDERA uses its normal controls. Opening `index.html`
 directly with `file://` does not work. Stop the server with Ctrl+C (or stop F5).
-WEB passes `/config SAVE:/sidera.cfg`; S saves settings to the browser's IndexedDB.
+WEB passes `/config SAVE:/sidera.cfg`; Ctrl+S saves settings to the browser's IndexedDB.
 Return using the same browser profile, hostname and port to restore them.
 Private browsing and clearing site data may discard saves. The fixed port keeps
 the local origin stable; close another server using port 8000 before launching.

@@ -24,12 +24,12 @@ splash, the header and keyboard hints appear immediately using your settings.
 Uncalculated Sun/Moon fields show dots and their icons stay hidden until ready.
 The first Sun/Moon results appear before the stars finish calculating; the sky
 plot follows when its data is ready.
-Wait for Working... to disappear before judging a fully calculated view.
-Use Q to return to the monitor. The computer clock supplies LIVE time.
+Wait for Working, please wait... to disappear before judging a fully calculated view.
+Use Ctrl+Q to return to the monitor. The computer clock supplies LIVE time.
 
 RP6502-WEB runs the same ROM in a desktop browser with WebAssembly and WebGL2.
 Open the served WEB page and click the emulator to focus the keyboard. The
-controls below also apply in the browser. S stores settings in browser storage;
+controls below also apply in the browser. Ctrl+S stores settings in browser storage;
 return to the same site in the same browser profile to restore them. Clearing
 site data removes saves. After loading, calculations need no network connection.
 
@@ -72,26 +72,27 @@ LCtrl+Left/Right     Narrow/widen FOV by 10 degrees, within 50-160.
 Shift+Right         Next direction: N, NE, E, SE, S, SW, W, NW.
 Shift+Left          Previous compass direction; 50 -> 45 -> 0 -> 315 degrees.
 N                   Return to LIVE using the computer's current UTC time.
-Space               Cycle LIVE -> SIM/PAUSE -> SIM/PLAY -> LIVE.
+Space               Toggle SIM/PAUSE and SIM/PLAY; from LIVE enter PAUSE.
 + / -               Move forward/backward 15 minutes and pause simulation.
 [ / ]               Move backward/forward one day and pause simulation.
 D                   Edit UTC date and time.
 L                   Edit latitude, longitude and height in metres AMSL.
 K                   Open Cities to select an observer location.
-F                   Open FIND for bodies, stars and constellations.
+Ctrl+F              Open FIND for bodies, stars and constellations (either Ctrl).
 Z                   Edit the IANA time zone, for example Europe/Warsaw.
-S                   Save all current settings to the configuration file.
+Ctrl+S              Save settings from the main sky view (either Ctrl key).
 G                   Cycle grid modes: scale, crosses, dots, off.
 T                   Toggle Sun and Moon daily paths.
 C                   Cycle constellation modes described below.
 P                   Toggle Mercury, Venus, Mars, Jupiter, Saturn and Uranus.
 Ctrl+L              Redraw the screen.
-X                   Show/hide a Solar System snapshot for the displayed UTC.
-Q / Esc             Quit to the monitor when no editor or city list is open.
+S                   Open a Solar System snapshot; Esc closes the panel.
+Ctrl+Q              Quit to the monitor from any panel (either Ctrl key).
 
-Space freezes the displayed UTC time when leaving LIVE. SIM/PLAY advances
-in 5-minute steps; returning to LIVE immediately reads the computer clock.
-N still returns directly to LIVE. FOV uses the physical left Ctrl key only;
+Space freezes the displayed UTC time when leaving LIVE, then toggles
+SIM/PAUSE and SIM/PLAY. Space never returns to LIVE; N immediately reads
+the computer clock and resumes LIVE. SIM/PLAY advances in 5-minute steps.
+FOV uses the physical left Ctrl key only;
 right Ctrl (also when held together with left Ctrl) does not change FOV.
 H and Shift+H have no action.
 
@@ -108,7 +109,7 @@ result count, messages and keyboard help all fit inside the frame.
 In Cities, type a country code, country or city name; filtering starts at two
 characters. Use Up/Down, Page Up/Down or Home/End; Enter selects, Esc cancels.
 A selected city supplies its coordinates, height and time zone. Selection
-also chooses the local-hour viewing direction; press S to keep the settings.
+also chooses the local-hour viewing direction; press Ctrl+S to keep the settings.
 
 The 300 x 150 pixel upper-right world map highlights the continent of the city
 selected in the list, before Enter. Land contours are white; the selected
@@ -158,19 +159,22 @@ inverse name remain visible independently of C, including C0 and C4; the C mode
 is preserved. The figure replaces the previous selection, moves with time and
 does not turn the camera. Selecting another object replaces the figure.
 
-The X panel shows a schematic Solar System from ecliptic north. Eight
+The S panel shows a schematic Solar System from ecliptic north. Eight
 concentric circles separate the planet sprites; distances are not in AU
 scale. The Sun uses its original 32 x 32 sprite. Planet directions follow
-the date printed at the top right. The panel is 317 x 317 pixels.
+the date printed at the top right. The panel is 640 x 409 pixels, below the header, with a 1-pixel frame.
+The enlarged orbit diagram is centred; sprite and text sizes are unchanged.
 English planet names appear beside their sprites, without connecting lines;
 their placement avoids other names, sprites and the panel edges.
 An unlabelled white 2 x 2 dot marks the Moon, 8 pixels from Earth's centre.
 A one-pixel black border separates it from the orbit lines. Its direction
 follows the snapshot time; labels avoid both the dot and its border.
-Only X and Q work while it is open. Sky drawing and calculations stop;
-LIVE updates only the UTC/LOCAL clocks. SIM / PLAY pauses until X closes
+Only Esc and Ctrl+Q work while it is open. Sky drawing and calculations stop;
+LIVE updates only the UTC/LOCAL clocks. SIM / PLAY pauses until Esc closes
 the panel, then resumes. Closing recalculates and redraws the sky for the
-current time. Reopening takes a new snapshot. Q returns to the monitor.
+current time. Reopening takes a new snapshot. Ctrl+Q returns to the monitor.
+Plain Q and Esc in the sky view do not quit the application. X and plain F are unused.
+Ctrl+S is ignored in panels and editors; return to the sky view before saving.
 
 4. USING THE OBSERVATORY
 
@@ -207,8 +211,14 @@ on black. Star names take priority over constellation labels; labels that
 cannot fit without overlapping are omitted. Alpha Centauri uses the
 catalogue position of component B (HIP 71681).
 Figures can extend beyond the view and are also drawn below the horizon.
-The footer groups time and settings in its first row, and view controls and
-panels in its second row. Active G/T/C/P labels are highlighted in inverse video.
+The footer has three rows at y=441, 451 and 461, with 8-pixel side margins.
+Navigation, Ctrl+S, Ctrl+F and Ctrl+Q occupy the first row. Time and time zone
+occupy the second. The third reads L: location, K: cities, S: Solar system,
+P: planets, T: paths, G: grid and C: constellations, in that order. Active
+G/T/C/P labels are highlighted in inverse video. Messages remain below at y=472.
+The same row shows the current G and C modes beneath their highlighted labels,
+in white on black. G1/G2/G3 read scale, cross and full. C1/C2/C3/C4 read
+stars, charts, charts & names and navigational. G0/C0 show no label.
 T shows paths from midnight to midnight UTC: solid for Sun, dashed for Moon.
 
 LIVE updates the clock each second, Sun/Moon/planets each minute, and stars
@@ -216,10 +226,10 @@ every five minutes. SIM / PLAY advances in 5-minute steps when calculations
 and drawing finish, with at least 0.336 seconds between steps. Detailed views
 can take substantially longer. No intermediate instants are skipped and no
 positions are interpolated. Manual +/- still uses 15-minute steps and pauses
-playback. SIM / PAUSE holds the date. Working... marks calculation or
+playback. SIM / PAUSE holds the date. Working, please wait... marks calculation or
 drawing in progress. Paths and rise/set calculations can take a while.
 
-S saves the location, zone, View, FOV, G/T/C/P and time mode. The default file
+Ctrl+S saves the location, zone, View, FOV, G/T/C/P and time mode. The default file
 is MSC0:/sidera.cfg; /config selects another file. A writable drive is
 needed.
 LIVE reloads with current time; a saved simulation reloads at its saved UTC

@@ -11,8 +11,8 @@ static void help(void)
     platform_puts("sidera /config PATH /date \"YYYY-MM-DD HH:MM:SS\" /live\r\n"
         " /location \"CC/City\" /view AZ,ALT /fov 50..160\r\n"
         " /grid 0..3 /paths on|off /planets on|off /constellations 0..4\r\n"
-        "All options optional. S saves settings.\r\n"
-        "Standalone: resources embedded in ROM; Q returns to the monitor.\r\n");
+        "All options optional. Ctrl+S saves settings.\r\n"
+        "Standalone: resources embedded in ROM; Ctrl+Q returns to the monitor.\r\n");
 }
 /* INIT is allowed to disappear between these two calls. Keep their shared
  * results resident, never pointers into its temporary configuration buffer. */
@@ -37,7 +37,7 @@ int boot_prepare(int argc,char **argv)
     }
     if(!platform_vga_ready()){platform_puts("sidera: requires VGA.\r\n");return -1;}
     boot_config=config_load();
-    if(boot_config<0)strcpy(note,"Cannot read configuration. S saves current settings.");
+    if(boot_config<0)strcpy(note,"Cannot read configuration. Ctrl+S saves current settings.");
     return 1;
 }
 void boot_apply(int argc,char **argv)

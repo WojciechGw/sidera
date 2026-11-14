@@ -11,27 +11,27 @@ holds the active overlay's code, constants, initialized data and BSS.
 
 | `ROM:` resource | Contents | Bytes loaded into the window | BSS | Free within 5888 B |
 | --- | --- | ---: | ---: | ---: |
-| `sidera-init.ovl` | Options, settings and opening data files | 4517 B | 0 B | 1371 B |
-| `sidera-cities.ovl` | City search, selection and map state | 4173 B | 431 B | 1284 B |
-| `sidera-edit.ovl` | Location, date and time-zone editors | 3106 B | 112 B | 2670 B |
+| `sidera-init.ovl` | Options, settings and opening data files | 4532 B | 0 B | 1356 B |
+| `sidera-cities.ovl` | City search, selection and map state | 4178 B | 431 B | 1279 B |
+| `sidera-edit.ovl` | Location, date and time-zone editors | 3111 B | 112 B | 2665 B |
 | `sidera-cover.ovl` | Splash screen and initial VGA assets | 829 B | 0 B | 5059 B |
-| `sidera-solar.ovl` | Orbits and the Solar System panel opened with X | 5672 B | 82 B | 134 B |
+| `sidera-solar.ovl` | Orbits and the Solar System panel opened with S | 5523 B | 82 B | 283 B |
 | `sidera-find.ovl` | Object and constellation search/details | 5071 B | 455 B | 362 B |
 
 Sizes are from the current cc65 build. Each resource also has a 24-byte header,
 read outside the window. Build-time checks reject memory boundary violations.
 
-The lower resident code, constants and BSS end at `$C59E` (exclusive).
+The lower resident code, constants and BSS end at `$C7A5` (exclusive).
 Target selection, figure geometry, world map and rendering helpers occupy 4655 B
 in resident HIGH at `$E000–$F22E`, including 79 B of initialized workspace,
 packaged as a second RAM block. After reserving the entire overlay window,
-**1843 B of unallocated RAM** remain below the C stack: 610 B at `$C59E–$C7FF`
+**1324 B of unallocated RAM** remain below the C stack: 91 B at `$C7A5–$C7FF`
 and 1233 B at `$F22F–$F6FF`. The C stack retains `$F700–$FEFF`, 2048 B.
 Unused space is not an automatically available heap.
 
 In the original standalone build used for comparison, data ends at `$D5B1`,
 leaving 8527 B free. After adding X, removing the RMT layer and updating the
-controls, city panel/map, FIND, simulation scheduling, early panels and partial rendering, **6684 B**
+controls, city panel/map, FIND, simulation scheduling, early panels and partial rendering, **7203 B**
 less RAM is available than in the original, after accounting for the window,
 loader and panel code. Unused space inside
 overlays is not included in this result.
@@ -64,7 +64,7 @@ Resident `main` selects an overlay through `ovl_select()` before calling its
 functions. An overlay cannot replace its own window or retain pointers into it
 after returning. Startup proceeds through INIT prepare, optional CITIES for
 `/location`, INIT apply, COVER and the sky view. During observation, overlays
-load when entering K, L/D/Z, X or F. Sky calculations and S saving are resident.
+load when entering K, L/D/Z, S or Ctrl+F. Sky calculations and Ctrl+S saving are resident.
 
 FIND holds a frozen date and a four-record scan budget. Its 855 match indices use
 1069 bytes of XRAM at `$E200–$E62C`, packed as 10-bit values, after label storage
@@ -116,16 +116,16 @@ Only city controls are shown while the selector is active. On selection or
 cancellation, the entire panel is cleared and axes and footer invalidated before
 redrawing the sky, both compasses, side scales and sky shortcuts.
 
-## X panel
+## Solar System panel
 
-X opens a static Solar System view for the current `moment` (UTC). Pressing X
-again closes it; reopening captures a new time. The S key does not save panel
-state. The **317×317 px** square occupies x=301..617, y=93..409: 10 empty pixels
-separate it from the plot's right boundary, the last upper compass tick and
-the highest lower compass tick (y=420).
+S opens a static Solar System view for the current `moment` (UTC). Esc
+closes it; reopening captures a new time. Ctrl+S is ignored inside panels and
+does not save panel state. The **640×409 px** panel occupies x=0..639, y=71..479, matching CITIES:
+it preserves the header and covers the plot, compasses, side scales and footer,
+with no outer margin and a one-pixel frame. The diagram is centred at (320, 280).
 
-The eight orbits are concentric circles with radii of 30, 42, 54, 66, 83, 100,
-117 and 134 px. The layout is schematic, without an AU scale. Spacing prevents
+The eight orbits are concentric circles with radii of 39, 55, 71, 87, 109, 131,
+154 and 176 px. The layout is schematic, without an AU scale. Spacing prevents
 8×8 px sprites from overlapping even when planets have similar directions.
 The Sun uses the original 32×32 px sprite without scaling.
 English names of all eight planets sit directly beside their sprites, without
@@ -143,24 +143,44 @@ Heliocentric directions are calculated for the captured date from
 perturbation corrections. The view is from ecliptic north: the equinox direction
 points right, and 90° ecliptic longitude points up. Distances are not represented
 to scale. The header has ` SOLAR SYSTEM ` in black on white on the left, lowered
-by 8 px (text at y=105). `snapshot YYYY-MM-DD HH:MM:SS UTC` stays at y=97,
+by 8 px (text at y=83). `snapshot YYYY-MM-DD HH:MM:SS UTC` stays at y=75,
 right-aligned with a 2 px margin.
-At the bottom, `Schematic view (not in AU scale)` and `X: close` are right-aligned
-with a 2 px margin. Both keyboard shortcut rows below the main plot start at x=12
-and span 102 character cells. The first row (y=450) groups time and settings;
-the second (y=462) groups view controls, panels and quitting. G/T/C/P retain
+At the bottom, `Schematic view (not in AU scale)` is left-aligned and `Esc: close`
+is right-aligned, each with a 2 px margin. The sky keyboard shortcuts return after
+closing. All three rows span x=8..631, leaving 8 px side margins. The first row
+(y=441) contains
+`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+F: find object`
+and `Ctrl+Q: quit`, with 54 px gaps. The second (y=451) contains N,
+`Space: SIM PAUSE/PLAY`, +/-, [/], D and Z with 48 px gaps.
+The third (y=461) contains `L: location`, `K: cities`, `S: Solar system`,
+`P: planets`, `T: paths`, `G: grid` and `C: constellations`, with 27 px gaps.
+The final C highlight ends at the label boundary to preserve the right margin.
+The compass ends at y=438; y=439..440
+stay empty. Scene clearing stops before `FOOTER_TOP` (441), and editors clear
+from there through the screen bottom. G/T/C/P retain
 inverse-video state labels. Messages remain on a separate row at y=472.
+The same row shows persistent white-on-black mode labels under G (x=473,
+30 px) and C (x=542, 84 px). G1/G2/G3 read `scale`/`cross`/`full`;
+C1/C2/C3/C4 read `stars`/`charts`/`charts & names`/`navigational`.
+G0/C0 are blank. Ordinary messages must stay short enough to end before x=473.
+Independent caches redraw only a changed mode field; clearing the message row
+restores both labels. Padded strings clear the full field on every transition.
 
 Six planets use the existing images and palettes. The additional resource
 `ROM:sidera-solar.dat` contains Earth and Neptune.
 Panel descriptors occupy XRAM `$B096–$B0EF`, images occupy `$E160–$E1DF`,
 and the two palettes occupy `$E200–$E5FF`, all in previously unused areas.
 
-Only X (close) and Q (quit the application) work while the panel is open.
+The SOLAR sprite list extends through y=479 on plane 1; sky sprites keep their
+existing y=84..415 clip.
+
+Only Esc (close) and Ctrl+Q (quit the application) work while the panel is open.
 Calculations, sky drawing and simulation are suspended; in LIVE mode, only the
 UTC/LOCAL clocks in the top bar refresh. Sky sprites that overlap the panel are
-hidden until it closes. X triggers recalculation and redraw of the plot for the
-current time. Simulation returns to its previous PLAY/PAUSE state.
+hidden until it closes. Esc clears the panel and invalidates axes and footer,
+then triggers recalculation and redraw for the current time. Simulation returns
+to its previous PLAY/PAUSE state. Ctrl+Q works with either Ctrl key, from the
+sky, every panel and every editor. Plain Q and sky-view Esc do not quit.
 
 The loader opens a resource through `open/read/close`, checks its header,
 boundaries, length and CRC32, then clears BSS. The last successfully loaded

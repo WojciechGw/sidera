@@ -23,27 +23,29 @@ Keys:
 Arrows           Pan the view
 + / -            Adjust observation time by + / - 15 min
 [ / ]            Move observation date backward / forward 1 day
-Space            Cycle LIVE -> SIM/PAUSE -> SIM/PLAY -> LIVE (5 min/step)
+Space            SIM PAUSE/PLAY; from LIVE enter PAUSE (5 min/step)
 LCtrl+Left/Right  Decrease/Increase FOV by 10 deg (50–160 deg default: 120 deg)
 N                Set observation time to now (computer local time)
 D                Set observation date and time
 L                Set location (DMS coordinates)
-S                Save location, zone, view, FOV, G/T/C/P and LIVE/simulation time
+Ctrl+S           Save location, zone, view, FOV, G/T/C/P and LIVE/simulation time
 Shift+Right      Next compass direction: N/NE/E/SE/S/SW/W/NW
 Shift+Left       Previous compass direction (50 -> 45 -> 0 -> 315 deg)
 G                Cycle grid and coordinate markers
 T                Toggle daily Sun and Moon paths
 P                Toggle planets (Mercury to Uranus)
 K                Search countries and cities in a framed sky panel
-F                Find bodies, stars or constellations by name/code/HIP
+Ctrl+F           Find bodies, stars or constellations by name/code/HIP
 Z                Set time zone (IANA name)
 C                Cycle constellation display modes
-X                Solar System snapshot; only X/Q work, sky and SIM pause
-Q                Quit
+S                Solar System snapshot; Esc closes, sky and SIM pause
+Ctrl+Q           Quit from any panel (either Ctrl key)
 
 Standalone edition with embedded ROM resources.
+Ctrl+S accepts either Ctrl key and saves only from the main sky view. X and plain F are unused.
+Ctrl+F accepts either Ctrl key; N returns to LIVE.
 FOV requires the physical left Ctrl key; right Ctrl does not change FOV.
-Default settings: MSC0:/sidera.cfg. Q returns to the monitor.
+Default settings: MSC0:/sidera.cfg. Ctrl+Q returns to the monitor.
 
 Have fun!
 

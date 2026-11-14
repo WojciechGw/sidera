@@ -75,10 +75,10 @@ int main(int argc,char **argv)
     trail_reset();tick=calc_tick=star_tick=platform_ticks();
     for(;;) {
         k=key_poll();
+        if(k==CTRL('Q'))goto done; /* Either Ctrl, also inside modal panels. */
         interactive=view=0;
         if(solar_visible) {
-            if(k=='q'||k=='Q')goto done;
-            if(k=='x'||k=='X') {
+            if(k==K_ESC) {
                 solar_hide();if(live)now();
                 refresh=scene=head=star_check=1;tick=platform_ticks();k=0;
             } else {
@@ -116,7 +116,6 @@ int main(int argc,char **argv)
             jump=0;
             interactive=1;
             switch(k) {
-            case 'q':case 'Q':case K_ESC:goto done;
             case K_LEFT:bearing=(bearing+355)%360;scene=view=1;break;
             case K_RIGHT:bearing=(bearing+5)%360;scene=view=1;break;
             case K_LEFT|K_LCTRL:case K_RIGHT|K_LCTRL:
@@ -126,15 +125,13 @@ int main(int argc,char **argv)
             case K_RIGHT|K_SHIFT:bearing=((bearing/45+1)*45)%360;scene=view=1;break;
             case K_LEFT|K_SHIFT:
                 bearing=bearing?((bearing-1)/45)*45:315;scene=view=1;break;
-            case 'n':case 'N':interactive=0;live=now();playing=0;refresh=head=1;break;
+            case 'n':case 'N':
+                interactive=0;live=now();playing=0;refresh=head=1;
+                if(!live)strcpy(note,"Cannot read system clock.");break;
             case ' ':
                 interactive=0;
                 if(live)live=playing=0;
-                else if(!playing)playing=1;
-                else {
-                    playing=0;live=now();refresh=1;
-                    if(!live)strcpy(note,"Cannot read system clock.");
-                }
+                else playing=!playing;
                 tick=platform_ticks();head=star_check=1;break;
             case '+':case '=':jump=900;break;
             case '-':jump=-900;break;
@@ -150,7 +147,7 @@ int main(int argc,char **argv)
                 scene=1;gx_footer();break;
             case 'p':case 'P':planets=!planets;gx_footer();refresh=scene=1;break;
             case 't':case 'T':trails=!trails;gx_footer();scene=1;break;
-            case 'x':case 'X':
+            case 's':case 'S':
                 solar_date=moment;
                 if(!ovl_select(OVL_SOLAR))goto done;
                 if(!solar_draw()){exit_code=1;goto done;}
@@ -160,7 +157,7 @@ int main(int argc,char **argv)
             case 'l':case 'L':if(!ovl_select(OVL_EDIT))goto done;edit_start(1);continue;
             case 'd':case 'D':if(!ovl_select(OVL_EDIT))goto done;edit_start(2);continue;
             case 'z':case 'Z':if(!ovl_select(OVL_EDIT))goto done;edit_start(3);continue;
-            case 'f':case 'F':
+            case CTRL('F'):
                 if(!ovl_select(OVL_FIND))goto done;
                 if(find_start()) {
                     if(!gx_objects()){strcpy(note,"Cannot load Moon phase from sidera.dat.");exit_code=1;goto done;}
@@ -174,7 +171,7 @@ int main(int argc,char **argv)
                     cities_draw();continue;
                 }
                 gx_footer();break;
-            case 's':case 'S':strcpy(note,config_save()?"":"Cannot save configuration.");gx_footer();break;
+            case CTRL('S'):strcpy(note,config_save()?"":"Cannot save configuration.");gx_footer();break;
             case 12:gx_axes_invalidate();gx_footer_invalidate();scene=head=1;break;
             default:interactive=0;break;
             }

@@ -14,7 +14,7 @@ with rp6502.Emu() as emu:
     def word(symbol,signed=False):
         return int.from_bytes(read(symbol,2),'little',signed=signed)
     def locate(query,ident,figure=False):
-        emu.cmd('key f')
+        emu.cmd('key f+ctrl')
         emu.cmd('wait _find_active 1 7200')
         emu.cmd(f'type "{query}"')
         emu.cmd('key enter')
@@ -28,7 +28,7 @@ with rp6502.Emu() as emu:
     emu.cmd('run 1200')
     emu.cmd('wait _calculating 0 14400')
     emu.cmd('run 5')
-    emu.cmd('key f')
+    emu.cmd('key f+ctrl')
     emu.cmd('wait _find_active 1 7200')
     emu.cmd('run 1200')
     emu.cmd('shot "find.png"')
@@ -74,7 +74,7 @@ with rp6502.Emu() as emu:
     bearing=word('_bearing')
     emu.cmd('key space')
     emu.cmd('run 5')
-    emu.cmd('key f')
+    emu.cmd('key f+ctrl')
     emu.cmd('wait _find_active 1 7200')
     frozen=read('_moment',7)
     emu.cmd('run 600')
@@ -83,7 +83,7 @@ with rp6502.Emu() as emu:
     emu.cmd('wait _find_active 0 120')
     emu.cmd('run 1800')
     assert read('_moment',7)!=frozen and word('_bearing')==bearing and word('_target_id')==sirius
-    emu.cmd('key space')  # SIM/PLAY -> LIVE
+    emu.cmd('key n')  # SIM/PLAY -> LIVE
     emu.cmd('run 60')
     emu.cmd('key space')  # LIVE -> SIM/PAUSE
     emu.cmd('run 60')
@@ -129,7 +129,7 @@ with rp6502.Emu() as emu:
     emu.cmd('run 1800')
     assert read('_moment',7)!=frozen
     assert view==read('_bearing',2)+read('_elevation',2)+read('_fov',2)
-    emu.cmd('key space')
+    emu.cmd('key n')
     emu.cmd('run 60')
     emu.cmd('key space')
     emu.cmd('run 60')
@@ -142,7 +142,7 @@ with rp6502.Emu() as emu:
     emu.cmd('shot "find-ursa-major.png"')
     locate('Ori',8+len(stars)+ori,True)
     emu.cmd('peek _constellation_mode 4')
-    emu.cmd('key f')
+    emu.cmd('key f+ctrl')
     emu.cmd('wait _find_active 1 7200')
     emu.cmd('run 120')  # Allow the modal frame to open before measuring search cancellation.
     emu.cmd('type "UMa"')
@@ -152,7 +152,7 @@ with rp6502.Emu() as emu:
     assert word('_target_id')==8+len(stars)+ori
     emu.cmd('run 60')
     emu.cmd('wait _calculating 0 14400')
-    emu.cmd('key q')
+    emu.cmd('key q+ctrl')
     emu.cmd('wait exit 120')
     emu.cmd('expect exit 0')
 print('PASS: actual ROM FIND, responsive cancel, HIP/name/code selection, C0/C4 figures, fixed camera, frozen SIM, LIVE centring and overlay lifetime')

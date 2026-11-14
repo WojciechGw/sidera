@@ -16,7 +16,8 @@ for y in range(480):
         if data[y*80+x//8]&(128>>(x&7)):
             a=(y*640+x)*3;pixels[a:a+3]=b'\xff\xff\xff'
 for mode,cfg,top,bottom in ([] if '--bitmap' in sys.argv[3:] else
-                           [(6,0xb050+i*10,84,416) for i in range(16 if '--solar' in sys.argv else 7)]+
+                           [(6,0xb050+i*10,84,416) for i in range(7)]+
+                           ([(6,0xb096+i*10,84,480) for i in range(9)] if '--solar' in sys.argv else [])+
                            [(4,0xb018,84,416),(5,0xb030,0,71),(4,0xb038,0,84),
                             (7,0xb0f0,75,229)]):
     size=32

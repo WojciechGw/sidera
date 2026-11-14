@@ -4,7 +4,7 @@
 #include <string.h>
 #include "solar.h"
 
-static int radius[8]={30,42,54,66,83,100,117,134};
+static int radius[8]={39,55,71,87,109,131,154,176};
 static void check_layout(void)
 {
     int x,y,w,j,k,px,py,gapx,gapy;

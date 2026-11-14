@@ -70,7 +70,7 @@ with rp6502.Emu() as emu:
     emu.cmd('press lctrl')
     results.append(pan('left_ctrl_during_stars', 'left+ctrl', '_fov', -10))
     emu.cmd('release lctrl')
-    emu.cmd('key q')
+    emu.cmd('key q+ctrl')
     emu.cmd('wait exit 120')
     emu.cmd('expect exit 0')
 Path(os.environ.get('SIDERA_LATENCY_OUTPUT','input-latency.json')).write_text(

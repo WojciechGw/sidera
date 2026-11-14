@@ -74,5 +74,5 @@ with rp6502.Emu() as emu:
     city=next(c for c in catalogue if c['city']=='Jayapura')
     assert int.from_bytes(read('_observer',4),'little',signed=True)==round(city['latitude']*36000)
     emu.cmd('run 60');emu.cmd('wait _calculating 0 14400')
-    emu.cmd('key q');emu.cmd('wait exit 120');emu.cmd('expect exit 0')
+    emu.cmd('key q+ctrl');emu.cmd('wait exit 120');emu.cmd('expect exit 0')
 print('PASS: actual-ROM 300x150 map, geographic region, red 5x5 cross, frozen time, empty results and selected-city apply')

@@ -36,6 +36,8 @@ with tempfile.TemporaryDirectory(prefix='sidera-loop-') as directory:
     subprocess.run(command + ["simulation-limit"], check=True)
     subprocess.run(command + ["solar-loop"], check=True)
     subprocess.run(command + ["solar-live"], check=True)
+    for key in ('K', 'F', 'L', 'D', 'Z'):
+        subprocess.run(command + [f"quit-{key}"], check=True)
     for name, data in assets.items():
         (root / name).write_bytes(data[:-1])
         subprocess.run(command + [name], check=True)

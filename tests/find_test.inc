@@ -73,14 +73,14 @@ static void find_tests(const char *output)
     assert(assets_vectors(id-8,1,vector));star_frame(&moment,&observer,&frame);
     star_position(&frame,vector,&p);assert(gx_project(&p,&x,&y));
     assert(abs(x-VIEW_CENTER)<=gx_circle/360+1&&abs(y-VIEW_MIDDLE)<=gx_circle/360+1);
-    constellation_mode=4;target_update();gx_clear(71,377);target_draw();
+    constellation_mode=4;target_update();gx_clear(71,370);target_draw();
     assert(pixel(x,y)); /* Sirius is not in the five C4 navigation groups. */
     sprintf(name,"%s.target",output);file=fopen(name,"wb");assert(file);
     assert(fwrite(xram,1,sizeof(xram),file)==sizeof(xram));fclose(file);
     old_bearing=bearing;assert(date_step(&moment,3600));target_update();
     assert(bearing==old_bearing&&target_id==id); /* Position moves; camera does not. */
     star_frame(&moment,&observer,&frame);star_position(&frame,vector,&p);
-    gx_clear(71,377);target_draw();if(gx_project(&p,&x,&y))assert(pixel(x,y));
+    gx_clear(71,370);target_draw();if(gx_project(&p,&x,&y))assert(pixel(x,y));
     find_query("HIP 32349");assert(find_key('\r')==1&&target_id==id&&constellation_mode==4);
     assert(find_start());assert(find_key(K_ESC)==2&&target_id==id);
     planets=0;find_query("Mercury");assert(find_key('\r')==1&&target_id==2&&planets);

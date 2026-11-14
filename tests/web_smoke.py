@@ -68,8 +68,8 @@ def main():
             # The normal five-second cover cannot be skipped. Allow preparation.
             page.wait_for_timeout(20000)
 
-            def save(expected=None):
-                page.keyboard.press('s', delay=100)
+            def save(expected=None, control='ControlLeft'):
+                page.keyboard.press(control + '+s', delay=100)
                 deadline = monotonic() + 60
                 while monotonic() < deadline:
                     config = page.evaluate(READ_CONFIG)
@@ -85,17 +85,17 @@ def main():
             # Keep the physical HID modifier pressed until the 6502 reads it.
             page.keyboard.press('ControlLeft+ArrowLeft', delay=500)
             page.wait_for_timeout(500)
-            changed = save(' 110 0 off off 0')
+            changed = save(' 110 0 off off 0', control='ControlRight')
             page.keyboard.press('ControlRight+ArrowLeft', delay=500)
             page.wait_for_timeout(500)
-            page.keyboard.press('s', delay=100)
+            page.keyboard.press('ControlLeft+s', delay=100)
             page.wait_for_timeout(1000)
             assert page.evaluate(READ_CONFIG) == changed, 'Right Ctrl changed FOV'
-            for key, name in [('k', 'cities'), ('f', 'find'), ('x', 'solar')]:
+            for key, name in [('k', 'cities'), ('ControlRight+f', 'find'), ('s', 'solar')]:
                 page.keyboard.press(key, delay=100)
                 page.wait_for_timeout(15000)
                 canvas.screenshot(path=str(output / (name + '.png')))
-                page.keyboard.press('Escape' if key != 'x' else 'x', delay=100)
+                page.keyboard.press('Escape', delay=100)
                 # Closing repaints the sky incrementally before the next panel.
                 page.wait_for_timeout(5000)
             # Clear the saved entry after loading to prove that the ROM restored it.

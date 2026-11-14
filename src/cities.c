@@ -223,7 +223,7 @@ unsigned char cities_key(unsigned k)
         if(!read_city(ids[selected-page])){cities_close();return 2;}
         if(!apply_city()){draw_note();return 0;}
         cities_close();
-        sprintf(note,"%s (press S to save location)",location_name);return 1;
+        sprintf(note,"%s (press Ctrl+S to save location)",location_name);return 1;
     }
     if(k==K_UP&&selected)--selected;
     else if(k==K_DOWN&&selected+1<total)++selected;

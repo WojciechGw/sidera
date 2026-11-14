@@ -67,7 +67,7 @@ with rp6502.Emu('--phi2', '8000', '--memseed', '123',
         if args.manual_step and moment != initial and not read('_calculating')[0]:
             events.append({'frame': frame, 'event': 'ready'})
             break
-    emu.cmd('key q')
+    emu.cmd('key q+ctrl')
     emu.cmd('wait exit 120')
     emu.cmd('expect exit 0')
 

@@ -132,9 +132,10 @@ Grid pixel rows are cached until elevation or FOV changes. Projection scaling
 uses unsigned shifts with an explicit sign to retain signed division's truncation
 toward zero without cc65's general 32-bit division routine.
 
-Space cycles LIVE → SIM/PAUSE → SIM/PLAY → LIVE. Leaving LIVE freezes the
-displayed time; returning reads the current system clock immediately. Shift+Right
-selects the next 45-degree compass direction; Shift+Left selects the previous
+Space enters SIM/PAUSE from LIVE, then toggles SIM/PAUSE and SIM/PLAY.
+Leaving LIVE freezes the displayed time; only N returns to LIVE and reads
+the current system clock immediately. Shift+Right selects the next 45-degree
+compass direction; Shift+Left selects the previous
 one, including from bearings between compass directions. LCtrl+Left/Right narrows
 or widens FOV by 10 degrees within 50–160. H and Shift+H have no action.
 
@@ -164,7 +165,8 @@ The three region bits occupy bits 4..6 of the existing SIDCITY2 role byte, leavi
 the default/capital/seat bits intact. Untagged legacy catalogues use a coarse
 lookup raster from the map resource. These assignments serve a schematic locator.
 
-F opens FIND with the same bounds and 20 rows. The 855-entry offline catalogue
+Ctrl+F (either Ctrl key) opens FIND; plain F is inactive. The panel uses the
+same bounds as CITIES and 20 rows. The 855-entry offline catalogue
 contains eight Solar System bodies, the existing 759 stars and 88 constellations,
 indexed back to their unchanged vectors and figures. Search matches a case-insensitive substring of names,
 Bayer/Flamsteed designations, HIP or HD identifiers from two characters onward.
@@ -207,9 +209,32 @@ and an inverse figure label are drawn independently of C, including C0 and C4.
 The mode remains unchanged. LIVE refreshes the angular cache at each displayed
 time while a figure is selected; the camera moves only on selection.
 
-The X panel captures a snapshot of the displayed date. While open, it suspends
-sky work and simulation advancement; LIVE clocks can still update. X closes the
-panel and refreshes the sky, and Q exits. Panel state is not saved in settings.
+The S panel captures a snapshot of the displayed date. While open, it suspends
+sky work and simulation advancement; LIVE clocks can still update. Esc closes the
+panel and refreshes the sky. Ctrl+Q (either Ctrl key) exits globally, including
+from panels and editors; plain Q and Esc in the sky view do not exit.
+Panel state is not saved in settings. S opens SOLAR; X has no action.
+Ctrl+S (either Ctrl key) saves settings only in the main sky view and is ignored
+in panels and editors. The three footer rows at y=441, 451 and 461 have 8 px
+side margins, with gaps differing by at most one pixel within each row. The
+first starts two empty scanlines below the compass and contains
+`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+F: find object`
+and `Ctrl+Q: quit`; FIND appears only here. The second groups N, Space, +/-,
+[/], D and Z, with 48 px gaps. The third contains `L: location`, `K: cities`,
+`S: Solar system`, `P: planets`, `T: paths`, `G: grid` and `C: constellations`,
+with 27 px gaps. The C highlight stays inside the right margin. Notes remain at y=472.
+On that row, persistent white-on-black labels start at x=473 for G and x=542
+for C, aligned with the highlighted fields above. G1/G2/G3 read `scale`, `cross`,
+`full`; C1/C2/C3/C4 read `stars`, `charts`, `charts & names`,
+`navigational`. G0/C0 are blank. Ordinary notes must end before these fields.
+Padded labels erase longer previous text. Each field caches its mode separately;
+note-row clearing invalidates both caches, while unchanged modes cause no writes.
+The busy label `Working, please wait...` extends leftward, leaving one character
+cell before the right-aligned LIVE/SIM status. Status updates clear x=424..639,
+y=0..8, including the full message and the LIVE bar.
+Scene clearing stops before `FOOTER_TOP` (441); editors clear from that row
+to the screen bottom so no shortcut fragments remain.
+FOV still requires physical left Ctrl despite the compact footer description.
 
 ## CPU memory and overlays
 
@@ -308,13 +333,13 @@ Perimeter scales are preserved independently of the plot interior. The upper
 and lower compasses change with bearing or FOV; the side scales change with
 elevation or FOV. Grid visibility also controls the upper and side scales.
 LIVE and SIM/PLAY updates leave all unchanged margins in place, except for the
-lower compass's daylight style. Its full-width band (rows 426–440, below the V)
+lower compass's daylight style. Its full-width band (rows 424–438, below the V)
 uses black ticks and directions on white from the displayed Sun Rise minute
 (inclusive) to Set (exclusive). At night it uses white on black. Polar UP/DOWN
 and civil days with just one crossing are supported; pending, stale or unavailable
 event results use the normal dark band. A style transition XORs only that band,
 including when time runs backward, without clearing the plot or the V.
-Direction glyphs occupy rows 433–439, leaving one empty row after the ticks
+Direction glyphs occupy rows 431–437, leaving one empty row after the ticks
 and one row of background below the letters.
 Clearing uses
 masked writes at the plot edges because margin and plot pixels share bytes.
@@ -323,7 +348,13 @@ scene. Regions become valid only after drawing finishes, so interrupted view
 changes cannot leave an incomplete scale cached. Full bitmap clears and Ctrl+L
 invalidate the affected regions. The interior grid still redraws normally.
 
-The Solar System panel occupies 317 × 317 pixels. It shows all eight planets,
+The Solar System panel occupies the same 640 × 409 pixels as CITIES
+(x=0..639, y=71..479), preserving the header, with a one-pixel frame.
+Its diagram is centred at (320, 280), with orbit radii of
+39, 55, 71, 87, 109, 131, 154 and 176 pixels; sprite and text sizes are unchanged.
+The SOLAR sprite list also covers scanlines 416..479, while sky sprites retain
+their original clip. Closing clears the panel and invalidates axes and footer.
+It shows all eight planets,
 including Earth and Neptune, on eight fixed concentric circles. Directions follow
 the calculated heliocentric positions, but circle radii are schematic rather than
 an astronomical-unit scale. Its calculations and label placement are separate
@@ -381,7 +412,7 @@ Resources are embedded in the ROM and opened through `ROM:` paths.
 | --- | --- |
 | `sidera.dat` | `SIDERA5` header; font, palettes, Sun and Moon images, six sky-planet images, star/constellation data and splash assets |
 | `sidera.find` | `SIDFIND3` header and 855 fixed 256-byte records: object index, label, complete searchable aliases and a padded 52-character table row |
-| `sidera-solar.dat` | Additional Earth and Neptune images and palettes for the X panel |
+| `sidera-solar.dat` | Additional Earth and Neptune images and palettes for the S panel |
 | `sidera.cty` | `SIDCITY2` header and fixed-size city records with coordinates, height and time-zone ID |
 | `sidera.map` | `SIDMAP1` header, eight 300x150 map variants in shifted 39-byte rows, then a geographic lookup raster; 91816 bytes |
 | `sidera.tz` | `SIDTZ001` header, sorted zone index and UTC intervals carrying local offsets |

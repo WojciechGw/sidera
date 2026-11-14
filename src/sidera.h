@@ -58,6 +58,7 @@ void show_cover(void);
 #define VIEW_TOP 84
 #define VIEW_BOTTOM 416
 #define VIEW_MIDDLE 250
+#define FOOTER_TOP 441 /* Two blank rows after the bottom compass (ends at 438). */
 #define CITIES_LEFT 0
 #define CITIES_RIGHT 640 /* exclusive */
 #define CITIES_TOP 71

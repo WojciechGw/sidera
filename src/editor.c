@@ -28,7 +28,7 @@ extern unsigned char editing;
 #endif
 static void edit_draw(void)
 {
-    gx_clear(448,32);
+    gx_clear(FOOTER_TOP,480-FOOTER_TOP);
     gx_text(20,450,editing==1?"Location: D = degrees, ' = minutes, \" = seconds; Enter: apply, Esc: cancel":
         editing==3?"Zone: IANA name (e.g. Europe/Warsaw, Etc/UTC); Enter: apply, Esc: cancel":
         "UTC date: YYYY-MM-DD HH:MM:SS (1900-2200); Enter: apply, Esc: cancel");
@@ -55,7 +55,7 @@ unsigned char edit_key(unsigned k)
         if(editing==1?location_parse(edit,&observer):editing==3?tz_set(edit):date_parse(edit,&moment)) {
             if(editing==1&&memcmp(&previous,&observer,sizeof(observer)))location_name[0]=0;
             if(editing==2){live=0;playing=0;note[0]=0;}
-            else strcpy(note,"Location/zone changed (press S to save location)");
+            else strcpy(note,"Location/zone changed (press Ctrl+S to save location)");
             editing=0;return 1;
         }
         strcpy(note,editing==1?"Invalid DMS location or height (-500..10000 m).":

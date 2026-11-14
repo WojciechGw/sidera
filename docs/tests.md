@@ -6,8 +6,9 @@
   against their references. They cover astronomy, catalogues,
   time zones, rise/set times, settings, graphics, labels, the loader and the full
   application loop with overlays, including error scenarios.
-  Application-loop checks include the Space LIVE/PAUSE/PLAY cycle, immediate
-  clock resynchronization, clock failure and Shift+Left/Right direction wrapping.
+  Application-loop checks include Space entering PAUSE from LIVE and toggling
+  PAUSE/PLAY without returning to LIVE, N clock resynchronization/failure, and
+  Shift+Left/Right direction wrapping.
   They also check FOV limits and that the retired H shortcuts and generic Ctrl
   arrows do not change the view.
   C scenarios verify immediate footer/busy feedback, an unchanged plot during
@@ -23,7 +24,13 @@
   Simulation scenarios exercise all 20 G/C combinations with T/P enabled,
   exact five-minute steps, one redraw per instant, local/UTC date rollover,
   unsigned deadline wrap, manual +15-minute pause/resume and the year-2200
-  boundary. Q is also tested during catalogue preparation.
+  boundary. Ctrl+Q is also tested during catalogue preparation and in CITIES,
+  FIND, SOLAR and all editors; plain Q and sky-view Esc must not exit.
+  Ctrl+S saves only from the sky view; modal panels and editors ignore it.
+  S opens SOLAR and X has no action. Footer checks enforce 8 px side margins
+  and all G/T/P/C highlights in the second row, including partial writes.
+  The first shortcut row must survive scene redraws and editor return;
+  y=441..442 stays blank and note text remains independent at y=472.
   Projection checks cover all 12 FOVs, negative rounding and inactive-buffer
   ownership. Six reference PNGs cover sky and Solar System views; the daytime
   C views include the inverted compass band.
@@ -33,7 +40,7 @@
   the resulting bitmap must match a fresh full redraw.
   Daylight checks cover local Rise/Set minute boundaries, reverse time, polar
   UP/DOWN, midnight-spanning and single-crossing days, and stale event caches.
-  Bitmap checks require an exact inversion of rows 426–440 with every other
+  Bitmap checks require an exact inversion of rows 424–438 with every other
   pixel (including V) unchanged, also after interrupted view/FOV redraws.
   City rendering checks verify the frame, preservation of surrounding pixels,
   incremental redraws, search and 20-row pagination, plus exact sky and footer restoration
@@ -41,7 +48,8 @@
   `sidera_platform_6502` checks the 125 Hz clock code, 16-bit counter wraparound,
   waiting, VGA detection, console I/O, the monitor argument buffer and the
   keyboard decoder (RIA sequences, physical LCtrl versus RCtrl/both modifiers,
-  Esc and timeout), USB bitmap mapping, failure handling and unmapping.
+  Ctrl+Q/Ctrl+S/Ctrl+F with either/both Ctrl keys, Esc and timeout), USB bitmap mapping,
+  failure handling and unmapping.
   The test controls RIA registers and time; sim65 executes the code.
 - `sidera_rom`: checks the actual built ROM: lower/HIGH resident code and reset
   vector in initial memory, six overlays as resources, headers, CRC32, the shared build
@@ -53,8 +61,8 @@
 - `sidera_emu`: runs the actual ROM in RP6502-EMU with a fixed date and a fixed seed
   for random RAM initialization. It exercises startup with the splash screen,
   the sky view, physical LCtrl-only FOV, Shift+arrow directions, retired H keys,
-  the X panel, the L editor, K cities, S saving to `SAVE:`, full-detail simulation
-  with five-minute steps and manual +15-minute pause, and Q exit.
+  the S panel, the L editor, K cities, Ctrl+S saving to `SAVE:`, full-detail simulation
+  with five-minute steps and manual +15-minute pause, and Ctrl+Q exit.
   It checks application states, the absence of overlay errors and the existence
   of the saved file. The saved time must match the `/date` option, which also
   verifies monitor argument handling by the actual ROM.
@@ -103,12 +111,102 @@ The SDK adds two helper fixtures: `rp6502.build` and `rp6502.save`.
 All test assertions remain enabled in Release as well.
 Tests do not upload anything to PICO or download astronomical data.
 
+Local SOLAR/quit validation on 14 November 2026: Windows Debug and Release
+configure/build and all CTest checks passed, including the 26 host/sim65/image
+checks. Debug's startup assertion initially expected the old footer label;
+after updating it, `ctest --preset cc65/Debug --rerun-failed` passed.
+The six reference images were reviewed and updated: sky differences are confined
+to the shortcut row, and SOLAR now fills the CITIES bounds. Host checks require
+exact sky/footer restoration after closing SOLAR and non-overlapping labels
+throughout 1900-2200. The new exit checks cover either/both Ctrl modifiers,
+global Ctrl+Q cleanup and ignored plain Q/sky Esc/SOLAR X.
+Release's Chromium 159.0.8154.6 smoke test passed, with its SOLAR screenshot
+reviewed. Packing leaves 283 bytes spare in SOLAR and 1820 resident bytes
+unallocated below the C stack. Physical PICO was not rerun for these changes.
+
+Follow-up footer/shortcut validation on 14 November 2026: both Windows builds
+and full Debug/Release CTest runs passed (12 entries each, including SDK
+fixtures and the 26-check host suite). Release's Chromium test also passed,
+including left/right Ctrl+S persistence and S opening SOLAR. The sky references
+were reviewed; only rows 450..469 changed, and all three SOLAR references were
+unchanged. Footer tests cover full labels, 8 px margins and G/T highlights in
+the first row. Ctrl+S is ignored in every panel/editor; X is inactive.
+The current build leaves 1583 resident bytes unallocated below the C stack;
+SOLAR still has 283 spare bytes. Physical PICO was not rerun.
+
+Three-row footer and Space/Ctrl+F validation on 14 November 2026: Windows
+Debug/Release builds and all 12 CTest entries per preset passed, including the
+26-check host suite and six reference-image comparisons. The three sky images
+changed only in the shortcut area; SOLAR images were unchanged. Tests cover
+the y=443/453/463 rows, two blank rows below the compass, editor clearing and
+restoration, Space pausing/resuming without entering LIVE, N clock resync and
+failure, inactive plain F, and Ctrl+F with either/both Ctrl modifiers.
+Release's Chromium test passed; FIND opened with right Ctrl+F and the restored
+three-row footer was reviewed. Packing leaves 1522 resident bytes unallocated
+below the C stack and 283 spare bytes in SOLAR. Physical PICO was not rerun.
+
+Bottom-layout adjustment on 14 November 2026: V, the entire lower compass/daylight
+band and all three shortcut rows moved up exactly 2 px; notes remain at y=472.
+Pixel comparisons verified the exact translation in all three sky references
+and unchanged SOLAR references. Windows Debug/Release builds passed, as did
+the selected host-suite, ROM, emulator, daylight and startup tests (7 CTest
+entries including fixtures per preset; 26 nested host checks, with six images).
+Memory headroom remains 1522 resident bytes and 283 SOLAR bytes. Physical PICO
+and Chromium were not rerun for this coordinate-only adjustment.
+
+Footer reorder and busy-label validation on 14 November 2026: rows now follow
+the previous 3/1/2 order, with unchanged spacing and highlights; the busy label
+is `Working, please wait...`. Exact row permutation was verified in the three
+sky references; SOLAR references remained unchanged. Windows Debug/Release
+builds and selected host-suite, ROM, emulator and startup tests passed (6 CTest
+entries per preset including fixtures, 26 nested checks with six images).
+Status tests cover the full message, spacing and clearing in all LIVE/SIM modes.
+The longer string uses 13 additional resident bytes: 1509 B remain unallocated;
+SOLAR retains 283 B. Physical PICO and Chromium were not rerun for these edits.
+
+Location-row layout validation on 14 November 2026: the third row now orders
+L/K/S/P/T/G/C with the requested letter case and 27 px gaps; the second row
+omits L and uses 48 px gaps. Eight-pixel margins hold with every highlight state.
+Only rows 451..468 changed in the three sky references; SOLAR remained unchanged.
+Debug/Release builds and selected host-suite, ROM, emulator and startup checks
+passed (6 CTest entries including fixtures per preset, 26 nested checks including
+six reference images). Resident headroom is 1527 B; SOLAR retains 283 B.
+Physical PICO and Chromium were not rerun for this footer-only adjustment.
+
+Persistent G/C mode-label validation on 14 November 2026: Debug/Release builds
+and selected host-suite, ROM, emulator and startup checks passed (6 CTest entries
+including fixtures per preset; 26 nested checks with six reference images).
+Coverage includes all modes, blank G0/C0 fields, shorter-label cleanup, white-on-black
+text, independent field updates, no writes for unchanged modes, note replacement,
+editor/panel restoration and saved startup modes. Startup readiness is published
+after both mode labels finish drawing. Only the two label fields changed in the
+three sky references; SOLAR references remained unchanged. Resident headroom is
+1324 B (91 B below the overlay, 1233 B above HIGH); SOLAR retains 283 B.
+Physical PICO and Chromium were not rerun for this change.
+
+Ampersand font fix on 14 November 2026: added the missing `&` glyph to
+`scripts/assets.py` and regenerated `sidera.dat`. Only its eight-byte font slot
+changed, with no asset-size or memory-layout change. Footer tests now reject
+blank glyphs for non-space characters in mode descriptions. The three sky
+references changed only at the ampersand; SOLAR references remained unchanged.
+Debug/Release builds and selected host-suite, ROM, emulator and startup checks
+passed (6 CTest entries per preset, 26 nested checks with six reference images).
+`python scripts/regenerate.py --output build/generated --check` passed.
+
+C-mode label rename on 14 November 2026: C1/C2/C3/C4 now read `stars`, `charts`,
+`charts & names` and `navigational`. Only the C description field changed in
+the three sky references. Debug/Release builds and selected host-suite, ROM,
+emulator and startup tests passed (6 CTest entries per preset including fixtures,
+26 nested checks with six reference images). Label positions and memory layout
+are unchanged; physical PICO and Chromium were not rerun.
+
 ## WEB browser smoke test
 
 CI additionally runs `tests/web_smoke.py` for Debug and Release in headless
 Chromium. It serves the generated WEB directory on localhost in an isolated
-browser context, exercises startup, physical left/right Ctrl, saves through S
-to IndexedDB and verifies restoration after reloading the page. It captures
+browser context, exercises startup and physical left/right Ctrl, saves to
+IndexedDB through Ctrl+S with each Ctrl key, and verifies restoration after
+reloading the page. It captures
 sky, CITIES, FIND, SOLAR and restored-view screenshots for visual review;
 these screenshots are not automatic pixel comparisons. Browser exceptions and
 console errors fail the check. This test is separate from the standard CTest

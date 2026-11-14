@@ -10,6 +10,11 @@ static unsigned char header_visible;
 static unsigned char calculating,status_drawn=255;
 static unsigned char footer_valid,footer_flags; /* Valid bits: help rows 1, note row 2. */
 static char footer_note[sizeof(note)];
+static unsigned char footer_grid,footer_constellation;
+static const char grid_modes[4][6]={"     ","scale","cross","full "};
+static const char constellation_modes[5][15]={
+    "              ","stars         ","charts        ","charts & names","navigational  "
+};
 static unsigned char panel_dirty;
 static char text[120];
 int fov=120,gx_circle=1800; /* Horizontal degrees; pixels per full azimuth turn. */
@@ -74,9 +79,9 @@ void gx_clear(int y,int rows)
     unsigned char i;
     if(rows>0) {
         if(y<84&&y+rows>71)axes_valid&=~AXIS_TOP;
-        if(y<441&&y+rows>420)axes_valid&=~AXIS_BOTTOM;
+        if(y<439&&y+rows>418)axes_valid&=~AXIS_BOTTOM;
         if(y<418&&y+rows>78)axes_valid&=~AXIS_SIDES;
-        if(y<472&&y+rows>448)footer_valid&=~1;
+        if(y<472&&y+rows>FOOTER_TOP)footer_valid&=~1;
         if(y<480&&y+rows>472)footer_valid&=~2;
     }
     for(;rows>0;--rows,++y) {
@@ -251,6 +256,8 @@ int gx_canvas(void)
     RIA.addr0=XR_CITY_CFG;
     put16(-64);put16(0);put16(XR_CITY_IMAGE);put16(XR_CITY_PAL);put16(0x11);
     if(r>=0)r=xreg(1,0,1,5,56,XR_BODY_CFG,PLANET_COUNT+10,1,VIEW_TOP,VIEW_BOTTOM);
+    /* The enlarged SOLAR diagram extends below the sky sprite clip. */
+    if(r>=0)r=xreg(1,0,1,5,56,XR_SOLAR_CFG,9,1,VIEW_BOTTOM,SOLAR_BOTTOM);
     if(r>=0)r=xreg(1,0,1,4,1,XR_MOON_CFG,1,2,VIEW_TOP,VIEW_BOTTOM);
     if(r>=0)r=xreg(1,0,1,5,19,XR_SUN_HEADER_CFG,1,0,0,CITIES_TOP);
     /* Plane 0 sprite overlays the bitmap fill, below the header Sun. */
@@ -377,12 +384,12 @@ void gx_status(unsigned char busy)
     status_drawn=state;
     /* Clear only the top-right status, including the old LIVE bar. */
     for(row=0;row<9;++row) {
-        RIA.step0=1;RIA.addr0=(unsigned)row*80+60;
-        for(i=0;i<20;++i)RIA.rw0=0;
+        RIA.step0=1;RIA.addr0=(unsigned)row*80+53;
+        for(i=0;i<27;++i)RIA.rw0=0;
     }
     label=live?" LIVE ":playing?"SIM / PLAY":"SIM / PAUSE";
     x=640-(int)strlen(label)*6;
-    if(calculating)gx_text(x-66,1,"Working...");
+    if(calculating)gx_text(x-144,1,"Working, please wait...");
     draw_text(x,1,label,live?6:0);
     if(live)gx_line(604,0,639,0,0);
 }
@@ -452,22 +459,36 @@ void gx_footer(void)
     unsigned char flags=!!grid|((!!trails)<<1)|((!!planets)<<2)|((!!constellation_mode)<<3);
     unsigned char changed;
     if(!(footer_valid&1)) {
-        gx_clear(448,24);
-        gx_text(12,450,"N: now   Space: mode cycle    +/-: 15 min   [/]: day    D: date   L: location    Z: Timezone   S: save");
-        /* 101 character cells: 17px side margins and two spaces per gap. */
-        gx_text(17,462,"Arrows: view  G: grid  T: paths  P: Planets  C: constellations  K: Cities  F: Find  X: Solar  Q: quit");
+        gx_clear(FOOTER_TOP,472-FOOTER_TOP);
+        /* Three rows span x=8..631. Gaps differ by at most one pixel per row. */
+        gx_text(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV");
+        gx_text(266,441,"Ctrl+S: save");gx_text(392,441,"Ctrl+F: find object");
+        gx_text(560,441,"Ctrl+Q: quit");
+        gx_text(8,451,"N: now");gx_text(92,451,"Space: SIM PAUSE/PLAY");
+        gx_text(266,451,"+/-: 15 min");gx_text(380,451,"[/]: day");
+        gx_text(476,451,"D: date");
+        gx_text(566,451,"Z: Timezone");
+        gx_text(8,461,"L: location");gx_text(101,461,"K: cities");
+        gx_text(182,461,"S: Solar system");gx_text(299,461,"P: planets");
+        gx_text(386,461,"T: paths");gx_text(461,461,"G: grid");
+        gx_text(530,461,"C: constellations");
         footer_flags=0;footer_valid|=1;
     }
     changed=flags^footer_flags;
-    if(changed&1)draw_text(113,462," grid ",flags&1?255:0);
-    if(changed&2)draw_text(167,462," paths ",flags&2?255:0);
-    if(changed&4)draw_text(227,462," Planets ",flags&4?255:0);
-    if(changed&8)draw_text(299,462," constellations ",flags&8?255:0);
+    if(changed&1)draw_text(473,461," grid ",flags&1?255:0);
+    if(changed&2)draw_text(398,461," paths ",flags&2?255:0);
+    if(changed&4)draw_text(311,461," planets ",flags&4?255:0);
+    /* No trailing highlight cell past the right margin. */
+    if(changed&8)draw_text(542,461," constellations",flags&8?255:0);
     footer_flags=flags;
     if(!(footer_valid&2)||strcmp(footer_note,note)) {
         gx_clear(472,8);gx_text(20,472,note);
-        strcpy(footer_note,note);footer_valid|=2;
+        strcpy(footer_note,note);
+        footer_grid=footer_constellation=255;
     }
+    if(footer_grid!=grid)gx_text(473,472,grid_modes[grid]);
+    if(footer_constellation!=constellation_mode)gx_text(542,472,constellation_modes[constellation_mode]);
+    footer_grid=grid;footer_constellation=constellation_mode;footer_valid|=2;
 }
 void gx_trail(unsigned char body,unsigned char n)
 {
@@ -575,7 +596,7 @@ static void scene_clear_row(unsigned y)
     if((y>=VIEW_TOP&&y<VIEW_BOTTOM)||
        (y<VIEW_TOP&&(axes_redraw&AXIS_TOP)))clear_plot_row(a);
     if(y>=VIEW_TOP-6&&y<VIEW_BOTTOM+2&&(axes_redraw&AXIS_SIDES))clear_sides_row(a);
-    if(y>=420&&(axes_redraw&AXIS_BOTTOM)) {
+    if(y>=418&&(axes_redraw&AXIS_BOTTOM)) {
         RIA.step0=1;RIA.addr0=a;
         for(i=0;i<80;++i)RIA.rw0=0;
     }
@@ -626,7 +647,7 @@ void gx_grid_add(void)
 static void compass_invert(void)
 {
     unsigned a;
-    RIA.step0=RIA.step1=1;RIA.addr0=RIA.addr1=426u*80;
+    RIA.step0=RIA.step1=1;RIA.addr0=RIA.addr1=424u*80;
     for(a=0;a<15u*80;++a)RIA.rw0=RIA.rw1^255;
     compass_inverted=!compass_inverted;
 }
@@ -648,14 +669,14 @@ static void compass(void)
     for(a=0;a<360;a+=10) {
         x=azimuth_x(a);
         if(x<VIEW_LEFT||x>VIEW_RIGHT)continue;
-        gx_line(x,428,x,430,0);
+        gx_line(x,426,x,428,0);
     }
     for(i=0;i<8;++i) {
         x=azimuth_x(i*45);
         if(x<VIEW_LEFT||x>VIEW_RIGHT)continue;
-        gx_line(x,426,x,431,0);gx_text(x-(int)strlen(dirs[i])*3,433,dirs[i]);
+        gx_line(x,424,x,429,0);gx_text(x-(int)strlen(dirs[i])*3,431,dirs[i]);
     }
-    gx_line(VIEW_CENTER-4,420,VIEW_CENTER,424,0);gx_line(VIEW_CENTER,424,VIEW_CENTER+4,420,0);
+    gx_line(VIEW_CENTER-4,418,VIEW_CENTER,422,0);gx_line(VIEW_CENTER,422,VIEW_CENTER+4,418,0);
     compass_inverted=0;
     if(compass_daylight)compass_invert();
     axes_valid|=AXIS_BOTTOM;
@@ -682,8 +703,8 @@ void gx_scene_step(void)
         switch(drawing) {
         case 8:if(cs_project_step())drawing=1;break;
         case 1:
-            for(row=0;row<8&&draw_item<448;++row,++draw_item)scene_clear_row(draw_item);
-            if(draw_item>=448){drawing=2;draw_item=0;}break;
+            for(row=0;row<8&&draw_item<FOOTER_TOP;++row,++draw_item)scene_clear_row(draw_item);
+            if(draw_item>=FOOTER_TOP){drawing=2;draw_item=0;}break;
         case 2:
             if(grid>=2){grid_column(draw_item,1,grid==3);draw_item+=2;}
             if(grid<2||draw_item>=360){drawing=3;draw_item=1;}break;

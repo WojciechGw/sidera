@@ -12,6 +12,7 @@ void solar_hide(void)
 {
     unsigned char i;
     static const unsigned char hidden[]={0xC0,0xFF};
+    if(solar_visible)gx_clear(SOLAR_TOP,SOLAR_BOTTOM-SOLAR_TOP);
     solar_visible=0;
     for(i=0;i<9;++i)gx_write(XR_SOLAR_CFG+i*10,hidden,2);
 }

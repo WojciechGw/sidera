@@ -40,9 +40,9 @@ int solar_draw(void)
     static const unsigned char images[]={0,1,6,2,3,4,5,7};
     /* >=12 px between orbit radii separates even diagonally adjacent 8x8 sprites.
      * The first radius also clears the unscaled 32x32 Sun. */
-    static const unsigned char radii[]={30,42,54,66,83,100,117,134};
-    unsigned char row[SOLAR_ROW_BYTES],i,k;
-    unsigned a,src,pal;
+    static const unsigned char radii[]={39,55,71,87,109,131,154,176};
+    unsigned char i,k;
+    unsigned src,pal;
     int fd,r,x,y;
     int16_t hx,hy;
     uint16_t longitude;
@@ -54,14 +54,7 @@ int solar_draw(void)
     if(close(fd)<0)r=0;
     if(!r)goto bad;
     solar_hide();
-    memset(row,0,sizeof(row));
-    for(y=SOLAR_TOP;y<SOLAR_BOTTOM;++y) {
-        a=(unsigned)y*80+SOLAR_LEFT/8;
-        gx_read(a,row,1);row[0]&=0xFFu<<(8-(SOLAR_LEFT&7));
-        gx_read(a+sizeof(row)-1,row+sizeof(row)-1,1);
-        row[sizeof(row)-1]&=0xFFu>>(SOLAR_RIGHT&7);
-        gx_write(a,row,sizeof(row));
-    }
+    gx_clear(SOLAR_TOP,SOLAR_BOTTOM-SOLAR_TOP);
     gx_line(SOLAR_LEFT,SOLAR_TOP,SOLAR_RIGHT-1,SOLAR_TOP,0);
     gx_line(SOLAR_RIGHT-1,SOLAR_TOP,SOLAR_RIGHT-1,SOLAR_BOTTOM-1,0);
     gx_line(SOLAR_RIGHT-1,SOLAR_BOTTOM-1,SOLAR_LEFT,SOLAR_BOTTOM-1,0);
@@ -71,7 +64,7 @@ int solar_draw(void)
     date_format(stamp+strlen(stamp),&solar_date);strcat(stamp," UTC");
     gx_text(SOLAR_RIGHT-2-(int)strlen(stamp)*6,SOLAR_TOP+4,stamp);
     gx_text(SOLAR_LEFT+2,SOLAR_BOTTOM-11,"Schematic view (not in AU scale)");
-    gx_text(SOLAR_RIGHT-2-8*6,SOLAR_BOTTOM-11,"X: close");
+    gx_text(SOLAR_RIGHT-2-10*6,SOLAR_BOTTOM-11,"Esc: close");
     sprite(0,SOLAR_CX-16,SOLAR_CY-16,XR_SUN,XR_PAL,0x77);
     for(i=8;i>0;) {
         --i;solar_orbit(i,&solar_date,&orbit);circle(radii[i]);
