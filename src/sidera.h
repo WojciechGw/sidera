@@ -89,6 +89,7 @@ void gx_daylight(void);
 
 void paths_init(void);
 int config_load(void); /* 0 missing, 1 read, -1 invalid/I/O */
+int config_reload(const Date *utc); /* Same result; LIVE requires a valid clock. */
 int config_save(void);
 enum { OPT_VIEW=1,OPT_FOV,OPT_GRID,OPT_PATHS,OPT_PLANETS,OPT_CONSTELLATIONS,
        OPT_DATE,OPT_LIVE,OPT_LOCATION,OPT_CONFIG,OPT_ASSETS,OPT_HELP };

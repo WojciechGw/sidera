@@ -64,6 +64,8 @@ assert BASE <= symbols['_find_key'] < BASE + LIMIT
 assert symbols['_find_active'] < BASE and symbols['_target_id'] < BASE
 assert 0xE000 <= symbols['_target_draw'] < 0xF700
 assert 0xE000 <= symbols['_cities_step'] < 0xF700
+assert 0xE000 <= symbols['_gx_footer'] < 0xF700
+assert BASE <= symbols['_config_reload'] < BASE + LIMIT
 free = BASE - end + (0xF700 - 0xE000 - len(high))
 print(f'PASS: SIDERA, six verified ROM overlays at $C800-$DEFF, scratch $DF00-$DFFF; '
       f'core ends ${end:04X}; {free} bytes unallocated below the C stack '

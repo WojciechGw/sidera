@@ -18,19 +18,32 @@
   calculation, and visible Sun/Moon header icons before planet/star preparation.
   They exercise saved LIVE presets and default settings, with one final scene.
   Footer checks reject writes outside a changed option's label, including pixels
-  sharing boundary bytes. They require zero writes for unchanged states and
-  enabled-to-enabled G/C transitions, compare partial updates with a full redraw,
+  sharing boundary bytes, with G/C transitions also updating their colon/line
+  columns. All mode combinations verify 1 px white lines at x=469/538 from
+  y=462 through y=479 and restored colons in mode 0. Notes start at x=8;
+  expiration, clearing and panel return preserve the active lines.
+  They require zero writes for unchanged states; during
+  enabled-to-enabled G/C transitions only the mode descriptions change.
+  They compare partial updates with a full redraw,
   and check shorter/cleared messages, editor return and explicit invalidation.
   Simulation scenarios exercise all 20 G/C combinations with T/P enabled,
   exact five-minute steps, one redraw per instant, local/UTC date rollover,
   unsigned deadline wrap, manual +15-minute pause/resume and the year-2200
   boundary. Ctrl+Q is also tested during catalogue preparation and in CITIES,
   FIND, SOLAR and all editors; plain Q and sky-view Esc must not exit.
-  Ctrl+S saves only from the sky view; modal panels and editors ignore it.
+  Ctrl+S/Ctrl+R save/reload only from the sky view; panels and editors ignore both.
+  Reload scenarios cover all saved fields, SIM/PAUSE, LIVE with a current clock,
+  repeated reload during drawing, an exact full refresh, missing/malformed files,
+  I/O and clock failures without partial changes, and all four result messages.
+  Message tests cover five-second expiration without input, repeated identical
+  results, timer wraparound, replacement notes and modal-panel preservation.
+  Busy feedback uses the bottom message field with an INFO prefix, persists
+  beyond five seconds, yields to save/reload results and resumes after their
+  expiration if work remains. Busy transitions leave the header unchanged.
   S opens SOLAR and X has no action. Footer checks enforce 8 px side margins
-  and all G/T/P/C highlights in the second row, including partial writes.
+  and all G/T/P/C highlights in the third row, including partial writes.
   The first shortcut row must survive scene redraws and editor return;
-  y=441..442 stays blank and note text remains independent at y=472.
+  y=439..440 stays blank and short notes coexist with mode descriptions at y=472.
   Projection checks cover all 12 FOVs, negative rounding and inactive-buffer
   ownership. Six reference PNGs cover sky and Solar System views; the daytime
   C views include the inverted compass band.
@@ -200,13 +213,59 @@ emulator and startup tests passed (6 CTest entries per preset including fixtures
 26 nested checks with six reference images). Label positions and memory layout
 are unchanged; physical PICO and Chromium were not rerun.
 
+Save/reload controls validated on 14 November 2026: Ctrl+S reports save results;
+Ctrl+R restores the full configuration through INIT, with SIM/PAUSE or a fresh
+LIVE clock, and reports reload results. Host loop tests exercise reload during
+drawing, all settings, full-refresh equivalence, missing/malformed files, read/
+write errors and unavailable LIVE clocks. Native date assertions compare fields,
+not structure padding. Modal panels ignore both shortcuts; physical left/right
+Ctrl are covered by sim65, the emulator and Chromium. Footer rendering moved
+to HIGH; packing leaves 1046 resident bytes (596 below overlays, 450 above HIGH),
+1251 bytes in INIT and 283 bytes in SOLAR. Windows Debug/Release builds passed;
+all 12 CTest entries per preset passed after rerunning Release's host suite with
+the corrected date assertion (26 nested checks, including six reference images).
+Only shortcut row 1 changed in sky references; SOLAR references were unchanged.
+Release Chromium passed Ctrl+R restoration with both Ctrl keys without browser
+navigation, plus IndexedDB persistence and panel checks. Physical PICO was not rerun.
+
+Save/reload message expiration validated on 14 November 2026: all four result
+messages clear after five seconds of platform time without input. Repeating an
+action restarts the timer; G/C descriptions remain visible. Host tests cover the
+deadline, unsigned wraparound, replacement notes and modal-panel preservation;
+the actual-ROM emulator checks automatic expiration after save and reload.
+Windows Debug/Release builds and all 12 CTest entries per preset passed, including
+the 26 nested host/sim65/image checks. Packing leaves 919 resident bytes
+(469 below overlays, 450 above HIGH); INIT and SOLAR retain 1251 and 283 bytes.
+Physical PICO and Chromium were not rerun for this timer change.
+
+Footer alignment and G/C lines validated on 14 November 2026: Windows Debug
+and Release builds, host suites (26 checks each, including all six reference
+images), ROM checks and actual-ROM emulator tests passed. The reviewed sky
+references change exactly 32 pixels each, confined to x=469/538, y=462..479;
+SOLAR references are unchanged. Messages now begin at x=8. Mode transitions,
+message expiration, partial clearing and editor return preserve the expected
+lines or colons, without writes for unchanged states. Packing leaves 661 resident
+bytes (469 below overlays, 192 above HIGH); overlay sizes are unchanged.
+Physical PICO and Chromium were not rerun for this visual change.
+
+Bottom-field busy message validated on 14 November 2026: Windows Debug/Release
+builds and all 12 CTest entries per preset passed, including 26 nested checks
+and six unchanged image references. Host tests cover the INFO prefix, priority
+of save/reload results, busy restoration after expiration, persistence beyond
+five seconds, modal ownership and zero writes for unchanged content. The
+actual-ROM startup test checks the bottom text and empty former header area;
+its Release screenshot was reviewed. Input-latency checks passed in both builds.
+Packing leaves 637 resident bytes (477 below overlays, 160 above HIGH), with
+unchanged overlay sizes. Physical PICO and Chromium were not rerun.
+
 ## WEB browser smoke test
 
 CI additionally runs `tests/web_smoke.py` for Debug and Release in headless
 Chromium. It serves the generated WEB directory on localhost in an isolated
 browser context, exercises startup and physical left/right Ctrl, saves to
-IndexedDB through Ctrl+S with each Ctrl key, and verifies restoration after
-reloading the page. It captures
+IndexedDB through Ctrl+S with each Ctrl key, and verifies Ctrl+R restores saved
+FOV with either Ctrl without reloading the browser page. It also checks restoration
+after reloading the page. It captures
 sky, CITIES, FIND, SOLAR and restored-view screenshots for visual review;
 these screenshots are not automatic pixel comparisons. Browser exceptions and
 console errors fail the check. This test is separate from the standard CTest

@@ -26,6 +26,7 @@ with tempfile.TemporaryDirectory(prefix='sidera-loop-') as directory:
     command = [exe, str(root), str(root / 'settings.cfg')]
     subprocess.run(command, check=True)
     subprocess.run(command + ["controls"], check=True)
+    subprocess.run(command + ["settings"], check=True)
     subprocess.run(command + ["startup-default"], check=True)
     subprocess.run(command + ["startup-saved"], check=True)
     for mode in (0,1,4):

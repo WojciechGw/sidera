@@ -214,24 +214,49 @@ sky work and simulation advancement; LIVE clocks can still update. Esc closes th
 panel and refreshes the sky. Ctrl+Q (either Ctrl key) exits globally, including
 from panels and editors; plain Q and Esc in the sky view do not exit.
 Panel state is not saved in settings. S opens SOLAR; X has no action.
-Ctrl+S (either Ctrl key) saves settings only in the main sky view and is ignored
-in panels and editors. The three footer rows at y=441, 451 and 461 have 8 px
+Ctrl+S and Ctrl+R (either Ctrl key) save/reload settings only in the main sky view
+and are ignored in panels and editors. Ctrl+R uses the same `config_path`, restores
+all fields and refreshes the sky, axes, paths and header. Saved LIVE mode reads
+the current clock; a saved simulation date enters SIM/PAUSE. The selected FIND
+target remains active. Missing/invalid files, read errors and unavailable LIVE
+clocks leave settings unchanged. Success messages are `[INFO] Configuration saved`
+and `[INFO] Configuration reloaded`; failures use `[!] Failed to save configuration`
+and `[!] Failed to reload configuration`.
+These four result messages expire after five seconds (625 platform ticks).
+Repeated actions restart the timer even when the text is unchanged. The resident
+loop checks elapsed unsigned ticks without blocking; replacement notes cancel
+the old timer. Expiration clears the result and refreshes the sky footer while
+preserving G/C descriptions. Modal panels retain ownership of their pixels.
+Resident main selects INIT before `config_reload()`. The shared parser validates
+the entire file and, for reloads of LIVE, a clock snapshot before applying fields.
+`gx_footer()` resides in HIGH to leave room for resident input handling.
+The three footer rows at y=441, 451 and 461 have 8 px
 side margins, with gaps differing by at most one pixel within each row. The
 first starts two empty scanlines below the compass and contains
-`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+F: find object`
-and `Ctrl+Q: quit`; FIND appears only here. The second groups N, Space, +/-,
+`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+R: reload`,
+`Ctrl+F: find object` and `Ctrl+Q: quit`, with 19-20 px gaps; FIND appears only here.
+The second groups N, Space, +/-,
 [/], D and Z, with 48 px gaps. The third contains `L: location`, `K: cities`,
 `S: Solar system`, `P: planets`, `T: paths`, `G: grid` and `C: constellations`,
-with 27 px gaps. The C highlight stays inside the right margin. Notes remain at y=472.
+with 27 px gaps. The C highlight stays inside the right margin. Notes start at x=8, y=472, aligned with Arrows.
+For active G/C modes, the colon becomes a 1 px white vertical line at x=469/538
+from its upper dot (y=462) through the last screen row (y=479). Mode 0 restores
+the colon. Note-row clearing restores the lower line segments; shortcut-row
+clearing restores the full lines. Unchanged states cause no bitmap writes.
 On that row, persistent white-on-black labels start at x=473 for G and x=542
 for C, aligned with the highlighted fields above. G1/G2/G3 read `scale`, `cross`,
 `full`; C1/C2/C3/C4 read `stars`, `charts`, `charts & names`,
 `navigational`. G0/C0 are blank. Ordinary notes must end before these fields.
 Padded labels erase longer previous text. Each field caches its mode separately;
 note-row clearing invalidates both caches, while unchanged modes cause no writes.
-The busy label `Working, please wait...` extends leftward, leaving one character
-cell before the right-aligned LIVE/SIM status. Status updates clear x=424..639,
-y=0..8, including the full message and the LIVE bar.
+The busy label `[INFO] Working, please wait...` occupies the message field at
+x=8, y=472 whenever calculation or drawing is pending and `note` is empty.
+It has no timeout. Save/reload results take priority for their five-second
+interval; afterward the busy label returns only if work is still pending.
+The footer caches the displayed string, keeping the busy label separate from
+`note` and preserving G/C labels and lines on transitions. Modal panels own their
+pixels and suppress footer updates until they close. Header redraws only update
+the right-aligned LIVE/SIM status; status updates clear x=424..639, y=0..8.
 Scene clearing stops before `FOOTER_TOP` (441); editors clear from that row
 to the screen bottom so no shortcut fragments remain.
 FOV still requires physical left Ctrl despite the compact footer description.

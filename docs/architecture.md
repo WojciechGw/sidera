@@ -11,7 +11,7 @@ holds the active overlay's code, constants, initialized data and BSS.
 
 | `ROM:` resource | Contents | Bytes loaded into the window | BSS | Free within 5888 B |
 | --- | --- | ---: | ---: | ---: |
-| `sidera-init.ovl` | Options, settings and opening data files | 4532 B | 0 B | 1356 B |
+| `sidera-init.ovl` | Options, settings and opening data files | 4637 B | 0 B | 1251 B |
 | `sidera-cities.ovl` | City search, selection and map state | 4178 B | 431 B | 1279 B |
 | `sidera-edit.ovl` | Location, date and time-zone editors | 3111 B | 112 B | 2665 B |
 | `sidera-cover.ovl` | Splash screen and initial VGA assets | 829 B | 0 B | 5059 B |
@@ -21,17 +21,17 @@ holds the active overlay's code, constants, initialized data and BSS.
 Sizes are from the current cc65 build. Each resource also has a 24-byte header,
 read outside the window. Build-time checks reject memory boundary violations.
 
-The lower resident code, constants and BSS end at `$C7A5` (exclusive).
-Target selection, figure geometry, world map and rendering helpers occupy 4655 B
-in resident HIGH at `$E000–$F22E`, including 79 B of initialized workspace,
+The lower resident code, constants and BSS end at `$C623` (exclusive).
+Target selection, figure geometry, world map and rendering helpers occupy 5728 B
+in resident HIGH at `$E000–$F65F`, including 79 B of initialized workspace,
 packaged as a second RAM block. After reserving the entire overlay window,
-**1324 B of unallocated RAM** remain below the C stack: 91 B at `$C7A5–$C7FF`
-and 1233 B at `$F22F–$F6FF`. The C stack retains `$F700–$FEFF`, 2048 B.
+**637 B of unallocated RAM** remain below the C stack: 477 B at `$C623–$C7FF`
+and 160 B at `$F660–$F6FF`. The C stack retains `$F700–$FEFF`, 2048 B.
 Unused space is not an automatically available heap.
 
 In the original standalone build used for comparison, data ends at `$D5B1`,
 leaving 8527 B free. After adding X, removing the RMT layer and updating the
-controls, city panel/map, FIND, simulation scheduling, early panels and partial rendering, **7203 B**
+controls, city panel/map, FIND, simulation scheduling, early panels and partial rendering, **7890 B**
 less RAM is available than in the original, after accounting for the window,
 loader and panel code. Unused space inside
 overlays is not included in this result.
@@ -64,7 +64,10 @@ Resident `main` selects an overlay through `ovl_select()` before calling its
 functions. An overlay cannot replace its own window or retain pointers into it
 after returning. Startup proceeds through INIT prepare, optional CITIES for
 `/location`, INIT apply, COVER and the sky view. During observation, overlays
-load when entering K, L/D/Z, S or Ctrl+F. Sky calculations and Ctrl+S saving are resident.
+load when entering K, L/D/Z, S or Ctrl+F, and INIT loads for Ctrl+R configuration
+reloads. Sky calculations and Ctrl+S saving are resident; footer rendering is
+resident HIGH code. Reload validates the whole file and the clock for LIVE before
+applying settings, then refreshes the sky without resetting the selected target.
 
 FIND holds a frozen date and a four-record scan budget. Its 855 match indices use
 1069 bytes of XRAM at `$E200–$E62C`, packed as 10-bit values, after label storage
@@ -119,7 +122,7 @@ redrawing the sky, both compasses, side scales and sky shortcuts.
 ## Solar System panel
 
 S opens a static Solar System view for the current `moment` (UTC). Esc
-closes it; reopening captures a new time. Ctrl+S is ignored inside panels and
+closes it; reopening captures a new time. Ctrl+S/Ctrl+R are ignored inside panels and
 does not save panel state. The **640×409 px** panel occupies x=0..639, y=71..479, matching CITIES:
 it preserves the header and covers the plot, compasses, side scales and footer,
 with no outer margin and a one-pixel frame. The diagram is centred at (320, 280).
@@ -149,8 +152,8 @@ At the bottom, `Schematic view (not in AU scale)` is left-aligned and `Esc: clos
 is right-aligned, each with a 2 px margin. The sky keyboard shortcuts return after
 closing. All three rows span x=8..631, leaving 8 px side margins. The first row
 (y=441) contains
-`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+F: find object`
-and `Ctrl+Q: quit`, with 54 px gaps. The second (y=451) contains N,
+`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+R: reload`,
+`Ctrl+F: find object` and `Ctrl+Q: quit`, with 19-20 px gaps. The second (y=451) contains N,
 `Space: SIM PAUSE/PLAY`, +/-, [/], D and Z with 48 px gaps.
 The third (y=461) contains `L: location`, `K: cities`, `S: Solar system`,
 `P: planets`, `T: paths`, `G: grid` and `C: constellations`, with 27 px gaps.
@@ -158,11 +161,16 @@ The final C highlight ends at the label boundary to preserve the right margin.
 The compass ends at y=438; y=439..440
 stay empty. Scene clearing stops before `FOOTER_TOP` (441), and editors clear
 from there through the screen bottom. G/T/C/P retain
-inverse-video state labels. Messages remain on a separate row at y=472.
+inverse-video state labels. Messages start at x=8 on a separate row at y=472, aligned with Arrows.
+When no note is present, pending work shows `[INFO] Working, please wait...`
+until it finishes. Save/reload results override it for five seconds. The
+LIVE/SIM header is drawn independently and contains no busy text.
+Active G/C replace their colons with 1 px white lines at x=469/538, y=462..479;
+mode 0 restores the colons. Message clearing and panel restoration preserve them.
 The same row shows persistent white-on-black mode labels under G (x=473,
 30 px) and C (x=542, 84 px). G1/G2/G3 read `scale`/`cross`/`full`;
 C1/C2/C3/C4 read `stars`/`charts`/`charts & names`/`navigational`.
-G0/C0 are blank. Ordinary messages must stay short enough to end before x=473.
+G0/C0 are blank. Ordinary messages must stay short enough to end before the G separator at x=469.
 Independent caches redraw only a changed mode field; clearing the message row
 restores both labels. Padded strings clear the full field on every transition.
 

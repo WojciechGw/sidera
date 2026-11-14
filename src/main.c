@@ -14,6 +14,8 @@ int bearing=0,elevation=24;
 unsigned char grid=0,trails=0,live=1,playing=0;
 unsigned char trail_done=0;
 char note[100];
+static const char *message_text;
+static unsigned message_tick;
 static Date trail_time;
 static Sky trail_sky;
 static int32_t trail_day;
@@ -39,6 +41,21 @@ static int read_clock(Date *result)
     *result=d;return 1;
 }
 static int now(void) { return read_clock(&moment); }
+static void message_show(const char *text)
+{
+    strcpy(note,text);gx_footer();
+    message_text=text;message_tick=platform_ticks();
+}
+static void message_step(void)
+{
+    if(!message_text)return;
+    if(strcmp(note,message_text))message_text=NULL;
+    else if((unsigned)(platform_ticks()-message_tick)>=5u*PLATFORM_TICK_HZ) {
+        note[0]=0;message_text=NULL;
+        /* A modal panel owns the pixels; restore its footer only on close. */
+        if(!solar_visible&&!find_active&&!cities_active&&!editing)gx_footer();
+    }
+}
 void location_view(void)
 {
     Date utc,local;
@@ -54,12 +71,14 @@ static void trail_reset(void)
 }
 int main(int argc,char **argv)
 {
+    Date reload_time;
     int r,exit_code=0;
     unsigned k,tick,calc_tick,star_tick;
     unsigned char refresh=1,scene=1,head=1,clock_dirty=0,star_check=1,result,present=0,interactive,view;
     unsigned char startup_panel=1;
     unsigned char locate=0;
     int32_t jump;
+    message_text=NULL;
     r=startup(argc,argv);
     if(ovl_failed)goto done;
     if(r<=0)return r<0;
@@ -71,9 +90,10 @@ int main(int argc,char **argv)
     solar_hide();gx_clear(0,480);
     if(!gx_objects()||!gx_canvas()){gx_console();assets_close();platform_puts("sidera: cannot load sprite or configure VGA.\r\n");return 1;}
     if(!platform_keyboard_start()){strcpy(note,"Cannot map USB keyboard state.");exit_code=1;goto done;}
-    gx_status(1);rs_sync();gx_header_pending();gx_footer();
+    rs_sync();gx_header_pending();gx_status(1);gx_footer();
     trail_reset();tick=calc_tick=star_tick=platform_ticks();
     for(;;) {
+        message_step();
         k=key_poll();
         if(k==CTRL('Q'))goto done; /* Either Ctrl, also inside modal panels. */
         interactive=view=0;
@@ -171,7 +191,20 @@ int main(int argc,char **argv)
                     cities_draw();continue;
                 }
                 gx_footer();break;
-            case CTRL('S'):strcpy(note,config_save()?"":"Cannot save configuration.");gx_footer();break;
+            case CTRL('S'):
+                message_show(config_save()?"[INFO] Configuration saved":"[!] Failed to save configuration");
+                break;
+            case CTRL('R'):
+                if(!ovl_select(OVL_INIT))goto done;
+                interactive=0;
+                r=config_reload(read_clock(&reload_time)?&reload_time:NULL);
+                if(r==1) {
+                    gx_axes_invalidate();trail_reset();
+                    refresh=scene=head=star_check=1;clock_dirty=locate=0;
+                    tick=platform_ticks();
+                }
+                message_show(r==1?"[INFO] Configuration reloaded":"[!] Failed to reload configuration");
+                break;
             case 12:gx_axes_invalidate();gx_footer_invalidate();scene=head=1;break;
             default:interactive=0;break;
             }

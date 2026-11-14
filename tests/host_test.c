@@ -153,7 +153,7 @@ static void corrected_date(void)
     assert(edit_key('\r')==1&&!editing);
     assert(!note[0]&&!live&&!playing);
     assert(moment.year==original.year&&moment.month==original.month&&moment.day==original.day);
-    gx_footer();for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));
+    gx_footer();for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));
     live=old_live;playing=old_playing;
 }
 static void expect_text(int x,int y,const char *p,unsigned inverse)
@@ -215,7 +215,7 @@ static void catalogue_recovery(void)
     cs_begin();assert(!cs_step());assert(note[0]); /* do not hide an unresolved error */
     while(cs_busy())cs_step();assert(!note[0]);
     gx_footer();
-    {unsigned i;for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));}
+    {unsigned i;for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));}
     strcpy(note,"Location/zone changed (press Ctrl+S to save location)");
     cs_begin();while(cs_busy())cs_step();
     assert(!strcmp(note,"Location/zone changed (press Ctrl+S to save location)"));
@@ -324,7 +324,7 @@ static void location_names(void)
     f=fopen(config_path,"rb");assert(f);n=(unsigned)fread(contents,1,255,f);contents[n]=0;fclose(f);
     assert(strstr(contents,"m AMSL")&&!strstr(contents,"n.p.m."));
     remove(config_path);bearing=saved_bearing;location_name[0]=note[0]=0;gx_header();gx_footer();
-    for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));
+    for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));
 }
 static void header_sprites(void)
 {
@@ -359,23 +359,35 @@ static void initial_panels(void)
 static void calculation_status(void)
 {
     unsigned mode,i,writes;int x;
+    assert(!note[0]);
     for(mode=0;mode<3;++mode) {
-        live=mode==0;playing=mode==1;gx_status(0);gx_header();
+        live=mode==0;playing=mode==1;gx_status(0);gx_header();gx_footer();
         memcpy(before_clock,xram,sizeof(xram));
         portal_writes=0;gx_status(1);assert(portal_writes<2000);
-        x=(mode==0?604:mode==1?580:574)-144;
-        expect_text(x,1,"Working, please wait...",0);
-        expect_text(x+138,1," ",0);
-        expect_text(x+144,1,mode==0?" LIVE ":mode==1?"SIM / PLAY":"SIM / PAUSE",mode==0?6:0);
+        x=mode==0?604:mode==1?580:574;
+        expect_text(8,472,"[INFO] Working, please wait...",0);
+        expect_text(x,1,mode==0?" LIVE ":mode==1?"SIM / PLAY":"SIM / PAUSE",mode==0?6:0);
         for(i=0;i<sizeof(xram);++i)
-            if(i>=9*80||i%80<53)assert(xram[i]==before_clock[i]);
+            if(i<472*80||i>=480*80)assert(xram[i]==before_clock[i]);
         writes=portal_writes;gx_status(1);assert(writes==portal_writes);
-        gx_header();expect_text(x,1,"Working, please wait...",0); /* redraw keeps busy state */
+        gx_header();expect_text(8,472,"[INFO] Working, please wait...",0);
         gx_status(0);assert(!memcmp(before_clock,xram,sizeof(xram)));
     }
     live=1;gx_status(1);live=0;playing=1;gx_status(1);playing=0;gx_status(1);
-    expect_text(430,1,"Working, please wait...",0);expect_text(574,1,"SIM / PAUSE",0);
+    expect_text(8,472,"[INFO] Working, please wait...",0);expect_text(574,1,"SIM / PAUSE",0);
     for(i=424;i<640;++i)assert(!pixel(i,0)); /* LIVE bar is erased */
+    strcpy(note,"[INFO] Configuration saved");gx_footer();gx_status(0);gx_status(1);
+    expect_text(8,472,note,0);
+    note[0]=0;gx_footer();expect_text(8,472,"[INFO] Working, please wait...",0);
+    /* Busy transitions cannot paint over any modal panel. */
+    for(mode=0;mode<4;++mode) {
+        if(mode==0)solar_visible=1;else if(mode==1)find_active=1;
+        else if(mode==2)cities_active=1;else editing=1;
+        memcpy(before_clock,xram,sizeof(xram));gx_status(0);gx_status(1);
+        assert(!memcmp(before_clock,xram,sizeof(xram)));
+        solar_visible=find_active=cities_active=editing=0;
+        gx_footer();expect_text(8,472,"[INFO] Working, please wait...",0);
+    }
     gx_status(0);gx_header();
 }
 static void footer_states(void)
@@ -401,16 +413,22 @@ static void footer_states(void)
         expect_text(398,461," paths ",trails?255:0);
         expect_text(542,461," constellations",c?255:0);
         expect_text(311,461," planets ",planets?255:0);
-        expect_text(461,461,"G:",0);expect_text(386,461,"T:",0);
-        expect_text(530,461,"C:",0);expect_text(299,461,"P:",0);
+        expect_text(461,461,"G",0);expect_text(386,461,"T:",0);
+        expect_text(530,461,"C",0);
+        for(y=461;y<480;++y)for(x=467;x<473;++x)
+            assert(pixel(x,y)==(x==469&&(g?y>=462:y==462||y==465)));
+        for(y=461;y<480;++y)for(x=536;x<542;++x)
+            assert(pixel(x,y)==(x==538&&(c?y>=462:y==462||y==465)));
+        expect_text(299,461,"P:",0);
         expect_text(566,451,"Z: Timezone",0);
-        expect_text(101,461,"K: cities",0);expect_text(392,441,"Ctrl+F: find object",0);
+        expect_text(101,461,"K: cities",0);expect_text(427,441,"Ctrl+F: find object",0);
         expect_text(182,461,"S: Solar system",0);
         expect_text(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV",0);
         expect_text(8,451,"N: now",0);expect_text(92,451,"Space: SIM PAUSE/PLAY",0);
         expect_text(266,451,"+/-: 15 min",0);expect_text(380,451,"[/]: day",0);
         expect_text(476,451,"D: date",0);expect_text(8,461,"L: location",0);
-        expect_text(266,441,"Ctrl+S: save",0);expect_text(560,441,"Ctrl+Q: quit",0);
+        expect_text(232,441,"Ctrl+S: save",0);expect_text(323,441,"Ctrl+R: reload",0);
+        expect_text(560,441,"Ctrl+Q: quit",0);
         for(y=439;y<441;++y)for(x=0;x<640;++x)assert(!pixel(x,y));
         for(y=441;y<480;++y)for(x=0;x<8;++x)
             assert(!pixel(x,y)&&!pixel(632+x,y));
@@ -424,7 +442,7 @@ static void footer_region(unsigned x,unsigned y,unsigned w,unsigned h)
 }
 static void footer_updates(void)
 {
-    static const unsigned x[]={473,398,311,542},y[]={461,461,461,461},w[]={36,42,54,90};
+    static const unsigned x[]={467,398,311,536},y[]={461,461,461,461},w[]={42,42,54,96};
     static unsigned char expected[480*80];
     unsigned char saved_g=grid,saved_t=trails,saved_p=planets,saved_c=constellation_mode;
     unsigned i,on,full,writes[4];
@@ -438,7 +456,7 @@ static void footer_updates(void)
         case 2:planets=on==1;break;case 3:constellation_mode=on==1;break;
         }
         footer_region(x[i],y[i],w[i],i==0||i==3?19:8);
-        assert(portal_writes&&portal_writes<=w[i]/6*16+(i==0?80:i==3?224:0));
+        assert(portal_writes&&portal_writes<=w[i]/6*16+(i==0?98:i==3?242:0));
         if(on==1)writes[i]=portal_writes;
         memcpy(expected,xram,sizeof(expected));
         gx_footer_invalidate();gx_footer();assert(!memcmp(expected,xram,sizeof(expected)));
@@ -455,16 +473,16 @@ static void footer_updates(void)
         portal_writes=0;gx_footer();assert(!portal_writes);
     }
     strcpy(note,"Saved");footer_region(0,472,640,8);assert(portal_writes);
-    expect_text(20,472,"Saved",0);
+    expect_text(8,472,"Saved",0);
     expect_text(473,472,"full ",0);expect_text(542,472,"navigational  ",0);
-    for(i=0;i<8*640;++i)if(i%640>=50&&i%640<473)assert(!pixel(i%640,472+i/640));
+    for(i=0;i<8*640;++i)if(i%640>=38&&i%640<473)assert(pixel(i%640,472+i/640)==(i%640==469));
     note[0]=0;footer_region(0,472,640,8);
     expect_text(473,472,"full ",0);expect_text(542,472,"navigational  ",0);
-    for(i=0;i<8*473;++i)assert(!pixel(i%473,472+i/473));
+    for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));
     portal_writes=0;gx_footer();assert(!portal_writes);
     /* Rebuild only the cleared region, or both after an editor owns the footer. */
     gx_clear(474,1);footer_region(0,472,640,8);assert(portal_writes);
-    gx_clear(441,1);footer_region(0,441,640,31);assert(portal_writes);
+    gx_clear(441,1);footer_region(0,441,640,39);assert(portal_writes);
     memcpy(expected,xram,sizeof(expected));edit_start(2);
     for(i=441*80;i<450*80;++i)assert(!xram[i]); /* No first-row fragments above the editor. */
     assert(edit_key(K_ESC)==2);

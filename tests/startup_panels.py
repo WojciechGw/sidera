@@ -35,6 +35,10 @@ with rp6502.Emu() as emu:
         text_at(data,x,y,text,True)
     text_at(data,473,472,'scale')
     text_at(data,542,472,'navigational')
+    text_at(data,8,472,'[INFO] Working, please wait...')
+    for y in range(1,9):
+        for x in range(424,574):
+            assert not (data[y*80+x//8] & (128 >> (x%8)))
     empty_plot(data)
     emu.cmd('peek _header_visible 0')
     emu.cmd('shot "startup-panels.png"')

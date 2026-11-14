@@ -24,7 +24,7 @@ splash, the header and keyboard hints appear immediately using your settings.
 Uncalculated Sun/Moon fields show dots and their icons stay hidden until ready.
 The first Sun/Moon results appear before the stars finish calculating; the sky
 plot follows when its data is ready.
-Wait for Working, please wait... to disappear before judging a fully calculated view.
+Wait for [INFO] Working, please wait... to disappear before judging a calculated view.
 Use Ctrl+Q to return to the monitor. The computer clock supplies LIVE time.
 
 RP6502-WEB runs the same ROM in a desktop browser with WebAssembly and WebGL2.
@@ -81,6 +81,7 @@ K                   Open Cities to select an observer location.
 Ctrl+F              Open FIND for bodies, stars and constellations (either Ctrl).
 Z                   Edit the IANA time zone, for example Europe/Warsaw.
 Ctrl+S              Save settings from the main sky view (either Ctrl key).
+Ctrl+R              Reload saved settings from the main sky view (either Ctrl key).
 G                   Cycle grid modes: scale, crosses, dots, off.
 T                   Toggle Sun and Moon daily paths.
 C                   Cycle constellation modes described below.
@@ -174,7 +175,7 @@ LIVE updates only the UTC/LOCAL clocks. SIM / PLAY pauses until Esc closes
 the panel, then resumes. Closing recalculates and redraws the sky for the
 current time. Reopening takes a new snapshot. Ctrl+Q returns to the monitor.
 Plain Q and Esc in the sky view do not quit the application. X and plain F are unused.
-Ctrl+S is ignored in panels and editors; return to the sky view before saving.
+Ctrl+S and Ctrl+R are ignored in panels and editors; return to the sky view first.
 
 4. USING THE OBSERVATORY
 
@@ -212,7 +213,7 @@ cannot fit without overlapping are omitted. Alpha Centauri uses the
 catalogue position of component B (HIP 71681).
 Figures can extend beyond the view and are also drawn below the horizon.
 The footer has three rows at y=441, 451 and 461, with 8-pixel side margins.
-Navigation, Ctrl+S, Ctrl+F and Ctrl+Q occupy the first row. Time and time zone
+Navigation, Ctrl+S, Ctrl+R, Ctrl+F and Ctrl+Q occupy the first row. Time and time zone
 occupy the second. The third reads L: location, K: cities, S: Solar system,
 P: planets, T: paths, G: grid and C: constellations, in that order. Active
 G/T/C/P labels are highlighted in inverse video. Messages remain below at y=472.
@@ -226,15 +227,26 @@ every five minutes. SIM / PLAY advances in 5-minute steps when calculations
 and drawing finish, with at least 0.336 seconds between steps. Detailed views
 can take substantially longer. No intermediate instants are skipped and no
 positions are interpolated. Manual +/- still uses 15-minute steps and pauses
-playback. SIM / PAUSE holds the date. Working, please wait... marks calculation or
-drawing in progress. Paths and rise/set calculations can take a while.
+playback. SIM / PAUSE holds the date. [INFO] Working, please wait... appears in
+the bottom message field while calculation or drawing is in progress. It stays
+until work finishes. Paths and rise/set calculations can take a while.
 
 Ctrl+S saves the location, zone, View, FOV, G/T/C/P and time mode. The default file
 is MSC0:/sidera.cfg; /config selects another file. A writable drive is
 needed.
 LIVE reloads with current time; a saved simulation reloads at its saved UTC
-date in PAUSE, even if saved during PLAY. Successful saving clears the bottom
-message. Changes are not saved automatically, and older formats are not read.
+date in PAUSE, even if saved during PLAY. Ctrl+R reloads the same file, restores
+all saved settings and refreshes the sky. Missing or invalid files, I/O errors,
+or an unavailable clock for a saved LIVE mode leave current settings unchanged.
+The selected FIND target is retained. Changes are not saved automatically,
+and older formats are not read. The bottom row reports:
+  [INFO] Configuration saved
+  [!] Failed to save configuration
+  [INFO] Configuration reloaded
+  [!] Failed to reload configuration
+These messages disappear after five seconds. Repeating save or reload restarts
+the five-second interval. They take priority over the Working message, which
+returns afterward if work is still pending. The G/C mode descriptions remain visible.
 
 Use SIDERA for sky exploration, not precision eclipse or navigation work.
 Monitor command reference: https://picocomputer.github.io/pico.html

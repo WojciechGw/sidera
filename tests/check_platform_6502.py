@@ -122,14 +122,14 @@ int main(void)
     check("\033[1;5A",K_UP|K_CTRL);check("\033[1;3A",K_UP|K_ALT);
     /* Only physical left Ctrl qualifies horizontal arrows for FOV. */
     check("\033[1;5D",K_LEFT|K_CTRL);
-    modifiers=0x01;check("\021",CTRL('Q'));check("\023",CTRL('S'));check("\006",CTRL('F'));
+    modifiers=0x01;check("\021",CTRL('Q'));check("\023",CTRL('S'));check("\022",CTRL('R'));check("\006",CTRL('F'));
     check("\033[1;5D",K_LEFT|K_LCTRL);check("\033[1;5C",K_RIGHT|K_LCTRL);
     check("\033[1;6D",K_LEFT|K_LCTRL|K_SHIFT);
     check("\033[1;7C",K_RIGHT|K_LCTRL|K_ALT);
     check("\033[1;5A",K_UP|K_CTRL);check("h",'h');check("H",'H');
-    modifiers=0x10;check("\021",CTRL('Q'));check("\023",CTRL('S'));check("\006",CTRL('F'));
+    modifiers=0x10;check("\021",CTRL('Q'));check("\023",CTRL('S'));check("\022",CTRL('R'));check("\006",CTRL('F'));
     check("\033[1;5D",K_LEFT|K_CTRL);check("\033[1;5C",K_RIGHT|K_CTRL);
-    modifiers=0x11;check("\021",CTRL('Q'));check("\023",CTRL('S'));check("\006",CTRL('F'));
+    modifiers=0x11;check("\021",CTRL('Q'));check("\023",CTRL('S'));check("\022",CTRL('R'));check("\006",CTRL('F'));
     check("\033[1;5D",K_LEFT|K_CTRL);check("\033[1;5C",K_RIGHT|K_CTRL);
     modifiers=0;
     check("\033[H",K_HOME);check("\033[F",K_END);

@@ -91,6 +91,17 @@ def main():
             page.keyboard.press('ControlLeft+s', delay=100)
             page.wait_for_timeout(1000)
             assert page.evaluate(READ_CONFIG) == changed, 'Right Ctrl changed FOV'
+            page.evaluate('window.sideraReloadProbe = true')
+            for control in ('ControlLeft','ControlRight'):
+                page.keyboard.press('ControlLeft+ArrowLeft', delay=500)
+                page.wait_for_timeout(500)
+                page.keyboard.press(control + '+r', delay=100)
+                page.wait_for_timeout(4000)
+                assert page.evaluate('window.sideraReloadProbe === true'), 'Ctrl+R reloaded the browser page'
+                canvas.screenshot(path=str(output / 'reloaded.png'))
+                page.keyboard.press(control + '+s', delay=100)
+                page.wait_for_timeout(1000)
+                assert page.evaluate(READ_CONFIG) == changed, 'Ctrl+R did not restore the saved FOV'
             for key, name in [('k', 'cities'), ('ControlRight+f', 'find'), ('s', 'solar')]:
                 page.keyboard.press(key, delay=100)
                 page.wait_for_timeout(15000)

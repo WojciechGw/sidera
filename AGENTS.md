@@ -76,6 +76,16 @@
   Ctrl+Q (either Ctrl) is the only application quit shortcut, including inside
   panels and editors. Plain Q and Esc in the sky view do not quit.
   Ctrl+S (either Ctrl) saves only in the main sky view; panels/editors ignore it.
+  Ctrl+R (either Ctrl) reloads the same config_path only in the sky view, through
+  INIT selected by resident main. Restore all saved fields, LIVE with a fresh
+  clock or the saved date in SIM/PAUSE, then invalidate axes and refresh sky/jobs.
+  A missing/invalid file or unavailable LIVE clock preserves current settings.
+  Keep the selected FIND target. Save/reload report "[INFO] Configuration saved"/
+  "[INFO] Configuration reloaded" or "[!] Failed to save configuration"/
+  "[!] Failed to reload configuration". These results expire after five seconds;
+  repeating the action restarts the timer. Expiration preserves G/C mode labels
+  and never paints over modal panels or clears a newer, unrelated note.
+  Footer rendering resides in HIGH.
   CITIES reserves x=334..633, y=77..226 for a 300x150 geographic locator;
   the 20-row list stays left of x=328. Full city/country names sit below the map.
   `world_map.c` streams three rows per `cities_step()` and moves only the sprite
@@ -119,17 +129,23 @@
   G/T/P/C update their footer highlights before calculation or chart drawing.
   Three shortcut lines at y=441/451/461 have 8 px side margins and gaps
   differing by at most one pixel within each row. Row 1:
-  "Arrows/+Shift/+Ctrl: view/NWSE/FOV", "Ctrl+S: save", "Ctrl+F: find object",
+  "Arrows/+Shift/+Ctrl: view/NWSE/FOV", "Ctrl+S: save", "Ctrl+R: reload", "Ctrl+F: find object",
   "Ctrl+Q: quit". Row 2: N, Space, +/-, [/], D, Z; Space reads
   "SIM PAUSE/PLAY". Row 3: "L: location", "K: cities", "S: Solar system",
   "P: planets", "T: paths", "G: grid", "C: constellations".
-  Row 2 gaps are 48 px; row 3 gaps are 27 px. FIND appears only in row 1.
-  Notes remain at y=472. At x=473, G1/G2/G3 show "scale"/"cross"/"full";
+  Row 1 gaps are 19-20 px; row 2 gaps are 48 px; row 3 gaps are 27 px.
+  FIND appears only in row 1.
+  Notes start at x=8, y=472, aligned with Arrows. Active G/C replace their
+  colons with 1 px white lines at x=469/538, y=462..479; mode 0 restores
+  the colons. Preserve these lines through message clearing and panel restoration.
+  At x=473, G1/G2/G3 show "scale"/"cross"/"full";
   at x=542, C1/C2/C3/C4 show "stars"/"charts"/"charts & names"/
   "navigational", white on black. G0/C0 leave their fields blank.
   Keep ordinary notes short enough to end before these persistent mode labels.
-  The busy label reads "Working, please wait...",
-  one character cell before the right-aligned LIVE/SIM status.
+  The busy label "[INFO] Working, please wait..." uses the bottom message field
+  at x=8, y=472 while work is pending, without a timer. Nonempty notes take
+  priority; after a save/reload result expires, restore busy text if work remains.
+  Keep the top-right LIVE/SIM status separate and never paint over modal panels.
   The compass ends at y=438; keep y=439..440 blank. Scene clearing stops before
   FOOTER_TOP (441); editors clear from there. Keep highlights aligned.
   Cache footer highlights, mode labels and note text; unchanged content must cause no bitmap

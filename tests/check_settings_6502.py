@@ -25,11 +25,12 @@ int read_xram(unsigned a,unsigned n,int f){return -1;}
 void gx_read(unsigned a,void *p,unsigned char n){}
 int gx_zoom(int step){fov+=step;return 1;}
 int tz_set(const char *p){if(strcmp(p,"Europe/Warsaw"))return 0;strcpy(zone_name,p);return 1;}
-int main(void){int a;unsigned char id;FILE *file;
+int main(void){int a;unsigned char id;FILE *file;Date utc={2026,11,14,12,34,56};
 strcpy(config_path,"settings.cfg");memset(location_name,'X',44);location_name[44]=0;
 assert(config_save());bearing=elevation=0;fov=120;grid=0;live=1;
 assert(config_load()==1&&bearing==359&&elevation==-54&&fov==160&&grid==3);
 assert(!live&&!playing&&constellation_mode==4&&moment.year==2200&&strlen(location_name)==44);
+playing=1;assert(config_reload(NULL)==1&&!live&&!playing&&moment.year==2200);
 assert(observer.latitude==3240000L&&observer.longitude==-6480000L&&observer.altitude==10000);
 for(a=0;a<=9;++a){char v[2];v[0]='0'+a;v[1]=0;
 assert(option_value(OPT_GRID,v,0)==(a<=3));assert(option_value(OPT_CONSTELLATIONS,v,0)==(a<=4));}
@@ -48,6 +49,9 @@ assert(option_value(OPT_PATHS,"ON",1)&&trails);
 assert(option_value(OPT_PLANETS,"off",1)&&!planets);
 assert(option_value(OPT_LIVE,"",1)&&live);
 assert(config_save());live=0;playing=1;assert(config_load()==1&&live&&!playing);
+live=0;playing=1;bearing=12;
+assert(config_reload(NULL)==-1&&!live&&playing&&bearing==12);
+assert(config_reload(&utc)==1&&live&&!playing&&bearing==65&&!memcmp(&moment,&utc,sizeof(utc)));
 file=fopen(config_path,"wb");assert(file);fputs("broken",file);fclose(file);
 assert(config_load()==-1&&live&&bearing==65);
 remove(config_path);puts("PASS: 65C02 settings ranges, signs, full disk round trip and LIVE/PAUSE");return 0;}

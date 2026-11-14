@@ -42,6 +42,7 @@ static unsigned constellation_test,constellation_step,constellation_target,const
 static unsigned constellation_polls,constellation_stars,constellation_scenes;
 static unsigned startup_test,startup_seen;
 static unsigned quit_test,quit_step;
+static unsigned settings_test,settings_step,settings_read_fail,settings_write_fail;
 static unsigned simulation_sky,simulation_planets,simulation_stars,simulation_scenes;
 static Date simulation_at,simulation_next;
 static Date frozen_date;
@@ -97,15 +98,17 @@ static void expect_header_icons(unsigned char visible)
 }
 static void expect_busy(unsigned char busy)
 {
-    const char *p="Working, please wait...";unsigned x=(live?604:playing?580:574)-144,row,col,c;
+    const char *p="[INFO] Working, please wait...";unsigned x=8,row,col,c;
+    if(solar_visible||find_active||cities_active||editing)return;
+    if(note[0]){expect_text_at(8,472,note,0);return;}
     while(*p) {
         c=(unsigned char)*p++;
         for(row=0;row<8;++row)for(col=0;col<6;++col) {
-            if(!!(xram[(row+1)*80+(x+col)/8]&(128>>((x+col)&7)))!=
+            if(!!(xram[(row+472)*80+(x+col)/8]&(128>>((x+col)&7)))!=
                !!(busy&&(xram[XR_FONT+c*8+row]&(128>>col))))
                 fprintf(stderr,"busy=%u key=%u render=%u replay=%u idle=%u ticks=%u live=%u playing=%u\n",
                         busy,key_index,render_test,replay,idle_steps,ticks,live,playing);
-            assert(!!(xram[(row+1)*80+(x+col)/8]&(128>>((x+col)&7)))==
+            assert(!!(xram[(row+472)*80+(x+col)/8]&(128>>((x+col)&7)))==
                    !!(busy&&(xram[XR_FONT+c*8+row]&(128>>col))));
         }
         x+=6;
@@ -301,7 +304,7 @@ static unsigned control_keys(void)
 }
 static unsigned solar_keys(void)
 {
-    static const unsigned ignored[]={'+','K','D','S',K_LEFT,'G',' ','N','q','Q','x','X',CTRL('S'),12,'L','Z','P','T','C','[',']','-'};
+    static const unsigned ignored[]={'+','K','D','S',K_LEFT,'G',' ','N','q','Q','x','X',CTRL('S'),CTRL('R'),12,'L','Z','P','T','C','[',']','-'};
     static unsigned ignored_index,clock_changes;
     unsigned a,x,y;
     if(!solar_visible&&(solar_step==0||solar_step==4)&&gx_busy())return 0;
@@ -343,16 +346,19 @@ static unsigned solar_keys(void)
     default:assert(0);return CTRL('Q');
     }
 }
+#include "config_loop.inc"
 #endif
 unsigned key_poll(void)
 {
     unsigned i;
 #ifdef SIDERA_OVERLAY_HOST
+    if(settings_test)return settings_keys();
     if(quit_test) {
         if(!quit_step){++quit_step;return quit_test=='F'?CTRL('F'):quit_test;}
         assert(quit_test=='K'?cities_active:quit_test=='F'?find_active:editing);
         if(quit_step==1){++quit_step;return CTRL('S');}
-        assert(quit_step==2&&_access(save_path,0)!=0);
+        if(quit_step==2){++quit_step;return CTRL('R');}
+        assert(quit_step==3&&_access(save_path,0)!=0);
         ++quit_step;return CTRL('Q');
     }
     if(startup_test) {
@@ -467,9 +473,9 @@ unsigned key_poll(void)
 #endif
     if(key_index==16)assert(!strcmp(note,"Warsaw [PL] (press Ctrl+S to save location)"));
     if(key_index==17) {
-        assert(!note[0]);
+        assert(!strcmp(note,"[INFO] Configuration saved"));
+        expect_text_at(8,472,note,0);
         assert(!strcmp(location_name,"Warsaw [PL]"));
-        for(i=472*80;i<480*80;++i)if(i%80<59)assert(!xram[i]);
     }
     if(key_index>=4&&key_index<=6)assert(portal_writes<30000);
     if(key_index==7)assert(portal_writes>=25000); /* G off still clears the plot. */
@@ -488,7 +494,14 @@ int host_open(const char *path,int flags)
         if(strstr(path,".ovl"))++overlay_reads;
 #endif
         sprintf(full,"%s/%s",rom_dir,path+4);path=full;
-    } else assert(!strcmp(path,save_path));
+    } else {
+        assert(!strcmp(path,save_path));
+#ifdef SIDERA_OVERLAY_HOST
+        if((flags==O_RDONLY&&settings_read_fail)||(flags!=O_RDONLY&&settings_write_fail)) {
+            errno=EACCES;return -1;
+        }
+#endif
+    }
     fd=_open(path,flags|_O_BINARY,_S_IREAD|_S_IWRITE);
     if(fd>=0)++opened;return fd;
 }
@@ -550,11 +563,22 @@ int main(int argc,char **argv)
     assert(argc==3||argc==4);rom_dir=argv[1];save_path=argv[2];run_args[6]=argv[2];
     remove(save_path);
 #ifdef SIDERA_OVERLAY_HOST
+    if(argc==4&&!strcmp(argv[3],"settings")) {
+        char *settings_args[]={"sidera.rp6502","/config",argv[2],"/date","2026-11-09 12:00:00",
+            "/view","135,-14","/fov","70","/grid","3","/paths","on","/planets","on","/constellations","4"};
+        settings_test=1;vga=1;start.tm_year=126;start.tm_mon=10;start.tm_mday=10;start.tm_hour=4;
+        fake_time=_mkgmtime(&start);
+        assert(!sidera_main(sizeof(settings_args)/sizeof(settings_args[0]),settings_args));
+        assert(settings_step==12&&!opened&&!keyboard_mapped&&console_restored==1);
+        remove(save_path);
+        puts("PASS: Ctrl+S/Ctrl+R messages, full reload during work, SIM/LIVE, failures preserve state, exact refreshed chart");
+        return 0;
+    }
     if(argc==4&&!strncmp(argv[3],"quit-",5)) {
         quit_test=(unsigned char)argv[3][5];vga=1;fake_time=0;
         assert(!sidera_main(7,run_args));
-        assert(quit_step==3&&!opened&&!keyboard_mapped&&console_restored==1);
-        puts("PASS: Ctrl+S ignored in modal panels; global Ctrl+Q cleans up files/keyboard");
+        assert(quit_step==4&&!opened&&!keyboard_mapped&&console_restored==1);
+        puts("PASS: Ctrl+S/Ctrl+R ignored in modal panels; global Ctrl+Q cleans up files/keyboard");
         return 0;
     }
     if(argc==4&&(!strcmp(argv[3],"startup-saved")||!strcmp(argv[3],"startup-default"))) {

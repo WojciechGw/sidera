@@ -56,7 +56,7 @@ int option_value(unsigned char code,const char *value,unsigned char apply)
     }
     return 1;
 }
-int config_load(void)
+static int read_config(const Date *utc,unsigned char reload)
 {
     int fd,n;char *line[5],*values[6],*p;
     unsigned char i,mode;
@@ -77,11 +77,18 @@ int config_load(void)
         if(!option_value(i+1,values[i],0))return -1;
     }
     mode=!strcmp(line[4]+5,"LIVE")?OPT_LIVE:OPT_DATE;
-    if(!option_value(mode,line[4]+5,0)||!tz_set(line[1]+5))return -1;
+    if(!option_value(mode,line[4]+5,0))return -1;
+    /* Validate LIVE's clock before committing any saved settings. */
+    if(reload&&mode==OPT_LIVE&&(!utc||!date_valid(utc)))return -1;
+    if(!tz_set(line[1]+5))return -1;
     observer=parsed;strcpy(location_name,line[2]+5);
     for(i=0;i<6;++i)option_value(i+1,values[i],1);
-    option_value(mode,line[4]+5,1);return 1;
+    option_value(mode,line[4]+5,1);
+    if(reload&&mode==OPT_LIVE)moment=*utc;
+    return 1;
 }
+int config_load(void) { return read_config(NULL,0); }
+int config_reload(const Date *utc) { return read_config(utc,1); }
 int assets_open(void)
 {
     static const char magic[8]={'S','I','D','E','R','A','5',0};

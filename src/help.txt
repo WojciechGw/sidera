@@ -29,6 +29,7 @@ N                Set observation time to now (computer local time)
 D                Set observation date and time
 L                Set location (DMS coordinates)
 Ctrl+S           Save location, zone, view, FOV, G/T/C/P and LIVE/simulation time
+Ctrl+R           Reload saved settings; restore LIVE or paused simulation
 Shift+Right      Next compass direction: N/NE/E/SE/S/SW/W/NW
 Shift+Left       Previous compass direction (50 -> 45 -> 0 -> 315 deg)
 G                Cycle grid and coordinate markers
@@ -42,7 +43,8 @@ S                Solar System snapshot; Esc closes, sky and SIM pause
 Ctrl+Q           Quit from any panel (either Ctrl key)
 
 Standalone edition with embedded ROM resources.
-Ctrl+S accepts either Ctrl key and saves only from the main sky view. X and plain F are unused.
+Ctrl+S/Ctrl+R accept either Ctrl key and work only in the main sky view.
+X and plain F/R are unused. Failed reloads preserve the current settings.
 Ctrl+F accepts either Ctrl key; N returns to LIVE.
 FOV requires the physical left Ctrl key; right Ctrl does not change FOV.
 Default settings: MSC0:/sidera.cfg. Ctrl+Q returns to the monitor.

@@ -374,12 +374,12 @@ static void text_right(int y,const char *p)
 {
     gx_text(VIEW_RIGHT-(int)strlen(p)*6,y,p);
 }
-void gx_status(unsigned char busy)
+static void status_header(void)
 {
     unsigned char state,row,i;
     int x;
     const char *label;
-    calculating=!!busy;state=(live?0:playing?1:2)+calculating*4;
+    state=live?0:playing?1:2;
     if(state==status_drawn)return;
     status_drawn=state;
     /* Clear only the top-right status, including the old LIVE bar. */
@@ -389,9 +389,14 @@ void gx_status(unsigned char busy)
     }
     label=live?" LIVE ":playing?"SIM / PLAY":"SIM / PAUSE";
     x=640-(int)strlen(label)*6;
-    if(calculating)gx_text(x-144,1,"Working, please wait...");
     draw_text(x,1,label,live?6:0);
     if(live)gx_line(604,0,639,0,0);
+}
+void gx_status(unsigned char busy)
+{
+    calculating=!!busy;
+    if(!solar_visible&&!find_active&&!cities_active&&!editing)gx_footer();
+    status_header();
 }
 void gx_view(void)
 {
@@ -408,7 +413,7 @@ static void header_base(void)
     gx_clear(0,VIEW_TOP-13);
     draw_text(0,1," SIDERA  The Celestial Observatory",8);
     gx_line(0,0,47,0,0);
-    status_drawn=255;gx_status(calculating);
+    status_drawn=255;status_header();
     gx_clock();
     strcpy(text,"Location ");location_format(text+9,&observer,0);gx_text(202,21,text);
     gx_text(256,31,location_name);
@@ -454,15 +459,31 @@ void gx_riseset(void)
     gx_clear(53,8);
     for(i=0;i<2;++i){rs_text(i,text);gx_text(i?442:250,53,text);}
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (push, "HIGH_CODE")
+#endif
+static void footer_bar(unsigned x,unsigned y,unsigned char active)
+{
+    unsigned a=y*80u+x/8;
+    unsigned char mask=0x80u>>(x&7),v;
+    /* The colon's dots are at y=462 and y=465 in the 6x8 font. */
+    RIA.step0=0;
+    for(;y<480;++y,a+=80) {
+        RIA.addr0=a;v=RIA.rw0;
+        RIA.rw0=active||y==462||y==465?v|mask:v&~mask;
+    }
+}
 void gx_footer(void)
 {
+    const char *message=note[0]?note:calculating?"[INFO] Working, please wait...":"";
     unsigned char flags=!!grid|((!!trails)<<1)|((!!planets)<<2)|((!!constellation_mode)<<3);
     unsigned char changed;
     if(!(footer_valid&1)) {
         gx_clear(FOOTER_TOP,472-FOOTER_TOP);
         /* Three rows span x=8..631. Gaps differ by at most one pixel per row. */
         gx_text(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV");
-        gx_text(266,441,"Ctrl+S: save");gx_text(392,441,"Ctrl+F: find object");
+        gx_text(232,441,"Ctrl+S: save");gx_text(323,441,"Ctrl+R: reload");
+        gx_text(427,441,"Ctrl+F: find object");
         gx_text(560,441,"Ctrl+Q: quit");
         gx_text(8,451,"N: now");gx_text(92,451,"Space: SIM PAUSE/PLAY");
         gx_text(266,451,"+/-: 15 min");gx_text(380,451,"[/]: day");
@@ -481,15 +502,20 @@ void gx_footer(void)
     /* No trailing highlight cell past the right margin. */
     if(changed&8)draw_text(542,461," constellations",flags&8?255:0);
     footer_flags=flags;
-    if(!(footer_valid&2)||strcmp(footer_note,note)) {
-        gx_clear(472,8);gx_text(20,472,note);
-        strcpy(footer_note,note);
+    if(!(footer_valid&2)||strcmp(footer_note,message)) {
+        gx_clear(472,8);gx_text(8,472,message);
+        strcpy(footer_note,message);
         footer_grid=footer_constellation=255;
     }
     if(footer_grid!=grid)gx_text(473,472,grid_modes[grid]);
     if(footer_constellation!=constellation_mode)gx_text(542,472,constellation_modes[constellation_mode]);
+    if((changed&1)||!(footer_valid&2))footer_bar(469,changed&1?462:472,grid);
+    if((changed&8)||!(footer_valid&2))footer_bar(538,changed&8?462:472,constellation_mode);
     footer_grid=grid;footer_constellation=constellation_mode;footer_valid|=2;
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (pop)
+#endif
 void gx_trail(unsigned char body,unsigned char n)
 {
     int x,y,px,py;

@@ -4,6 +4,8 @@ import rp6502
 
 
 with rp6502.Emu() as emu:
+    def message():
+        return bytes.fromhex(emu.cmd('dump _note 100')).split(b'\0',1)[0].decode('ascii')
     emu.cmd('run 1200')  # Includes the unskippable five-second cover.
     assert 'EXIT' not in emu.status(), 'ROM exited before the sky view'
     emu.cmd('peek _ovl_failed 0')
@@ -52,7 +54,7 @@ with rp6502.Emu() as emu:
     emu.cmd('peek _solar_visible 1')
     emu.cmd('peek _ovl_failed 0')
     emu.cmd('shot "solar.png"')
-    for key in ('x', 's', 's+ctrl', 'q', 'q+shift'):
+    for key in ('x', 's', 's+ctrl', 'r+ctrl', 'q', 'q+shift'):
         emu.cmd('key '+key)
         emu.cmd('run 30')
         emu.cmd('peek _solar_visible 1')
@@ -76,6 +78,28 @@ with rp6502.Emu() as emu:
     emu.cmd('peek _cities_active 0')
     emu.cmd('key s+ctrl')
     emu.cmd('run 120')
+    assert message() == '[INFO] Configuration saved'
+    emu.cmd('run 300')
+    assert message() == '', 'Save result must disappear after five seconds without input'
+    for control in ('lctrl','rctrl'):
+        emu.cmd('key right')
+        emu.cmd('key g')
+        emu.cmd('key equal+shift')
+        emu.cmd('run 120')
+        emu.cmd('press '+control)
+        emu.cmd('key r+ctrl')
+        emu.cmd('run 120')
+        assert message() == '[INFO] Configuration reloaded'
+        emu.cmd('release '+control)
+        emu.cmd('wait _calculating 0 14400')
+        emu.cmd('peek _bearing 180')
+        emu.cmd('peek _grid 0')
+        emu.cmd('peek _live 0')
+        emu.cmd('peek _playing 0')
+        emu.cmd('peek (_moment+4) 20 0 0')
+    emu.cmd('shot "reloaded.png"')
+    emu.cmd('run 300')
+    assert message() == '', 'Reload result must disappear after five seconds without input'
     # Full-detail simulation: a five-minute step, then manual +15 pauses it.
     emu.cmd('type "gggccctp"')
     emu.cmd('wait _planets 1 7200')
