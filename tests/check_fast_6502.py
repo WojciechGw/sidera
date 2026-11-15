@@ -1,4 +1,4 @@
-"""65C02 atan accuracy, position-only equivalence and reproducible CPU timings.
+"""65C02 exact arithmetic, atan accuracy, position equivalence and CPU timings.
 
 Optional fourth argument: directory with the pre-change astro.c/astro.h/tables.
 """
@@ -13,15 +13,18 @@ work = Path(sys.argv[3]).resolve()
 work.mkdir(parents=True, exist_ok=True)
 
 
-def run(name, code, directory=source):
+def run(name, code, directory=source, embedded=False):
     (work / f'{name}.c').write_text(code)
     subprocess.run([sys.argv[1], '-t', 'sim65c02', '-O', '-I', str(directory),
-                    '-o', str(work / name), str(work / f'{name}.c'), str(directory / 'astro.c')], check=True)
+                    '-o', str(work / name), str(work / f'{name}.c')]
+                   + ([] if embedded else [str(directory / 'astro.c')]), check=True)
     result = subprocess.run([sys.argv[2], '-c', str(work / name)], capture_output=True, text=True, check=True)
     return result.stdout + result.stderr
 
 
 prefix = '#include <stdio.h>\n#include <assert.h>\n#include <string.h>\n#include "astro.h"\n'
+print(run('fixed_math', Path(__file__).with_name('fixed_math_6502.c').read_text(),
+          embedded=True).strip())
 angles = run('angles', prefix + r'''
 int main(void) {
     static const int16_t values[]={-32768,-16384,-8192,-1000,-1,0,1,1000,8192,16384,32767};

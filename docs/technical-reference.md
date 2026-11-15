@@ -477,6 +477,27 @@ crossings and refines brackets, accounting for the upper limb and standard
 refraction. This distinction matters around daylight-saving changes. The UI also
 handles days without a crossing and dates where a complete search is unavailable.
 
+The integer hot paths preserve the original rounding: Q14 multiplication biases
+negative products before an unsigned shift and a 16-bit cast; sine interpolation
+uses a nonnegative 16-bit product (at most 101 * 63) and a six-bit shift. Kepler
+iteration stops early only when its integer correction is exactly zero. These
+changes leave the orbital model and the 97-point path sampling unchanged. The
+12-byte month-length table resides in HIGH to keep the resident image within its
+memory limits.
+
+Resident astronomy caches retain the unrounded daily bases for five Sun/Moon
+orbital elements, obliquity sine/cosine and solar eccentricity, keyed by UTC day.
+The fractional-day contribution is still evaluated for every requested instant
+before the original angle rounding. A separate observer cache keys all latitude,
+longitude and altitude fields and retains the WGS84 terms used for parallax.
+Sidereal sine/cosine are rebuilt per call and shared by the bodies at that instant.
+Sun/Moon, rise/set, planet and star-frame calls can alternate dates and observers;
+each public entry prepares the state it uses. These helpers are deliberately
+non-reentrant, matching the single resident polling loop. The lunar inclination
+sine/cosine are exact precomputed lookup results, checked against the tables.
+Complete rise/set samples are not reused by the 97-point path cache: their local
+civil-day coverage and adaptive sampling differ from the UTC path grid.
+
 The implementation targets an interactive visual observatory. Regression tests
 compare selected cases with stored reference data; their tolerances are not a
 global accuracy guarantee over all dates and observers. See

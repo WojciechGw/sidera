@@ -56,6 +56,9 @@
 
 - One resident polling loop performs incremental work. Preserve responsiveness
   and LIVE/SIM behaviour when changing rendering or astronomical calculations.
+  `astro.c` keeps resident caches keyed by UTC day and the complete observer;
+  sidereal terms are prepared per instant. Keep astronomical entry calls serial
+  and preserve exact rounding when sharing these intermediates.
 - After the splash, show the header and footer before astronomy runs, including
   saved settings. Sun/Moon fields start as placeholders with header icons hidden.
   Publish their first results before planet/star preparation; keep plot sprites
@@ -278,7 +281,9 @@ In PowerShell, read UTF-8 documentation with `Get-Content -Encoding utf8`.
 - For compiler/platform-sensitive changes, validate Debug/Release and the affected
   host environments. Report exactly what ran; do not infer untested results.
 
-Automated tests do not upload to PICO. Hardware launch through F5 does.
+Automated tests do not upload to PICO. Physical PICO runs are performed by the
+owner; agents use host, sim65 and emulator checks. Hardware launch through F5
+uploads to PICO.
 The ignored `.rp6502` contains local device settings; keep credentials out of Git.
 
 ## Keep this context useful

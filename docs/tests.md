@@ -93,6 +93,17 @@
   Ctrl+Q/Ctrl+S/Ctrl+F with either/both Ctrl keys, Esc and timeout), USB bitmap mapping,
   failure handling and unmapping.
   The test controls RIA registers and time; sim65 executes the code.
+- `sidera_fast_6502` (inside the host suite) compares all 65,536 sine angles,
+  327,905 signed Q14 multiplication pairs and 1,024 Kepler cases with the
+  previous division-based arithmetic and fixed three-iteration solver. It also
+  checks atan accuracy, full/position-only equivalence and daily-path CPU cycles.
+- `sidera_astro_cache_host` and `sidera_astro_cache_6502` replay 72 interleaved
+  date/observer cases through Sun/Moon, horizon, lunar-longitude, star-frame and
+  planet APIs. Their canonical output must match `astro-cache.sha256`, captured
+  from uncached variant A on 15 November 2026. Cases include UTC day zero,
+  midnight, calendar limits, leap years, altitude changes and both poles.
+  Intervening calls deliberately replace the cached day and observer before the
+  original request is repeated; host and 65C02 outputs share the same reference.
 - `sidera_busy`: observes the actual ROM's foreground Moon at (3,33), its
   initial delay, original phase pixels and changing orientations during sky,
   CITIES, FIND and SOLAR work, plus disappearance and idle editor behavior.

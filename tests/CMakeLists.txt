@@ -57,6 +57,14 @@ set_tests_properties(sidera_cover_host PROPERTIES TIMEOUT 10)
 add_test(NAME sidera_cover_asset COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/check_cover.py")
 find_program(CL65 cl65 REQUIRED)
 find_program(SIM65 sim65 REQUIRED)
+add_executable(sidera_astro_cache_host astro_cache.c ../src/astro.c)
+target_include_directories(sidera_astro_cache_host PRIVATE ../src)
+target_compile_options(sidera_astro_cache_host PRIVATE /UNDEBUG)
+add_test(NAME sidera_astro_cache_host COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/check_astro_cache.py" --host "$<TARGET_FILE:sidera_astro_cache_host>")
+add_test(NAME sidera_astro_cache_6502 COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/check_astro_cache.py" "${CL65}" "${SIM65}"
+    "${CMAKE_CURRENT_BINARY_DIR}/astro_cache_sim")
 add_test(NAME sidera_platform_6502 COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/check_platform_6502.py"
     "${CL65}" "${SIM65}" "${CMAKE_CURRENT_BINARY_DIR}/platform_sim")
 set_tests_properties(sidera_platform_6502 PROPERTIES TIMEOUT 60)

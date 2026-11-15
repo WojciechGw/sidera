@@ -6,12 +6,23 @@
  * a sky display, not an occultation or navigation ephemeris.
  */
 #include "astro.h"
+#include <string.h>
 #include "tables/sine.h"
 #include "tables/atan.h"
 #define ONE 16384
 #define CIRCLE 360000000L
+/* Exact lookup results for the fixed 5.145-degree lunar inclination. */
+#define MOON_SIN_I 1468
+#define MOON_COS_I 16318
 
-static int16_t mul(int16_t a, int16_t b) { return (int16_t)((int32_t)a * b / ONE); }
+static int16_t mul(int16_t a, int16_t b)
+{
+    int32_t p = (int32_t)a * b;
+    /* Bias negative products to preserve division's truncation toward zero.
+     * The final 16-bit cast discards the unsigned shift's upper sign bits. */
+    if (p < 0) p += ONE - 1;
+    return (int16_t)((uint32_t)p >> 14);
+}
 static uint16_t root(uint32_t n)
 {
     uint32_t bit = 0x40000000UL, r = 0;
@@ -30,7 +41,8 @@ int16_t as_sin(uint16_t a)
     if (p > 16384u) p = 32768u - p;
     i = p >> 6;
     v = sine[i];
-    if (i < 256) v += (int16_t)((int32_t)(sine[i + 1] - v) * (p & 63) / 64);
+    /* Monotonic quarter wave: delta <= 101, so delta * 63 fits in 16 bits. */
+    if (i < 256) v += (int16_t)(((uint16_t)(sine[i + 1] - v) * (p & 63)) >> 6);
     return (a & 32768u) ? -v : v;
 }
 int16_t as_cos(uint16_t a) { return as_sin((uint16_t)(a + 16384u)); }
@@ -51,10 +63,16 @@ uint16_t as_atan(int16_t y, int16_t x)
 uint16_t as_angle(int32_t md) { return (uint16_t)(md * 4096L / 22500L); }
 int as_degrees(uint16_t a) { return (int)((uint32_t)a * 3600UL / 65536UL); }
 static unsigned char leap(int y) { return !(y % 4) && (y % 100 || !(y % 400)); }
+#if defined(SIDERA_OVERLAYS) && defined(__CC65__)
+#pragma rodata-name (push, "HIGH_RODATA")
+#endif
+static const unsigned char month_days[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+#if defined(SIDERA_OVERLAYS) && defined(__CC65__)
+#pragma rodata-name (pop)
+#endif
 static unsigned char days(int y, unsigned char m)
 {
-    static const unsigned char n[] = {31,28,31,30,31,30,31,31,30,31,30,31};
-    return n[m - 1] + (m == 2 && leap(y));
+    return month_days[m - 1] + (m == 2 && leap(y));
 }
 int date_valid(const Date *d)
 {
@@ -111,13 +129,33 @@ static int32_t modmul(int32_t a, int32_t b)
     }
     return neg ? -r : r;
 }
-static uint16_t element(int32_t base, int32_t rate, int32_t day, uint16_t fraction)
+static uint16_t fractional_element(int32_t a,int32_t rate,uint16_t fraction)
 {
-    int32_t a = base + modmul(rate,day);
     /* Split the rate: rate*fraction would overflow a 32-bit product. */
     a += (rate / 65536L) * fraction + (rate % 65536L) * (int32_t)(fraction / 2) / 32768L;
     a %= CIRCLE; if (a < 0) a += CIRCLE;
     return as_angle(a / 1000L);
+}
+/* Keep unrounded daily terms: reducing them to angles here would change the
+ * fractional-day rounding. The key is UTC day, independent of observer/zone. */
+static const int32_t daily_orbits[5][2]={
+    {356047000L,985600L},{282940400L,47L},{115365400L,13064993L},
+    {318063400L,164357L},{125122800L,-52954L}
+};
+static int32_t cached_day=2147483647L,daily_base[5];
+static int16_t daily_so,daily_co,daily_e;
+static uint16_t daily_element(unsigned char index,int32_t day,uint16_t fraction)
+{
+    unsigned char i;
+    uint16_t ob;
+    if(day!=cached_day) {
+        for(i=0;i<5;++i)daily_base[i]=daily_orbits[i][0]+modmul(daily_orbits[i][1],day);
+        ob=as_angle(23439L)-(uint16_t)(day*65L/1000000L);
+        daily_so=as_sin(ob);daily_co=as_cos(ob);
+        daily_e=(int16_t)(274L-day/53000L);
+        cached_day=day;
+    }
+    return fractional_element(daily_base[index],daily_orbits[index][1],fraction);
 }
 static int16_t correction(int amplitude, uint16_t a)
 {
@@ -130,6 +168,7 @@ static uint16_t anomaly(uint16_t m, int16_t e, int16_t *radius)
     unsigned char k;
     for (k = 0; k < 3; ++k) {
         delta = (int16_t)((int16_t)((uint16_t)ee - m) - mul(er,as_sin((uint16_t)ee)));
+        if (!delta) break; /* Further iterations would leave ee unchanged. */
         ee -= (int32_t)delta * ONE / (ONE - mul(e,as_cos((uint16_t)ee)));
     }
     x = as_cos((uint16_t)ee) - e;
@@ -138,25 +177,39 @@ static uint16_t anomaly(uint16_t m, int16_t e, int16_t *radius)
     return as_atan(y,x);
 }
 typedef struct { int16_t x,y,z; } Vec;
-static void equatorial(uint16_t lon, uint16_t lat, uint16_t ob, Vec *v)
+static void equatorial(uint16_t lon, uint16_t lat, Vec *v)
 {
-    int16_t y = mul(as_sin(lon),as_cos(lat)), z = as_sin(lat);
-    v->x = mul(as_cos(lon),as_cos(lat));
-    v->y = mul(y,as_cos(ob)) - mul(z,as_sin(ob));
-    v->z = mul(y,as_sin(ob)) + mul(z,as_cos(ob));
+    int16_t cl=as_cos(lat),y=mul(as_sin(lon),cl),z=as_sin(lat);
+    v->x = mul(as_cos(lon),cl);
+    v->y = mul(y,daily_co) - mul(z,daily_so);
+    v->z = mul(y,daily_so) + mul(z,daily_co);
 }
-static void horizontal(Vec *v, uint16_t sid, uint16_t lat, int16_t par,
-                       int altitude, Position *p)
+/* One resident caller at a time; planets and Sun/Moon prepare this frame before
+ * using it. Observer terms persist across instants, sidereal terms do not. */
+static Observer frame_observer={2147483647L,0,0};
+static uint16_t frame_lon;
+static int16_t frame_sl,frame_cl,frame_x,frame_z,frame_ss,frame_cs;
+static void horizontal_frame(const Observer *o,uint16_t sid)
 {
-    int16_t x = mul(v->x,as_cos(sid)) + mul(v->y,as_sin(sid));
-    int16_t east = mul(v->y,as_cos(sid)) - mul(v->x,as_sin(sid));
-    int16_t sl = as_sin(lat), cl = as_cos(lat), north, up, rho;
-    /* WGS84 geodetic observer, with height, divided by body distance. */
-    rho = ONE + mul(55,mul(sl,sl)) + (int16_t)((int32_t)altitude * ONE / 6378137L);
-    x -= mul(par,mul(rho,cl));
-    v->z -= mul(par,mul(rho - 110,sl));
-    north = mul(v->z,cl) - mul(x,sl);
-    up = mul(x,cl) + mul(v->z,sl);
+    uint16_t lat;
+    int16_t rho;
+    if(memcmp(o,&frame_observer,sizeof(*o))) {
+        frame_observer=*o;
+        frame_lon=(uint16_t)((o->longitude/100L)*4096L/8100L);
+        lat=(uint16_t)((o->latitude/100L)*4096L/8100L);
+        frame_sl=as_sin(lat);frame_cl=as_cos(lat);
+        rho=ONE+mul(55,mul(frame_sl,frame_sl))+(int16_t)((int32_t)o->altitude*ONE/6378137L);
+        frame_x=mul(rho,frame_cl);frame_z=mul(rho-110,frame_sl);
+    }
+    sid+=frame_lon;frame_ss=as_sin(sid);frame_cs=as_cos(sid);
+}
+static void horizontal(Vec *v,int16_t par,Position *p)
+{
+    int16_t x=mul(v->x,frame_cs)+mul(v->y,frame_ss);
+    int16_t east=mul(v->y,frame_cs)-mul(v->x,frame_ss),north,up;
+    x-=mul(par,frame_x);v->z-=mul(par,frame_z);
+    north=mul(v->z,frame_cl)-mul(x,frame_sl);
+    up=mul(x,frame_cl)+mul(v->z,frame_sl);
     p->az = as_atan(east,north);
     p->alt = (int16_t)as_atan(up,(int16_t)root((int32_t)east*east + (int32_t)north*north));
 }
@@ -164,25 +217,23 @@ static uint16_t compute_sky(const Date *d,const Observer *o,Sky *s,unsigned char
 {
     int32_t day = date_day(d), seconds = (int32_t)d->hour * 3600 + d->minute * 60u + d->second;
     uint16_t f = (uint16_t)((uint32_t)seconds * 32768UL / 43200UL);
-    uint16_t ms,ws,ls,mm,wm,nm,lm,dd,ff,ob,lon,lat,sid,v;
-    int16_t radius,x,y,z,si,ci,sl,cl,proj,illum,tx,ty;
+    uint16_t ms,ws,ls,mm,wm,nm,lm,dd,ff,lon,lat,v;
+    int16_t radius,x,y,z,sl,cl,proj,illum,tx,ty;
     int32_t dist;
     Vec sun,moon;
-    ms = element(356047000L,985600L,day,f);
-    ws = element(282940400L,47L,day,f);
+    ms = daily_element(0,day,f);
+    ws = daily_element(1,day,f);
     ls = ms + ws;
-    ob = element(23439300L,0,0,0) - (uint16_t)(day * 65L / 1000000L);
-    v = anomaly(ms,(int16_t)(274L - day / 53000L),&radius);
-    equatorial(v + ws,0,ob,&sun);
-    mm = element(115365400L,13064993L,day,f);
-    wm = element(318063400L,164357L,day,f);
-    nm = element(125122800L,-52954L,day,f);
+    v = anomaly(ms,daily_e,&radius);
+    equatorial(v + ws,0,&sun);
+    mm = daily_element(2,day,f);
+    wm = daily_element(3,day,f);
+    nm = daily_element(4,day,f);
     lm = mm + wm + nm; dd = lm - ls; ff = lm - nm;
     v = anomaly(mm,899,&radius) + wm;
-    si = as_sin(as_angle(5145)); ci = as_cos(as_angle(5145));
-    x = mul(as_cos(nm),as_cos(v)) - mul(as_sin(nm),mul(as_sin(v),ci));
-    y = mul(as_sin(nm),as_cos(v)) + mul(as_cos(nm),mul(as_sin(v),ci));
-    z = mul(as_sin(v),si);
+    x = mul(as_cos(nm),as_cos(v)) - mul(as_sin(nm),mul(as_sin(v),MOON_COS_I));
+    y = mul(as_sin(nm),as_cos(v)) + mul(as_cos(nm),mul(as_sin(v),MOON_COS_I));
+    z = mul(as_sin(v),MOON_SIN_I);
     lon = as_atan(y,x);
     lat = as_atan(z,(int16_t)root((int32_t)x*x + (int32_t)y*y));
     lon += correction(-1274,mm-2u*dd) + correction(658,2u*dd) + correction(-186,ms)
@@ -193,7 +244,7 @@ static uint16_t compute_sky(const Date *d,const Observer *o,Sky *s,unsigned char
     if(shading==3)return lon;
     lat += correction(-173,ff-2u*dd) + correction(-55,mm-ff-2u*dd)
         + correction(-46,mm+ff-2u*dd) + correction(33,ff+2u*dd) + correction(17,2u*mm+ff);
-    equatorial(lon,lat,ob,&moon);
+    equatorial(lon,lat,&moon);
     /* Distance in km. Split multiplication keeps it within int32. */
     dist = (int32_t)radius * 23462L / 1000L;
     dist -= (int32_t)3699 * as_cos(mm-2u*dd) / ONE + (int32_t)2934 * as_cos(2u*dd) / ONE;
@@ -206,10 +257,9 @@ static uint16_t compute_sky(const Date *d,const Observer *o,Sky *s,unsigned char
     s->illumination = (unsigned)((int32_t)illum * 1000 / ONE);
     s->phase = (unsigned char)(((int32_t)illum * 128 + ONE/2) / ONE);
     }
-    sid = ls + 32768u + f + (uint16_t)((o->longitude / 100L) * 4096L / 8100L);
-    lat = (uint16_t)((o->latitude / 100L) * 4096L / 8100L);
-    horizontal(&sun,sid,lat,0,o->altitude,&s->sun);
-    horizontal(&moon,sid,lat,(int16_t)(104499446L / dist),o->altitude,&s->moon);
+    horizontal_frame(o,ls+32768u+f);
+    horizontal(&sun,0,&s->sun);
+    horizontal(&moon,(int16_t)(104499446L/dist),&s->moon);
     if(shading==2) {
         s->sun.alt+=152; /* 16 arcmin solar radius + 34 arcmin refraction. */
         s->moon.alt+=103+(int16_t)(18122000L/dist); /* topocentric: no second parallax correction */
@@ -239,7 +289,7 @@ void star_frame(const Date *d, const Observer *o, StarFrame *frame)
     int16_t cz,sz,ct,st,cs,ss,cl,sl,x,y,vz,a,b,c,h;
     unsigned char i;
     f=(uint16_t)(((uint32_t)d->hour*3600UL+d->minute*60u+d->second)*32768UL/43200UL);
-    sid=element(356047000L,985600L,day,f)+element(282940400L,47L,day,f)+32768u+f+
+    sid=daily_element(0,day,f)+daily_element(1,day,f)+32768u+f+
         (uint16_t)((o->longitude/100L)*4096L/8100L);
     lat=(uint16_t)((o->latitude/100L)*4096L/8100L);
     /* Linear terms of the Lieske IAU 1976 precession angles from J2000:
@@ -287,7 +337,8 @@ static const Orbit orbits[PLANET_COUNT]={
 };
 static uint16_t planet_element(const int32_t *v,int32_t day,uint16_t f)
 {
-    return element(v[0],v[1]/100L,day,f)+as_angle(day*(v[1]%100L)/100000L);
+    int32_t rate=v[1]/100L;
+    return fractional_element(v[0]+modmul(rate,day),rate,f)+as_angle(day*(v[1]%100L)/100000L);
 }
 typedef struct { unsigned char planet,latitude; signed char j,s,u; int16_t phase,amp; } Perturb;
 /* Phases in tenths of a degree; cosine is encoded as sine(angle+90). */
@@ -303,20 +354,18 @@ uint16_t body_distance[PLANET_COUNT+1];
 void planets_compute(const Date *d,const Observer *o,Position p[PLANET_COUNT])
 {
     int32_t day=date_day(d),xx,yy,zz,a;
-    uint16_t f,ms,ws,sid,ob,lat,n,inc,w,m[PLANET_COUNT],v,lon,beta,arg;
+    uint16_t f,ms,ws,n,inc,w,m[PLANET_COUNT],v,lon,beta,arg;
     int16_t radius,sx,sy,x,y,z,e;
     unsigned char i,k;
     Vec eq;
     const Orbit *q;
     const Perturb *t;
     f=(uint16_t)(((uint32_t)d->hour*3600UL+d->minute*60u+d->second)*32768UL/43200UL);
-    ms=element(356047000L,985600L,day,f);ws=element(282940400L,47L,day,f);
-    v=anomaly(ms,(int16_t)(274L-day/53000L),&radius)+ws;
+    ms=daily_element(0,day,f);ws=daily_element(1,day,f);
+    v=anomaly(ms,daily_e,&radius)+ws;
     body_distance[PLANET_COUNT]=(uint16_t)radius/16u;
     sx=mul(radius,as_cos(v));sy=mul(radius,as_sin(v));
-    sid=ms+ws+32768u+f+(uint16_t)((o->longitude/100L)*4096L/8100L);
-    lat=(uint16_t)((o->latitude/100L)*4096L/8100L);
-    ob=as_angle(23439L)-(uint16_t)(day*65L/1000000L);
+    horizontal_frame(o,ms+ws+32768u+f);
     for(i=0;i<PLANET_COUNT;++i)m[i]=planet_element(orbits[i].angle+6,day,f);
     for(i=0;i<PLANET_COUNT;++i) {
         q=&orbits[i];n=planet_element(q->angle,day,f);
@@ -342,8 +391,8 @@ void planets_compute(const Date *d,const Observer *o,Position p[PLANET_COUNT])
         while(xx>8192L||xx< -8192L||yy>8192L||yy< -8192L||zz>8192L||zz< -8192L){xx/=2;yy/=2;zz/=2;++k;}
         body_distance[i]=(uint16_t)(((uint32_t)root(xx*xx+yy*yy+zz*zz)<<k)/16u);
         eq.x=(int16_t)xx;
-        eq.y=mul((int16_t)yy,as_cos(ob))-mul((int16_t)zz,as_sin(ob));
-        eq.z=mul((int16_t)yy,as_sin(ob))+mul((int16_t)zz,as_cos(ob));
-        horizontal(&eq,sid,lat,0,o->altitude,&p[i]);
+        eq.y=mul((int16_t)yy,daily_co)-mul((int16_t)zz,daily_so);
+        eq.z=mul((int16_t)yy,daily_so)+mul((int16_t)zz,daily_co);
+        horizontal(&eq,0,&p[i]);
     }
 }

@@ -142,3 +142,91 @@ The extended input test measured the first plot change after azimuth, elevation
 and LCtrl FOV input at 0.100 seconds when idle, and azimuth input during catalogue
 calculation at 0.150 seconds. These are emulator measurements; verification on
 physical PICO remains with the owner.
+
+## Exact arithmetic, variant A (15 November 2026)
+
+This is a separate measurement of the working tree based on `1a1fab0`, using
+cl65/sim65 V2.19 (Git `6fd2669`), `-O`, and RP6502-EMU at 8 MHz. The observer is
+Warsaw (catalogue coordinates, 113 m AMSL), the path day is 17 November 2026 UTC,
+and the ROM scenarios use G3, P on, FOV 120 and view 180/24. ROM sampling is 60 Hz;
+these are emulated times, not physical PICO measurements.
+
+| Scenario | Before A | After A |
+| --- | ---: | ---: |
+| CPU only: 97 Sun/Moon pairs plus 15-minute date stepping | 16.586 s | 10.954 s |
+| T enabled after all initial work, C0 | 18.817 s | 13.083 s |
+| T enabled after all initial work, C3 | 24.450 s | 18.750 s |
+| Next UTC day, C3 and T already on, all jobs complete | 61.467 s | 47.983 s |
+
+The CPU benchmark drops from 132,688,412 to 87,631,018 cycles (33.96%). The
+application measurements include graphics and other resident-loop work. The
+date-change improvement also includes faster shared astronomy used by other
+jobs; it is not exclusively a path-generation time.
+
+Variant A uses bounded 16-bit sine interpolation, exact signed Q14 division
+through a biased unsigned shift, and early termination of Kepler iteration only
+at zero integer correction. It keeps the model, path cadence and scheduling.
+The compact biased-shift implementation is slightly slower than the original
+analysis prototype (10.912 s), but saves 16 bytes of code. Moving the 12-byte
+month-length table to HIGH leaves 7 free bytes below the overlays and 3 above
+HIGH, with no new BSS. Both Debug and Release produce the same ROM hash.
+
+The 5,820 Sun/Moon position pairs used in the analysis remain bit-identical,
+covering 1900/2026/2200, four seasonal dates, Warsaw, the equator, latitude
+23.44 N and both poles. Equal angles imply equal projections at every FOV for
+these samples. The permanent `sidera_fast_6502` checks also cover all 65,536
+sine angles, 327,905 multiplication pairs and 1,024 Kepler cases against the
+former arithmetic rules. These checks establish regression equivalence, not
+improved absolute astronomical accuracy.
+
+ROM SHA-256 before A:
+`3eba1caf32d6ee8b1fcfc568cd5a8f9de7689bc72817c4dc93e6503c14027ec6`.
+ROM SHA-256 after A:
+`f178f29f16793ac89e562dd4e7a2c4f406c7fd1b1e0c9fdeddded2428c9626ed`.
+Local measurement scripts and raw reports are in `build/trajectory-analysis/`
+and `build/variant-a-after/`. Validation passed: Debug and Release builds, the
+full Release CTest suite (13/13), and Debug host/ROM/emulator checks (5/5 including
+SDK fixtures). Both host suites include the six unchanged reference images and
+the new exact-arithmetic checks. `git diff --check` also passed. The owner's
+manual test had not yet been reported at this checkpoint. Variant B was pending
+explicit approval; variant A adds no daily-constant cache or rise/set sharing.
+
+## Daily and observer caches, variant B (15 November 2026)
+
+The owner subsequently authorized B; physical PICO execution remains with the
+owner. Measurements use the same settings and tooling as A above.
+
+| Scenario | After A | After B |
+| --- | ---: | ---: |
+| CPU only: 97 Sun/Moon pairs plus date stepping | 10.954 s | 8.903 s |
+| T enabled after all initial work, C0 | 13.083 s | 11.133 s |
+| T enabled after all initial work, C3 | 18.750 s | 16.783 s |
+| Next UTC day, C3 and T already on, all jobs complete | 47.983 s | 43.500 s |
+
+The CPU benchmark uses 71,220,777 cycles: 18.73% fewer than A, and 46.33% fewer
+than the original 132,688,412-cycle baseline. B caches unrounded orbital bases,
+obliquity sine/cosine and solar eccentricity by UTC day. Observer latitude,
+longitude and height key the shared WGS84/parallax terms. Sidereal rotation is
+prepared for each instant, then reused for the bodies at that instant. Fixed
+lunar inclination lookup results are constants checked by the arithmetic test.
+
+The caches occupy 54 bytes of resident state on cc65. Removing repeated setup
+and the now-redundant orbital-element wrapper leaves the whole resident image
+six bytes smaller than A: 13 bytes remain below the overlays and 3 above HIGH.
+No XRAM allocation, overlay lifetime, path cadence or job order changes. Full
+rise/set sample sharing is excluded from this implementation: only 26 of the
+97 UTC path timestamps matched the measured local-day adaptive scan, and the
+additional sample-validity/transfer machinery would need more resident space.
+
+All 5,820 Sun/Moon pairs remain identical to A and to the original analysis
+baseline. The new host and 65C02 cache tests additionally compare 72 interleaved
+contexts across all astronomical APIs against a reference captured from A.
+Raw local reports and measurement scripts are in `build/variant-b-after/`;
+the pre-B source and ROM are retained in `build/variant-b-before/`.
+
+ROM SHA-256 after B:
+`bbc6bb38a490dc6b09b05a9bb53522492a02f05c4fe5d2995a863713021079f2`.
+Debug and Release builds produce this same ROM. Validation passed: the complete
+Release suite (13/13), Debug host/ROM/emulator checks (5/5 including SDK fixtures),
+both host suites' new cache tests and six unchanged reference views, and
+`git diff --check`. Physical PICO testing remains with the owner.
