@@ -1,0 +1,907 @@
+{
+  "source": "COMNAP (2025), Antarctic Facilities Information; current interactive map",
+  "url": "https://www.comnap.aq/antarctic-facilities-information",
+  "map_url": "https://comnap-antarctic-facilities.web.app/",
+  "snapshot": "2026-11-15",
+  "snapshot_sha256": "b9894e79c683f587ef9d5759034a83f5cf494897d84d33fa6f093141b1970679",
+  "map_records": 83,
+  "license": "COMNAP: educational and non-commercial purposes only; see src/rom/sidera-stations-license.txt",
+  "scope": "Open research stations south of 60 S, year-round or seasonal, with confirmed coordinates, sea-level elevation and civil time zone.",
+  "notes": [
+    "Station-first order; Arctowski is the AQ default.",
+    "Coordinates are representative COMNAP facility points, not navigation fixes. Elevations are representative integer metres above sea level; independent sources resolve ambiguous COMNAP datum labels.",
+    "Etc/GMT signs follow IANA POSIX notation: Etc/GMT+3 means UTC-3. Fixed zones describe documented operating time, not reconstructed history.",
+    "Regional IANA zones follow their own historical tables; these are not proof of station civil time before occupation. Future dates extrapolate the bundled IANA rules.",
+    "Troll follows the IANA UTC/UTC+2 approximation; exact historical intermediate UTC+1 dates are not documented in tzdb.",
+    "Arctowski elevation is corroborated by the 2026 study of the station sea terrace (2 m a.s.l.)."
+  ],
+  "stations": [
+    {
+      "comnap_id": "henryk_arctowski",
+      "station": "Arctowski",
+      "operators": [
+        "PL"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -62.159773,
+      "longitude": -58.473322,
+      "altitude": 2,
+      "elevation_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12923444/",
+      "timezone": "Etc/GMT+3",
+      "timezone_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12923444/",
+      "source_modified": "13/02/2024 1:44",
+      "default": true
+    },
+    {
+      "comnap_id": "amundsen_scott_south_pole",
+      "station": "Amundsen-Scott",
+      "operators": [
+        "US"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -89.983333,
+      "longitude": 142.266667,
+      "altitude": 2835,
+      "elevation_source": "https://www.usap.gov/usapgov/travelAndDeployment/documents/FINAL_2022_ParticipantGuide.pdf",
+      "timezone": "Antarctica/South_Pole",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "10/09/2025 6:02",
+      "default": false
+    },
+    {
+      "comnap_id": "casey",
+      "station": "Casey",
+      "operators": [
+        "AU"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -66.282343,
+      "longitude": 110.526792,
+      "altitude": 32,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Antarctica/Casey",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "23/06/2026 20:03",
+      "default": false
+    },
+    {
+      "comnap_id": "concordia",
+      "station": "Concordia",
+      "operators": [
+        "FR",
+        "IT"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -75.099975,
+      "longitude": 123.332605,
+      "altitude": 3233,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Asia/Singapore",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "15/09/2026 13:07",
+      "default": false
+    },
+    {
+      "comnap_id": "davis",
+      "station": "Davis",
+      "operators": [
+        "AU"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -68.575938,
+      "longitude": 77.969516,
+      "altitude": 27,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Antarctica/Davis",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "23/06/2026 20:04",
+      "default": false
+    },
+    {
+      "comnap_id": "dome_fuji",
+      "station": "Dome Fuji",
+      "operators": [
+        "JP"
+      ],
+      "status": "Open",
+      "seasonality": "Seasonal",
+      "latitude": -77.317075,
+      "longitude": 39.69877,
+      "altitude": 3810,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Etc/GMT-3",
+      "timezone_source": "https://doi.org/10.1029/2009JD011886",
+      "source_modified": "05/09/2025 22:25",
+      "default": false
+    },
+    {
+      "comnap_id": "dumont_d_urville",
+      "station": "Dumont d'Urville",
+      "operators": [
+        "FR"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -66.662833,
+      "longitude": 140.001333,
+      "altitude": 20,
+      "elevation_source": "https://institut-polaire.fr/en/antarctica/the-dumont-durville-ddu-station/",
+      "timezone": "Antarctica/DumontDUrville",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "26/08/2025 8:03",
+      "default": false
+    },
+    {
+      "comnap_id": "professor_julio_escudero",
+      "station": "Escudero",
+      "operators": [
+        "CL"
+      ],
+      "status": "Open",
+      "seasonality": "Seasonal",
+      "latitude": -62.201373,
+      "longitude": -58.962676,
+      "altitude": 10,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "America/Punta_Arenas",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "19/03/2021 9:28",
+      "default": false
+    },
+    {
+      "comnap_id": "frei",
+      "station": "Frei",
+      "operators": [
+        "CL"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -62.200232,
+      "longitude": -58.962627,
+      "altitude": 48,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "America/Punta_Arenas",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "10/02/2026 15:39",
+      "default": false
+    },
+    {
+      "comnap_id": "mawson",
+      "station": "Mawson",
+      "operators": [
+        "AU"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -67.602644,
+      "longitude": 62.873028,
+      "altitude": 15,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Antarctica/Mawson",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "23/06/2026 20:07",
+      "default": false
+    },
+    {
+      "comnap_id": "mcmurdo",
+      "station": "McMurdo",
+      "operators": [
+        "US"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -77.85,
+      "longitude": 166.666667,
+      "altitude": 10,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Antarctica/McMurdo",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "16/03/2026 6:54",
+      "default": false
+    },
+    {
+      "comnap_id": "neumayer_iii",
+      "station": "Neumayer III",
+      "operators": [
+        "DE"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -70.660516,
+      "longitude": -8.284148,
+      "altitude": 42,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Etc/UTC",
+      "timezone_source": "https://tc.copernicus.org/articles/15/4745/2021/tc-15-4745-2021.html",
+      "source_modified": "28/07/2025 2:30",
+      "default": false
+    },
+    {
+      "comnap_id": "o_higgins",
+      "station": "O'Higgins",
+      "operators": [
+        "CL"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -63.320951,
+      "longitude": -57.899781,
+      "altitude": 12,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "America/Punta_Arenas",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "10/02/2026 14:14",
+      "default": false
+    },
+    {
+      "comnap_id": "palmer",
+      "station": "Palmer",
+      "operators": [
+        "US"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -64.774167,
+      "longitude": -64.053056,
+      "altitude": 10,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Antarctica/Palmer",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "10/09/2025 6:07",
+      "default": false
+    },
+    {
+      "comnap_id": "prat",
+      "station": "Prat",
+      "operators": [
+        "CL"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -62.478717,
+      "longitude": -59.663603,
+      "altitude": 3,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "America/Punta_Arenas",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "10/02/2026 15:39",
+      "default": false
+    },
+    {
+      "comnap_id": "princess_elisabeth_antarctica",
+      "station": "Princess Elisabeth",
+      "operators": [
+        "BE"
+      ],
+      "status": "Open",
+      "seasonality": "Seasonal",
+      "latitude": -71.949858,
+      "longitude": 23.346891,
+      "altitude": 1382,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Europe/Brussels",
+      "timezone_source": "https://www.antarcticstation.org/news_press/news_detail/scientific_field_expeditions_begin_as_the_belare_team_welcomes_2026",
+      "source_modified": "18/11/2025 15:05",
+      "default": false
+    },
+    {
+      "comnap_id": "progress",
+      "station": "Progress",
+      "operators": [
+        "RU"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -69.37795,
+      "longitude": 76.388247,
+      "altitude": 15,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Etc/GMT-5",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "16/02/2025 16:45",
+      "default": false
+    },
+    {
+      "comnap_id": "rothera",
+      "station": "Rothera",
+      "operators": [
+        "GB"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -67.569529,
+      "longitude": -68.124888,
+      "altitude": 16,
+      "elevation_source": "https://www.nerc-bas.ac.uk/icd/metlog/userguide.html",
+      "timezone": "Antarctica/Rothera",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "22/09/2026 10:32",
+      "default": false
+    },
+    {
+      "comnap_id": "scott_base",
+      "station": "Scott Base",
+      "operators": [
+        "NZ"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -77.849437,
+      "longitude": 166.767281,
+      "altitude": 10,
+      "elevation_source": "https://www.antarcticanz.govt.nz/scott-base",
+      "timezone": "Pacific/Auckland",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "31/08/2025 18:44",
+      "default": false
+    },
+    {
+      "comnap_id": "syowa",
+      "station": "Syowa",
+      "operators": [
+        "JP"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -69.004122,
+      "longitude": 39.581836,
+      "altitude": 29,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Antarctica/Syowa",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "15/09/2026 13:03",
+      "default": false
+    },
+    {
+      "comnap_id": "troll",
+      "station": "Troll",
+      "operators": [
+        "NO"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -72.011946,
+      "longitude": 2.53307,
+      "altitude": 1275,
+      "elevation_source": "https://documents.ats.aq/ATCM36/att/ATCM36_att109_e.pdf",
+      "timezone": "Antarctica/Troll",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "10/02/2026 14:14",
+      "default": false
+    },
+    {
+      "comnap_id": "vostok",
+      "station": "Vostok",
+      "operators": [
+        "RU"
+      ],
+      "status": "Open",
+      "seasonality": "Year-Round",
+      "latitude": -78.464182,
+      "longitude": 106.836882,
+      "altitude": 3488,
+      "elevation_source": "COMNAP MSL",
+      "timezone": "Antarctica/Vostok",
+      "timezone_source": "https://data.iana.org/time-zones/tzdb/antarctica",
+      "source_modified": "16/02/2025 16:50",
+      "default": false
+    }
+  ],
+  "excluded": [
+    {
+      "comnap_id": "aboa",
+      "name": "Aboa",
+      "status": "Temporarily Closed",
+      "reasons": [
+        "COMNAP status: Temporarily Closed."
+      ]
+    },
+    {
+      "comnap_id": "artigas",
+      "name": "Artigas",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "asuka",
+      "name": "Asuka",
+      "status": "Temporarily Closed",
+      "reasons": [
+        "COMNAP status: Temporarily Closed."
+      ]
+    },
+    {
+      "comnap_id": "bah_a_fildes_maritime_station",
+      "name": "Bahia Fildes Maritime Station",
+      "status": "Open",
+      "reasons": [
+        "No elevation in COMNAP.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "belgrano_ii",
+      "name": "Belgrano II",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "bellingshausen",
+      "name": "Bellingshausen",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "bharati",
+      "name": "Bharati",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "brown",
+      "name": "Brown",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "bunger_oasis",
+      "name": "Bunger Oasis",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "camara",
+      "name": "Camara",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "carlini",
+      "name": "Carlini",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "carvajal",
+      "name": "Carvajal",
+      "status": "Temporarily Closed",
+      "reasons": [
+        "COMNAP status: Temporarily Closed."
+      ]
+    },
+    {
+      "comnap_id": "comandante_ferraz",
+      "name": "Comandante Ferraz",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "decepcion",
+      "name": "Decepcion",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "druzhnaya_iv",
+      "name": "Druzhnaya IV",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "esperanza",
+      "name": "Esperanza",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "gabriel_de_castilla",
+      "name": "Gabriel de Castilla",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "gabriel_gonzalez_videla",
+      "name": "Gabriel Gonzalez Videla",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "german_antarctic_receiving_station_gars",
+      "name": "German Antarctic Receiving Station (GARS)",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "gondwana",
+      "name": "Gondwana",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "great_wall",
+      "name": "Great Wall",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "halley_vi",
+      "name": "Halley VI",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "jang_bogo",
+      "name": "Jang Bogo",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "johann_gregor_mendel",
+      "name": "Johann Gregor Mendel",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "juan_carlos_i",
+      "name": "Juan Carlos I",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "king_sejong",
+      "name": "King Sejong",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "kohnen",
+      "name": "Kohnen",
+      "status": "Temporarily Closed",
+      "reasons": [
+        "COMNAP status: Temporarily Closed."
+      ]
+    },
+    {
+      "comnap_id": "kunlun",
+      "name": "Kunlun",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "leningradskaya",
+      "name": "Leningradskaya",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "machu_picchu",
+      "name": "Machu Picchu",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "macquarie_island",
+      "name": "Macquarie Island",
+      "status": "Open",
+      "reasons": [
+        "North of 60 S (subantarctic)."
+      ]
+    },
+    {
+      "comnap_id": "maitri",
+      "name": "Maitri",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "marambio",
+      "name": "Marambio",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "mario_zucchelli",
+      "name": "Mario Zucchelli",
+      "status": "Open",
+      "reasons": [
+        "Conflicting time-zone evidence: PNRA expedition report XXXVII says GMT+11; current timeanddate lists New Zealand time."
+      ]
+    },
+    {
+      "comnap_id": "matienzo",
+      "name": "Matienzo",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "melchior",
+      "name": "Melchior",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "mirny",
+      "name": "Mirny",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "mizuho",
+      "name": "Mizuho",
+      "status": "Temporarily Closed",
+      "reasons": [
+        "COMNAP status: Temporarily Closed."
+      ]
+    },
+    {
+      "comnap_id": "molodezhnaya",
+      "name": "Molodezhnaya",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "mountain_evening",
+      "name": "Mountain Evening",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "novolazarevskaya",
+      "name": "Novolazarevskaya",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "orcadas",
+      "name": "Orcadas",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "pedro_vicente_maldonado",
+      "name": "Pedro Vicente Maldonado",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "petrel",
+      "name": "Petrel",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "primavera",
+      "name": "Primavera",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "qinling",
+      "name": "Qinling",
+      "status": "Open",
+      "reasons": [
+        "No elevation in COMNAP.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "rada_covadonga",
+      "name": "Rada Covadonga",
+      "status": "Open",
+      "reasons": [
+        "No elevation in COMNAP.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "risopatron",
+      "name": "Risopatron",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "robert_guillard",
+      "name": "Robert Guillard",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "ruperto_elichiribehety",
+      "name": "Ruperto Elichiribehety",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "russkaya",
+      "name": "Russkaya",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "san_martin",
+      "name": "San Martin",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "sanae_iv",
+      "name": "SANAE IV",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "sanap_summer_station",
+      "name": "SANAP Summer Station",
+      "status": "Open",
+      "reasons": [
+        "No elevation in COMNAP.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "signy",
+      "name": "Signy",
+      "status": "Open",
+      "reasons": [
+        "Sea-level elevation not independently confirmed.",
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "soyuz",
+      "name": "Soyuz",
+      "status": "Temporarily Closed",
+      "reasons": [
+        "COMNAP status: Temporarily Closed."
+      ]
+    },
+    {
+      "comnap_id": "st_kliment_ohridski",
+      "name": "St. Kliment Ohridski",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "vernadsky",
+      "name": "Vernadsky",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "wasa",
+      "name": "Wasa",
+      "status": "Temporarily Closed",
+      "reasons": [
+        "COMNAP status: Temporarily Closed."
+      ]
+    },
+    {
+      "comnap_id": "yelcho",
+      "name": "Yelcho",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "comnap_id": "zhongshan",
+      "name": "Zhongshan",
+      "status": "Open",
+      "reasons": [
+        "Station civil time zone not confirmed; not inferred from operator or longitude."
+      ]
+    },
+    {
+      "name": "Dobrowolski",
+      "operators": [
+        "PL"
+      ],
+      "reasons": [
+        "Not listed in the current COMNAP map; station civil time zone not confirmed."
+      ],
+      "source": "https://www.igf.edu.pl/"
+    }
+  ]
+}

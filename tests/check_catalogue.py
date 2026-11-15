@@ -5,12 +5,16 @@ import math
 from pathlib import Path
 import struct
 import re
+import sys
 
 root=(Path(__file__).resolve().parents[1] / 'src')
-source=json.loads((root/'data/cities.json').read_text(encoding='utf8'))['cities']
+sys.path.insert(0,str(root.parent/'scripts'))
+from cities import catalogue_rows
+source=catalogue_rows(json.loads((root/'data/cities.json').read_text(encoding='utf8')))
 blob=(root/'rom/sidera.cty').read_bytes()
 magic,count,size,reserved=struct.unpack_from('<8sHHI',blob)
-assert (magic,count,size,reserved)==(b'SIDCITY2',345,96,0)
+assert (magic,count,size,reserved)==(b'SIDCITY2',388,96,0)
+assert len(source)==count
 tz=(root/'rom/sidera.tz').read_bytes()
 assert len(blob)==16+count*size
 countries=set();defaults={};names=set()
@@ -23,12 +27,35 @@ for i,city in enumerate(source):
     assert abs(lon/36000-city['longitude'])<=.5/36000+1e-12
     assert height==city['altitude'] and -500<=height<=10000
     assert bool(flags&2)==city['capital'] and bool(flags&4)==city['seat']
+    assert bool(flags&8)==('station' in city)
+    assert bool(flags&128)==('location' in city)
+    if flags&8:
+        assert code=='AQ' and lat<=-60*36000 and flags>>4==7
+        assert blob[16+i*size+14:16+i*size+43].split(b'\0')[0].decode()==city['operator_aliases']
+    if flags&128:
+        assert code=='XX' and not flags&15
+        assert blob[16+i*size+32:16+i*size+43].split(b'\0')[0].decode()==city['country_aliases']
+        assert ((flags>>4)&7)==city['region']
     assert (code,name) not in names
     names.add((code,name));countries.add(code)
     if flags&1:
-        assert code not in defaults and flags&6
+        assert code not in defaults and flags&14
         defaults[code]=name
-assert len(countries)==195 and set(defaults)==countries
+assert len(countries)==197 and set(defaults)==countries-{'XX'}
+assert defaults['AQ']=='Arctowski [PL]' and defaults['PL']=='Warsaw'
+assert [c['city'] for c in source[:4]]==['North Pole','South Pole','Null Island','Nemo point']
+assert all('station' in c for c in source[21:43]) and all('station' not in c for c in source[43:])
+for i,(lat,lon,height,region) in enumerate([(3240000,0,0,0),(-3240000,0,2835,7),(0,0,0,0),(-1759560,-4442160,0,0)]):
+    actual=struct.unpack_from('<iihBH',blob,16+i*size+83)
+    assert actual[:4]==(lat,lon,height,128+16*region)
+    assert source[i]['timezone']=='Etc/UTC' and source[i]['code']=='XX'
+assert sum('location' in c for c in source)==21
+assert all(c.get('countries') and c['coordinate_source'] and c['elevation_source'] for c in source[4:21])
+assert ('XX','Everest [NP/CN]') in names and ('XX','Mont Blanc [FR/IT]') in names
+assert ('AQ','Concordia [FR/IT]') in names
+stations=json.loads((root/'data/stations.json').read_text(encoding='utf8'))
+assert len({s['comnap_id'] for s in stations['stations']}|{s['comnap_id'] for s in stations['excluded'] if 'comnap_id' in s})==stations['map_records']
+assert all(s['reasons'] for s in stations['excluded'])
 assert defaults['PW']=='Ngerulmud' and defaults['LK']=='Sri Jayewardenepura Kotte'
 assert defaults['GQ']=='Ciudad de la Paz'
 assert ('US','New York') in names and ('US','Los Angeles') in names

@@ -22,7 +22,7 @@ compact=bytearray(blob[:24+count*48])
 for name in selected:
     i=names.index(name);pos,n=struct.unpack_from('<IH',blob,24+i*48+40)
     struct.pack_into('<I',compact,24+i*48+40,len(compact))
-    compact.extend(blob[pos:pos+n*12])
+    compact.extend(blob[pos:pos+n*13])
 assert len(compact)<65536
 (work/'sidera.tz').write_bytes(compact)
 with zipfile.ZipFile(root/'data/tzdata-2026.6-py2.py3-none-any.whl') as archive:
@@ -33,29 +33,37 @@ with zipfile.ZipFile(root/'data/tzdata-2026.6-py2.py3-none-any.whl') as archive:
                       '2026-10-25 01:00:00','2100-02-28 23:59:59','2200-12-31 23:59:59'):
             utc=dt.datetime.fromisoformat(stamp).replace(tzinfo=dt.timezone.utc)
             local=utc.astimezone(zone)
-            cases.append((names.index(name),utc,local,int(local.utcoffset().total_seconds())))
+            seasonal=any(dt.datetime(local.year,m,15,tzinfo=zone).dst() for m in range(1,13))
+            kind=2 if local.dst() else int(seasonal)
+            cases.append((names.index(name),utc,local,int(local.utcoffset().total_seconds()),kind))
 (work/'platform.h').write_text('#include <stdint.h>\n#include <fcntl.h>\n#include <unistd.h>\n')
 source='''#include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include "sidera.h"
 char asset_path[160]="sidera.dat";
 
-typedef struct {unsigned id;Date utc,local;long offset;} Case;
+typedef struct {unsigned id;Date utc,local;long offset;unsigned char kind;} Case;
 static const Case cases[]={
 '''
 def fields(d):return '{'+','.join(map(str,(d.year,d.month,d.day,d.hour,d.minute,d.second)))+'}'
-source+=',\n'.join('{'+f'{i},{fields(u)},{fields(l)},{o}L'+'}' for i,u,l,o in cases)
+source+=',\n'.join('{'+f'{i},{fields(u)},{fields(l)},{o}L,{k}'+'}' for i,u,l,o,k in cases)
 source+='''};
-int main(void){unsigned i;Date d;long off;
+int main(void){unsigned i;Date d;long off;char name[40];unsigned char kind;
 for(i=0;i<sizeof(cases)/sizeof(cases[0]);++i){
+assert(tz_set("Etc/UTC"));
+assert(tz_details(cases[i].id,&cases[i].utc,name,&off,&kind));
+if(off!=cases[i].offset||kind!=cases[i].kind){printf("preview failed: case %u, offset %ld/%ld, kind %u/%u\\n",i,off,cases[i].offset,kind,cases[i].kind);return 1;}
+assert(!strcmp(zone_name,"Etc/UTC"));
+assert(tz_local(&cases[i].utc,&d,&off)&&!off);
 if(!tz_select(cases[i].id)){printf("select failed: case %u, zone %u\\n",i,cases[i].id);return 1;}
 if(!tz_local(&cases[i].utc,&d,&off)){printf("local failed: case %u\\n",i);return 1;}
 assert(off==cases[i].offset);
 assert(d.year==cases[i].local.year&&d.month==cases[i].local.month&&d.day==cases[i].local.day);
 assert(d.hour==cases[i].local.hour&&d.minute==cases[i].local.minute&&d.second==cases[i].local.second);
-}tz_close();puts("PASS: 54 timezone conversions on actual 65C02");return 0;}
+}tz_close();puts("PASS: 54 timezone conversions and independent DST previews on actual 65C02");return 0;}
 '''
 (work/'test.c').write_text(source)
 subprocess.run([sys.argv[1],'-t','sim65c02','-O','-I',str(work),'-I',str(root),'-I',str(root/'platform'),

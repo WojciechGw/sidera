@@ -69,6 +69,32 @@ static void trail_reset(void)
     trail_observer=observer;
     trail_time.hour=trail_time.minute=trail_time.second=0;
 }
+static unsigned char pending_jobs(void)
+{
+    return (cs_enabled()&&cs_busy()?GX_WORK_STARS:0)|
+        (rs_busy()?GX_WORK_RISESET:0)|
+        (trails&&!trail_end&&trail_done<TRAIL_COUNT?GX_WORK_PATHS:0);
+}
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (push, "COVER_CODE")
+#pragma rodata-name (push, "COVER_RODATA")
+#endif
+/* Called only while COVER is loaded. 0: cleaned-up failure; -1: main cleanup. */
+static int sky_start(void)
+{
+    show_cover();
+    if(!assets_base()){assets_close();platform_puts(startup_messages[0]);return 0;}
+    if(live&&!now()){live=0;strcpy(note,startup_messages[1]);}
+    solar_hide();gx_clear(0,480);
+    if(!gx_objects()||!gx_canvas()){gx_console();assets_close();platform_puts(startup_messages[2]);return 0;}
+    if(!platform_keyboard_start()){strcpy(note,startup_messages[3]);return -1;}
+    rs_sync();gx_header_pending();gx_status(GX_WORK_SUN_MOON);gx_footer();
+    return 1;
+}
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (pop)
+#pragma code-name (pop)
+#endif
 int main(int argc,char **argv)
 {
     Date reload_time;
@@ -84,13 +110,7 @@ int main(int argc,char **argv)
     if(r<=0)return r<0;
     if(!assets_open()){platform_puts("sidera: missing or invalid sidera.dat.\r\n");return 1;}
     if(!ovl_select(OVL_COVER))goto done;
-    show_cover();
-    if(!assets_base()){assets_close();platform_puts("sidera: graphics file is truncated.\r\n");return 1;}
-    if(live&&!now()){live=0;strcpy(note,"System clock unavailable. D sets UTC date.");}
-    solar_hide();gx_clear(0,480);
-    if(!gx_objects()||!gx_canvas()){gx_console();assets_close();platform_puts("sidera: cannot load sprite or configure VGA.\r\n");return 1;}
-    if(!platform_keyboard_start()){strcpy(note,"Cannot map USB keyboard state.");exit_code=1;goto done;}
-    rs_sync();gx_header_pending();gx_status(1);gx_footer();
+    r=sky_start();if(!r)return 1;if(r<0){exit_code=1;goto done;}
     trail_reset();tick=calc_tick=star_tick=platform_ticks();
     for(;;) {
         message_step();
@@ -118,6 +138,7 @@ int main(int argc,char **argv)
             refresh=scene=head=star_check=1;tick=platform_ticks();interactive=result==2;locate=result==1;
         } else if(cities_active) {
             if(k) {
+                gx_status(1);
                 result=cities_key(k);
                 if(result) {
                     interactive=1;
@@ -125,10 +146,12 @@ int main(int argc,char **argv)
                     if(result==1)location_view();
                 }
             }
-            if(cities_active){if(!cities_step())platform_sleep_ticks(1);continue;}
+            if(cities_active){result=cities_step();gx_status(result);if(!result)platform_sleep_ticks(1);continue;}
         } else if(editing) {
             if(k) {
+                gx_status(1);
                 r=editing;result=edit_key(k);
+                gx_status(0);
                 if(result){interactive=1;if(result==1){if(r==1)location_view();refresh=1;}scene=head=1;}
             }
             if(editing){platform_sleep_ticks(1);continue;}
@@ -159,7 +182,7 @@ int main(int argc,char **argv)
             case ']':jump=86400L;break;
             case 'g':case 'G':
                 gx_grid_cycle();gx_footer();
-                if(!grid||gx_busy())scene=1;else if(!scene){gx_status(1);gx_grid_add();}break;
+                if(!grid||gx_busy())scene=1;else if(!scene){gx_status(GX_WORK_DRAW);gx_grid_add();}break;
             case 'c':case 'C':
                 /* Select immediately, but prepare stars before painting this mode.
                  * Further C presses replace the pending selection. */
@@ -168,6 +191,7 @@ int main(int argc,char **argv)
             case 'p':case 'P':planets=!planets;gx_footer();refresh=scene=1;break;
             case 't':case 'T':trails=!trails;gx_footer();scene=1;break;
             case 's':case 'S':
+                gx_status(1);
                 solar_date=moment;
                 if(!ovl_select(OVL_SOLAR))goto done;
                 if(!solar_draw()){exit_code=1;goto done;}
@@ -185,6 +209,7 @@ int main(int argc,char **argv)
                 }
                 gx_footer();break;
             case 'k':case 'K':
+                gx_status(1);
                 if(!ovl_select(OVL_CITIES))goto done;
                 if(cities_start()) {
                     if(!gx_objects()){strcpy(note,"Cannot load Moon phase from sidera.dat.");exit_code=1;goto done;}
@@ -230,13 +255,13 @@ int main(int argc,char **argv)
         if(live&&(unsigned)(platform_ticks()-calc_tick)>=60u*PLATFORM_TICK_HZ)refresh=1;
         if(live&&cs_enabled()&&(unsigned)(platform_ticks()-star_tick)>=300u*PLATFORM_TICK_HZ)star_check=1;
         if(refresh&&(!gx_busy()||scene)) {
-            gx_status(1);
+            gx_status(GX_WORK_SUN_MOON);
             sky_compute(&moment,&observer,&sky);calc_tick=platform_ticks();
             if(startup_panel) {
                 if(!gx_header_ready()){strcpy(note,"Cannot load Moon phase from sidera.dat.");exit_code=1;goto done;}
                 startup_panel=0;
             }
-            if(planets){planets_compute(&moment,&observer,planet_positions);scene=1;}
+            if(planets){gx_status(GX_WORK_PLANETS);planets_compute(&moment,&observer,planet_positions);scene=1;}
             target_update();
             if(locate&&target_figure==255){target_center();locate=0;} /* LIVE may have advanced while FIND was open. */
             if(date_day(&moment)!=trail_day||memcmp(&observer,&trail_observer,sizeof(observer)))
@@ -244,23 +269,24 @@ int main(int argc,char **argv)
             if(gx_busy())scene=1;
             refresh=0;head=star_check=1;
         }
-        if(star_check) {
-            if(cs_enabled()&&!cs_current()) {
-                gx_status(1);cs_begin();star_tick=platform_ticks();
-            }
-            star_check=0;
-        }
-        if(cs_enabled()&&cs_busy()&&!gx_busy()){gx_status(1);if(cs_step())scene=1;}
-        if(locate&&target_figure!=255&&!cs_busy()){target_center();locate=0;scene=head=1;}
         if(head||clock_dirty) {
             if(rs_sync())gx_riseset();
             gx_daylight();
         }
+        if(star_check) {
+            if(cs_enabled()&&!cs_current()) {
+                gx_status(GX_WORK_STARS|pending_jobs());cs_begin();star_tick=platform_ticks();
+            }
+            star_check=0;
+        }
+        if(!gx_busy()){result=pending_jobs();if(result)gx_status(result);}
+        if(cs_enabled()&&cs_busy()&&!gx_busy()){if(cs_step())scene=1;}
+        if(locate&&target_figure!=255&&!cs_busy()){target_center();locate=0;scene=head=1;}
         /* Keep the previous plot while preparing stars. Draw it only once,
          * with the new catalogue, instead of drawing old and new stars. */
         if(head){present=1;head=0;}
         if((present||scene)&&(interactive||!cs_enabled()||!cs_busy())) {
-            gx_status(1);
+            gx_status(GX_WORK_DRAW);
             if(!gx_objects()){strcpy(note,"Cannot load Moon phase from sidera.dat.");playing=0;view=0;}
             if(scene){if(interactive)gx_scene_interactive();else gx_scene_begin();}
             if(present&&(!view||!cs_enabled()||!cs_busy())){gx_header();clock_dirty=present=0;}
@@ -268,17 +294,18 @@ int main(int argc,char **argv)
             if(!view)gx_footer();scene=0;
         }
         if(clock_dirty){gx_clock();clock_dirty=0;}
-        if(gx_busy())gx_scene_step();
-        if(rs_busy()&&!gx_busy()&&!refresh) {gx_status(1);if(rs_step()){gx_riseset();gx_daylight();}}
+        if(gx_busy()){gx_status(GX_WORK_DRAW);gx_scene_step();}
+        if(!gx_busy()&&!refresh){result=pending_jobs();if(result)gx_status(result);}
+        if(rs_busy()&&!gx_busy()&&!refresh) {if(rs_step()){gx_riseset();gx_daylight();}}
         else if(trails&&!trail_end&&trail_done<TRAIL_COUNT&&!gx_busy()&&!refresh) {
-            gx_status(1);
             sky_positions(&trail_time,&observer,&trail_sky);
             gx_write(XR_TRAILS+(unsigned)trail_done*8,&trail_sky,8);
             if(trail_done){gx_trail(0,trail_done);gx_trail(1,trail_done);}
             ++trail_done;
             if(!date_step(&trail_time,900))trail_end=1;
         }
-        result=gx_busy()||rs_busy()||refresh||(cs_enabled()&&cs_busy())||(trails&&!trail_end&&trail_done<TRAIL_COUNT);
+        result=gx_busy()?GX_WORK_DRAW:pending_jobs();
+        if(!result&&refresh)result=GX_WORK_SUN_MOON;
         gx_status(result);
         /* Each job already yields to the keyboard after a bounded batch. */
         if(!result)platform_sleep_ticks(1);

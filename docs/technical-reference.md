@@ -141,18 +141,34 @@ or widens FOV by 10 degrees within 50–160. H and Shift+H have no action.
 
 CITIES is a modal 640 × 409 pixel panel from below the header to the bottom of
 the screen, covering the sky plot, both compasses, side scales and footer.
-It has no outer margin, a 1-pixel white border and 20 rows per page. Only city
-controls and messages appear inside the frame; the save reminder appears after
-selection, back in the sky view. Drawing preserves the header and its sprites; sky sprites are
+It has no outer margin, a 1-pixel white border and 22 rows per page. Only city
+controls and messages appear inside the frame. Selection clears notes so sky
+work descriptions appear immediately. Drawing preserves the header and its sprites; sky sprites are
 hidden until it closes. The main sky jobs remain suspended while selecting a
 city. Closing clears the panel and invalidates the axes and footer so the plot,
 scales, compasses and sky shortcuts are restored, including daylight inversion.
 
-The left-hand list retains 20 rows, clipped to 52 characters. A 300x150 north-up, equirectangular world map
+The left-hand list has 22 rows, clipped to 52 characters. Its last row starts at
+y=425, above the unchanged message and keyboard-help rows. A 300x150 north-up, equirectangular world map
 occupies the upper-right corner with a five-pixel inset from the frame. The
 selected city's geographic continent is filled white; other land remains in
-outline. A red 5x5 cross, one pixel thick, is centered on the city without a backing. Full city/country
-names appear below the map. No matches removes the highlight and marker.
+outline. A red 5x5 cross, one pixel thick, is centered on the city without a backing.
+Nine detail rows below the map start at x=334, y=240, spaced by 14 pixels:
+`city:`, `country:`, `continent:`, `LAT:`, `LON:`, `AMSL:`, `timezone:`, `UTC:`, `time:`. Labels are
+left-aligned; values start at x=400, one space after the longest label.
+The full names, UTC offset and seasonal status describe the highlighted city at
+the frozen displayed UTC instant (`moment`), in LIVE or SIM. Historical offsets
+include seconds when nonzero. LAT/LON use the shared DMS formatter with 0.1 arcsec
+precision and N/S/E/W; AMSL is in metres. The former bottom coordinate line is
+removed, and result-count clearing touches only the right side so it cannot
+erase the two extra list rows. No matches clears all nine rows and removes the
+highlight and marker. Missing zone data shows `unavailable` without preventing
+city browsing. `tz_details()` runs in CITIES and does not change the active
+zone, observer or resident conversion cache. Enter still applies the city.
+Moves within the same zone preserve its three detail rows without zone reads
+or bitmap writes; a full panel clear invalidates this cache.
+List clearing runs in resident CODE and search/truncation helpers in HIGH;
+their CITIES state is accessed only while that overlay is loaded.
 Each pass streams three raster rows; a move within the same region updates only
 the sprite coordinates, leaving the map bitmap intact. The map is optional at runtime:
 an I/O failure does not prevent selecting a city.
@@ -233,30 +249,67 @@ the entire file and, for reloads of LIVE, a clock snapshot before applying field
 The three footer rows at y=441, 451 and 461 have 8 px
 side margins, with gaps differing by at most one pixel within each row. The
 first starts two empty scanlines below the compass and contains
-`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+R: reload`,
-`Ctrl+F: find object` and `Ctrl+Q: quit`, with 19-20 px gaps; FIND appears only here.
+`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S/+R: safe/reload config`,
+`Ctrl+F: find object` and `Ctrl+Q: quit`, with 20 px gaps; FIND appears only here.
 The second groups N, Space, +/-,
-[/], D and Z, with 48 px gaps. The third contains `L: location`, `K: cities`,
+[/], D and Z, with 48 px gaps. The third contains `L: location`, `K: cities & locations`,
 `S: Solar system`, `P: planets`, `T: paths`, `G: grid` and `C: constellations`,
-with 27 px gaps. The C highlight stays inside the right margin. Notes start at x=8, y=472, aligned with Arrows.
-For active G/C modes, the colon becomes a 1 px white vertical line at x=469/538
+with 15 px gaps. The C highlight stays inside the right margin. Notes start at x=8, y=472, aligned with Arrows.
+For active G/C modes, the colon becomes a 1 px white vertical line at x=481/538
 from its upper dot (y=462) through the last screen row (y=479). Mode 0 restores
 the colon. Note-row clearing restores the lower line segments; shortcut-row
 clearing restores the full lines. Unchanged states cause no bitmap writes.
-On that row, persistent white-on-black labels start at x=473 for G and x=542
+On that row, persistent white-on-black labels start at x=485 for G and x=542
 for C, aligned with the highlighted fields above. G1/G2/G3 read `scale`, `cross`,
-`full`; C1/C2/C3/C4 read `stars`, `charts`, `charts & names`,
+`net`; C1/C2/C3/C4 read `stars`, `charts`, `charts & names`,
 `navigational`. G0/C0 are blank. Ordinary notes must end before these fields.
 Padded labels erase longer previous text. Each field caches its mode separately;
 note-row clearing invalidates both caches, while unchanged modes cause no writes.
-The busy label `[INFO] Working, please wait...` occupies the message field at
-x=8, y=472 whenever calculation or drawing is pending and `note` is empty.
+The busy label occupies x=8, y=472 whenever sky work is pending and `note` is empty.
+Stages use `[INFO] Calculating Sun & Moon...`, `Calculating planets...`,
+`Calculating stars...`, `Calculating rise/set...`, `Calculating paths...` and
+`Drawing sky...`, each with the INFO prefix. The pending stars/rise-set/paths
+bitmask produces combined text such as `Calculating stars, rise/set & paths...`;
+completed or disabled tasks disappear without oscillation between work batches.
+gx_status selects a GX_WORK stage
+before executing it. Value 1 preserves the current stage (or uses the generic
+Working label if none has been selected); 0 ends work. Switching stages never
+restarts the Moon delay or phase cycle. No detailed status text is drawn in panels.
 It has no timeout. Save/reload results take priority for their five-second
-interval; afterward the busy label returns only if work is still pending.
+interval; afterward the latest stage returns only if work is still pending.
 The footer caches the displayed string, keeping the busy label separate from
-`note` and preserving G/C labels and lines on transitions. Modal panels own their
+`note`. The 78-character field is clipped and padded to x=8..475; changed messages
+overwrite only these cells, never clearing or rewriting G/C labels and lines.
+A full row clear is reserved for restoration after footer invalidation.
+All nonempty messages use black glyphs on white across the entire 78-cell field,
+including its padding. Empty messages restore a black field. Changing between
+empty and nonempty redraws all cells; same-background transitions retain the
+partial-update optimization. G/C keep their existing rendering.
+An unchanged work set reuses its cached description without formatting. Changed
+messages redraw only through the last differing character of the padded field.
+Successful CITIES/L/Z changes clear notes instead of installing a save reminder.
+Modal panels own their
 pixels and suppress footer updates until they close. Header redraws only update
 the right-aligned LIVE/SIM status; status updates clear x=424..639, y=0..8.
+An additional 32x32 unscaled Moon at (3,33) indicates sustained work, including
+CITIES, FIND, SOLAR and editor processing. Idle input is not work. After 63
+125 Hz ticks, twenty original phase/orientation frames run over 250 ticks.
+The cycle grows from new to full with the light on the right, then wanes with
+the light on the left, with a fixed 15-degree counterclockwise tilt throughout.
+The inverse 8.8 affine transform uses sine 66 and cosine 247 about (15.5,15.5),
+without changing the real Moon sprites. Its timing handles the 16-bit tick wrap; unchanged frames
+perform no image reads or sprite writes. Completed work hides it immediately.
+The affine Mode 4 descriptor occupies XRAM $E6E0..$E6F3, beyond FIND and SOLAR
+scratch, on foreground plane 2 clipped to y=33..64. The inactive 2048-byte Moon
+buffer supplies its RGB pixels. Real Moon phase changes hide and invalidate
+the indicator before exchanging buffers, preserving both real Moon sprites.
+Ordinary animation uploads retain the visible descriptor and read the next
+phase into the animation image without first hiding or clearing it. Only the
+initial frame is published from a hidden state. Failed reads suppress it until the next work
+period without replacing notes. Resident gx_wait_step is serviced by the work
+loop, text/clear batches, city record scans and solar orbit drawing; it never
+runs in an interrupt or changes sky/date state. sky_start, gx_canvas and
+gx_header_pending reside in COVER and run only once while that overlay is loaded.
 Scene clearing stops before `FOOTER_TOP` (441); editors clear from that row
 to the screen bottom so no shortcut fragments remain.
 FOV still requires physical left Ctrl despite the compact footer description.
@@ -282,7 +335,7 @@ The six overlays serve distinct UI phases:
 | INIT | Startup options, configuration parsing and initial file handling |
 | CITIES | Catalogue search and city selection |
 | EDIT | Observer, UTC date and time-zone editors |
-| COVER | Splash screen and initial VGA asset loading |
+| COVER | sky_start orchestration, splash, initial VGA assets, gx_canvas and gx_header_pending |
 | SOLAR | Solar System calculations, drawing and labels |
 | FIND | Incremental catalogue search, results and exact selected-object details |
 
@@ -440,15 +493,71 @@ Resources are embedded in the ROM and opened through `ROM:` paths.
 | `sidera-solar.dat` | Additional Earth and Neptune images and palettes for the S panel |
 | `sidera.cty` | `SIDCITY2` header and fixed-size city records with coordinates, height and time-zone ID |
 | `sidera.map` | `SIDMAP1` header, eight 300x150 map variants in shifted 39-byte rows, then a geographic lookup raster; 91816 bytes |
-| `sidera.tz` | `SIDTZ001` header, sorted zone index and UTC intervals carrying local offsets |
+| `sidera.tz` | `SIDTZ001` header with `DST1` extension, sorted zone index, UTC offset intervals and seasonal classifications |
 | `help`, `manual` | Startup help and the English user manual |
 | `sidera-gpl.txt`, `sidera-notice.txt`, `sidera-sdk-license.txt` | GPLv3 text, project licensing scope and the retained SDK license |
 
-The current city data contains 345 cities in 195 countries. The time-zone database
+The catalogue contains 345 cities in 195 countries, 22 Antarctic research
+stations grouped under Antarctica [AQ], and 21 Special locations [XX].
+The latter appear first: four reference points, seven continental summits,
+Mont Blanc and Mount Kosciuszko alternatives, and eight landmarks.
+Their sources, reference-point definitions and zones are in
+[locations.json](../src/data/locations.json). The original four points and
+Mount Vinson use the agreed Etc/UTC convention; Everest uses Asia/Kathmandu.
+Other additions use local IANA zones. XX is an internal group with no bare-code
+CLI default. Names, XX/Name and country-code/Name select exact locations;
+bare country codes retain their existing defaults. Details use location:
+and the actual country (or - for the original four). Shared summits list both
+countries; Mont Blanc's FR/IT assignment does not resolve boundary depictions.
+Longyearbyen belongs to Norway and uses Arctic/Longyearbyen.
+The reviewed COMNAP map snapshot,
+field sources and exclusions are in [stations.json](../src/data/stations.json).
+COMNAP data has separate educational/non-commercial terms in
+[sidera-stations-license.txt](../src/rom/sidera-stations-license.txt).
+Stations precede cities, with Arctowski the AQ default; operator country codes
+and full names are searchable. Bare country CLI defaults still select cities,
+except AQ. Both AQ/Station and OperatorCode/Station accept the short bare name.
+
+SIDCITY2 remains a 16-byte header followed by 96-byte records. Flag bit 3 marks
+a station; bits 0..2 and 4..6 retain their meanings. Station country bytes 3..13
+hold `Antarctica\0`; unused country padding bytes 14..42 hold NUL-terminated
+operator aliases, e.g. `|FR France|IT Italy`. Byte 42 must remain zero. The name
+at 43..82 includes the display suffix `[FR/IT]`; lookup strips it only in its
+temporary record, then rereads the matched record before applying it. Ordinary
+city country padding stays zero. Older readers can display and select stations
+as AQ places, but cannot use operator search or the station label.
+Bit 7 marks a special location and makes region zero explicitly mean no
+continent, rather than the legacy geographic fallback. `world_select()` receives
+the high nibble: 8..15 designate explicit regions 0..7, with a marker even for
+zero. Ordinary zero still uses the map lookup. Region indices returned to the
+detail panel and used to read map rasters are always 0..7. Unknown/no continent
+is displayed as `-`. Special records store the actual country name (or `-`) in bytes 3..31,
+NUL-terminated, and country search aliases such as `|NP|CN` in bytes 32..42.
+The display name includes `[NP/CN]`; exact lookup strips this suffix as for
+stations. List rows and group-name searches use `Special locations`, independently
+of the country field. Full country names and both country codes remain searchable.
+
+CITIES uses 248 bytes of shared CPU scratch at $DF00: record[96], query[40],
+line[112]. Configuration I/O only borrows this area outside CITIES. Resident
+helpers may access these buffers only while that overlay is loaded.
+
+The time-zone database
 contains 598 zones, generated from the pinned tzdata package in
 [src/data/](../src/data/). Zone names and offset intervals are searched in the file;
 the whole database is not loaded into CPU RAM. Binary readers and generators must
 agree on field sizes and byte order independently of the host compiler's C types.
+
+The `DST1` extension occupies header bytes 12..15. Each zone index still points
+to `n` 12-byte little-endian records (signed 32-bit day, second, UTC offset),
+followed immediately by `n` classification bytes: 0 = `standard (no DST)`,
+1 = `standard (winter)`, 2 = `daylight (summer)`. Classification uses IANA data
+for the selected local calendar year; zero-offset changes in the DST flag and
+year boundaries are retained when they affect the displayed status. Negative
+DST conventions are normalized: the lower-offset winter period is standard,
+the zero-DST summer period is daylight. A year with no daylight period is
+classified as no DST. These are civil-time labels, not astronomical seasons.
+Aliases share tables. Older readers can still use the unchanged offset records;
+new readers show `unavailable` for seasonal status if `DST1` is absent or unreadable.
 
 `/assets` can override the main graphics resource. Asset, city and time-zone
 lookup rules are implemented in [files.c](../src/files.c),

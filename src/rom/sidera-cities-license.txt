@@ -1,5 +1,33 @@
 SIDERA city catalogue - attribution and provenance
 
+This notice covers the populated-place records. Antarctic research stations
+in the same sidera.cty file have separate terms: sidera-stations-license.txt.
+The 21 geographic reference points in the internal XX group are documented in
+src/data/locations.json. Nemo coordinates follow NOAA Ocean Service:
+https://oceanservice.noaa.gov/facts/nemo.html (48 deg 52.6 min S, 123 deg 23.6 min W).
+South Pole's representative 2835 m height follows the USAP Participant Guide
+(2022). The poles and Null Island use their geographic definitions. UTC and
+zero ocean heights are explicit application conventions. These point records
+are separate from the COMNAP station selection.
+
+Additional summit facts: Peakbagger.com, individual peak URLs in locations.json.
+Stonehenge and Greenwich elevations: UNESCO/IAU Portal to the Heritage of
+Astronomy, https://web.astronomicalheritage.net/ (entities 49 and 34).
+Historic Greenwich meridian coordinates: https://www.thegreenwichmeridian.org/
+Machu Picchu height: https://www.machupicchu.gob.pe/history/?lang=en
+Nordkapp plateau height: https://www.nordkapp.no/places/north-cape-plateau/
+Machu Picchu, Nordkapp and Cape Horn coordinate facts: OpenStreetMap contributors
+via Mapcarta; https://www.openstreetmap.org/copyright (ODbL 1.0).
+Cape of Good Hope and Longyearbyen: GeoNames (CC BY 4.0).
+Cape Horn: selected land point about 26 m east of the small southern lighthouse;
+55 m Copernicus GLO-90 terrain via Open-Meteo, retrieved 2026-11-15.
+Great Pyramid reference point: selected ground north of the pyramid footprint;
+58 m Copernicus GLO-90 terrain via Open-Meteo, retrieved 2026-11-15.
+No building height is added. Coordinates and heights are rounded, approximate
+point references, not survey-grade measurements. Source URLs and modifications
+are recorded per location in src/data/locations.json. No source images or
+descriptive articles are included.
+
 345 selected populated places, covering 193 United Nations members and the two
 non-member observer states (Holy See and State of Palestine).
 Catalogue snapshot: 2026-11-09. It is not a historical list of capitals.

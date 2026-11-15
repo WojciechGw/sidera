@@ -58,8 +58,13 @@ assert BASE <= symbols['_solar_names'] < BASE + LIMIT
 assert BASE <= symbols['_solar_labels'] < BASE + LIMIT - 63
 assert symbols['_solar_visible'] < BASE and symbols['_solar_date'] < BASE
 assert BASE <= symbols['_cities_key'] < BASE + LIMIT
+assert BASE <= symbols['_tz_details'] < BASE + LIMIT
 assert BASE <= symbols['_show_cover'] < BASE + LIMIT
 assert BASE <= symbols['_assets_base'] < BASE + LIMIT
+assert BASE <= symbols['_gx_canvas'] < BASE + LIMIT
+assert BASE <= symbols['_gx_header_pending'] < BASE + LIMIT
+assert BASE <= symbols['_startup_messages'] < BASE + LIMIT
+assert symbols['_gx_wait_step'] < BASE
 assert BASE <= symbols['_find_key'] < BASE + LIMIT
 assert symbols['_find_active'] < BASE and symbols['_target_id'] < BASE
 assert 0xE000 <= symbols['_target_draw'] < 0xF700

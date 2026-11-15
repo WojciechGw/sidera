@@ -2,7 +2,7 @@
 
 The import directory contains countryInfo.txt, cities15000.txt and PL.txt from
 https://download.geonames.org/export/dump/ (CC BY 4.0).
-Normal builds use the reviewed data/cities.json without network access.
+Normal builds use reviewed cities.json, stations.json and locations.json offline.
 """
 import argparse
 import datetime as dt
@@ -136,22 +136,59 @@ def imported(directory):
             'countries':'193 UN members plus Holy See and State of Palestine',
             'cities':sorted(result,key=lambda c:(c['country'].casefold(),not c['default'],c['city'].casefold()))}
 
+def catalogue_rows(data,stations=None):
+    if stations is None:
+        stations=json.loads((ROOT/'data/stations.json').read_text(encoding='utf8'))
+    countries={r['code']:r['country'] for r in data['cities']}
+    rows=[]
+    for s in stations['stations']:
+        assert s['status']=='Open' and s['seasonality'] in ('Year-Round','Seasonal'),s
+        assert -90<=s['latitude']<=-60 and s['elevation_source'] and s['timezone_source'],s
+        operators=s['operators']
+        assert operators and len(set(operators))==len(operators) and set(operators)<=set(COUNTRIES),s
+        aliases=''.join('|'+code+' '+countries[code] for code in operators)
+        assert len(aliases.encode('ascii'))<29,s
+        rows.append(dict(s,code='AQ',country='Antarctica',city=s['station']+' ['+'/'.join(operators)+']',
+                         capital=False,seat=False,operator_aliases=aliases))
+    assert sum(r['default'] for r in rows)==1
+    assert next(r for r in rows if r['default'])['station']=='Arctowski'
+    rows.sort(key=lambda r:(not r['default'],r['city'].casefold()))
+    locations=json.loads((ROOT/'data/locations.json').read_text(encoding='utf8'))['locations']
+    special=[]
+    for s in locations:
+        assert s['region'] in range(8),s
+        codes=s.get('countries',[])
+        assert len(set(codes))==len(codes) and set(codes)<=set(COUNTRIES)|{'AQ'},s
+        country=' / '.join('Antarctica' if c=='AQ' else countries[c] for c in codes) or '-'
+        aliases=''.join('|'+c for c in codes)
+        assert len(country.encode('ascii'))<29 and len(aliases)<11,s
+        special.append(dict(s,code='XX',country=country,country_aliases=aliases,
+                            city=s['location']+(' ['+'/'.join(codes)+']' if codes else ''),
+                            capital=False,seat=False,default=False))
+    return special+rows+data['cities']
+
 def build(data):
     from timezones import zone_names
     from world_regions import region
     zones=zone_names()
-    rows=data['cities'];seen=set()
-    assert {r['code'] for r in rows}==set(COUNTRIES)
-    for code in COUNTRIES:assert sum(r['default'] for r in rows if r['code']==code)==1,code
+    rows=catalogue_rows(data);seen=set()
+    assert {r['code'] for r in rows}==set(COUNTRIES)|{'AQ','XX'}
+    for code in [*COUNTRIES,'AQ']:assert sum(r['default'] for r in rows if r['code']==code)==1,code
+    assert len(rows)<=1000
     output=bytearray(struct.pack('<8sHHI',b'SIDCITY2',len(rows),96,0))
     for r in rows:
         key=(r['code'],r['city'].lower());assert key not in seen,key;seen.add(key)
         assert len(r['country'])<40 and len(r['city'])<40,r
         assert -90<=r['latitude']<=90 and -180<=r['longitude']<=180 and -500<=r['altitude']<=10000,r
-        output+=struct.pack('<3s40s40siihBH',r['code'].encode('ascii'),r['country'].encode('ascii'),
+        country=r['country'].encode('ascii')
+        if 'station' in r:country+=b'\0'+r['operator_aliases'].encode('ascii')
+        if 'location' in r:country=country.ljust(29,b'\0')+r['country_aliases'].encode('ascii')
+        output+=struct.pack('<3s40s40siihBH',r['code'].encode('ascii'),country,
                             r['city'].encode('ascii'),round(r['latitude']*36000),round(r['longitude']*36000),
                             r['altitude'],int(r['default'])+2*int(r['capital'])+4*int(r['seat'])+
-                            16*region(r['longitude'],r['latitude']),zones.index(r['timezone']))
+                            8*int('station' in r)+128*int('location' in r)+
+                            16*(r['region'] if 'location' in r else region(r['longitude'],r['latitude'])),
+                            zones.index(r['timezone']))
     return output
 
 if __name__=='__main__':
@@ -164,4 +201,6 @@ if __name__=='__main__':
         source.write_text(json.dumps(imported(a.import_dir),ensure_ascii=False,indent=2)+'\n',encoding='utf8')
     data=json.loads(source.read_text(encoding='utf8'))
     output=build(data);a.output.write_bytes(output)
-    print(len(data['cities']),'cities in 195 countries;',len(output),'bytes')
+    rows=catalogue_rows(data)
+    print(len(data['cities']),'cities in 195 countries +',sum('station' in r for r in rows),
+          'Antarctic stations +',sum('location' in r for r in rows),'special locations;',len(output),'bytes')

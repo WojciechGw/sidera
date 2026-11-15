@@ -55,6 +55,7 @@ static void fail(void)
 }
 void find_close(void)
 {
+    gx_status(0);
     if(fd>=0)close(fd);fd=-1;
     if(find_active)gx_panel_restore();
     find_active=0;
@@ -171,6 +172,7 @@ static void details(void)
 unsigned char find_step(void)
 {
     unsigned char n;unsigned length=(unsigned)strlen(query),first;char *p;
+    gx_status(stage!=0);
     if(stage==7) {
         clear_part(clear_y,8,0);clear_y+=8;if(clear_y>=410){stage=2;row=0;}
     } else if(stage==4) {
@@ -208,6 +210,7 @@ unsigned char find_step(void)
         if(n==2)fail();
         else if(n==1&&read_record(match(selected)))show_details(word(record));
     } else if(stage==6)paint_details();
+    if(!stage)gx_status(0);
     if(accept&&valid)return find_key('\r');
     return 0;
 }

@@ -13,22 +13,23 @@ static void message_timeout_checks(void)
         gx_status(i&1);
         message_show(messages[i]);memcpy(frozen_frame,xram,480*80);
         /* Ending work must not dismiss the five-second result. */
-        gx_status(1);gx_status(i&1);expect_text_at(8,472,messages[i],0);
+        gx_status(1);gx_status(i&1);expect_text_at(8,472,messages[i],255);
         ticks=message_tick+4u*PLATFORM_TICK_HZ;message_step();
         assert(!strcmp(note,messages[i])&&!memcmp(frozen_frame,xram,480*80));
         message_show(messages[i]); /* An identical result gets another five seconds. */
         ticks=message_tick+5u*PLATFORM_TICK_HZ-2;message_step();
         assert(!strcmp(note,messages[i]));
+        if(i&1){gx_status(GX_WORK_STARS);gx_status(GX_WORK_PATHS);}
         ticks=message_tick+5u*PLATFORM_TICK_HZ;message_step();
         assert(!note[0]&&!memcmp(frozen_frame,xram,472*80));
         if(i&1) {
-            expect_text_at(8,472,"[INFO] Working, please wait...",0);
+            expect_text_at(8,472,"[INFO] Calculating paths...",255);
             ticks+=10u*PLATFORM_TICK_HZ;message_step();
-            expect_text_at(8,472,"[INFO] Working, please wait...",0);
+            expect_text_at(8,472,"[INFO] Calculating paths...",255);
             gx_status(0);
         }
-        for(j=472*80;j<480*80;++j)if(j%80<59)assert(xram[j]==(j%80==58?4:0));
-        expect_text_at(473,472,"full ",0);expect_text_at(542,472,"navigational  ",0);
+        for(j=472*80;j<480*80;++j)if(j%80<60)assert(!xram[j]);
+        expect_text_at(485,472,"net  ",0);expect_text_at(542,472,"navigational  ",0);
         portal_writes=0;message_step();assert(!portal_writes);
     }
     ticks=(unsigned)-100;message_show(messages[0]);
@@ -62,7 +63,7 @@ static unsigned settings_keys(void)
         saved_observer=observer;saved_date=moment;clock=fake_time;
         ++settings_step;return CTRL('S');
     case 1:
-        assert(!strcmp(note,"[INFO] Configuration saved"));expect_text_at(8,472,note,0);
+        assert(!strcmp(note,"[INFO] Configuration saved"));expect_text_at(8,472,note,255);
         file=fopen(save_path,"rb");assert(file);n=(unsigned)fread(file_text,1,sizeof(file_text)-1,file);
         assert(n&&n<sizeof(file_text)-1);file_text[n]=0;fclose(file);
         observer.latitude=observer.longitude=observer.altitude=0;
@@ -72,7 +73,7 @@ static unsigned settings_keys(void)
         ++settings_step;return CTRL('R');
     case 2:
         assert(!live&&!playing&&!strcmp(note,"[INFO] Configuration reloaded"));
-        expect_text_at(8,472,note,0);
+        expect_text_at(8,472,note,255);
         assert(gx_busy()||cs_busy()); /* Reload again while the first redraw is pending. */
         ++settings_step;return CTRL('R');
     case 3:
@@ -82,7 +83,7 @@ static unsigned settings_keys(void)
         assert(!memcmp(frame,xram,sizeof(frame))); /* Same pixels as an explicit full refresh. */
         assert(!remove(save_path));++settings_step;return CTRL('R');
     case 5:
-        assert(!strcmp(note,"[!] Failed to reload configuration"));expect_text_at(8,472,note,0);
+        assert(!strcmp(note,"[!] Failed to reload configuration"));expect_text_at(8,472,note,255);
         file=fopen(save_path,"wb");assert(file);fputs("broken",file);fclose(file);
         ++settings_step;return CTRL('R');
     case 6:
@@ -93,7 +94,7 @@ static unsigned settings_keys(void)
         assert(!strcmp(note,"[!] Failed to reload configuration"));
         settings_read_fail=0;settings_write_fail=1;++settings_step;return CTRL('S');
     case 8:
-        assert(!strcmp(note,"[!] Failed to save configuration"));expect_text_at(8,472,note,0);
+        assert(!strcmp(note,"[!] Failed to save configuration"));expect_text_at(8,472,note,255);
         settings_write_fail=0;live=1;++settings_step;return CTRL('S');
     case 9:
         assert(!strcmp(note,"[INFO] Configuration saved"));

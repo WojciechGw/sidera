@@ -16,10 +16,16 @@ static void checked_sky_compute(const Date *d,const Observer *o,Sky *s);
 static void checked_sky_positions(const Date *d,const Observer *o,Sky *s);
 static void checked_planets_compute(const Date *d,const Observer *o,Position *p);
 static void checked_scene_begin(void);
+static void checked_scene_step(void);
+static unsigned char checked_rs_step(void);
+static unsigned char checked_cs_step(void);
 #define sky_compute checked_sky_compute
 #define sky_positions checked_sky_positions
 #define planets_compute checked_planets_compute
 #define gx_scene_begin checked_scene_begin
+#define gx_scene_step checked_scene_step
+#define rs_step checked_rs_step
+#define cs_step checked_cs_step
 #define time test_time
 #define main sidera_main
 #include "../src/main.c"
@@ -29,6 +35,9 @@ static void checked_scene_begin(void);
 #undef sky_positions
 #undef planets_compute
 #undef gx_scene_begin
+#undef gx_scene_step
+#undef rs_step
+#undef cs_step
 #include "../src/editor.c"
 
 #ifdef SIDERA_OVERLAY_HOST
@@ -98,21 +107,39 @@ static void expect_header_icons(unsigned char visible)
 }
 static void expect_busy(unsigned char busy)
 {
-    const char *p="[INFO] Working, please wait...";unsigned x=8,row,col,c;
+    const char *p=busy?"[INFO] ":"                               ";unsigned x=8,row,col,c;
     if(solar_visible||find_active||cities_active||editing)return;
-    if(note[0]){expect_text_at(8,472,note,0);return;}
+    if(note[0]){expect_text_at(8,472,note,255);return;}
     while(*p) {
         c=(unsigned char)*p++;
         for(row=0;row<8;++row)for(col=0;col<6;++col) {
             if(!!(xram[(row+472)*80+(x+col)/8]&(128>>((x+col)&7)))!=
-               !!(busy&&(xram[XR_FONT+c*8+row]&(128>>col))))
+               !!(busy&&((xram[XR_FONT+c*8+row]^0xFC)&(128>>col))))
                 fprintf(stderr,"busy=%u key=%u render=%u replay=%u idle=%u ticks=%u live=%u playing=%u\n",
                         busy,key_index,render_test,replay,idle_steps,ticks,live,playing);
             assert(!!(xram[(row+472)*80+(x+col)/8]&(128>>((x+col)&7)))==
-                   !!(busy&&(xram[XR_FONT+c*8+row]&(128>>col))));
+                   !!(busy&&((xram[XR_FONT+c*8+row]^0xFC)&(128>>col))));
         }
         x+=6;
     }
+}
+static void expect_stage(const char *message)
+{
+    if(!note[0]&&!solar_visible&&!find_active&&!cities_active&&!editing)
+        expect_text_at(8,472,message,255);
+}
+static void expect_jobs(void)
+{
+    char message[80];unsigned count=0;
+    strcpy(message,"[INFO] Calculating ");
+    if(cs_enabled()&&cs_busy()){strcat(message,"stars");++count;}
+    if(rs_busy()){if(count)strcat(message,", ");strcat(message,"rise/set");++count;}
+    if(trails&&!trail_end&&trail_done<TRAIL_COUNT){if(count)strcat(message,", ");strcat(message,"paths");++count;}
+    if(count>1) {
+        char *last=strrchr(message,',');
+        memmove(last+2,last+1,strlen(last+1)+1);last[0]=' ';last[1]='&';
+    }
+    strcat(message,"...");expect_stage(message);
 }
 static void checked_sky_compute(const Date *d,const Observer *o,Sky *s)
 {
@@ -123,28 +150,41 @@ static void checked_sky_compute(const Date *d,const Observer *o,Sky *s)
         expect_text_at(226,43,"Sun AZ ... ALT ...",0);
         expect_text_at(412,43,"Moon AZ ... ALT ... LIT ...",0);
         expect_text_at(8,451,"N: now",0);expect_text_at(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV",0);
-        expect_text_at(473,461," grid ",grid?255:0);
-        expect_text_at(398,461," paths ",trails?255:0);
-        expect_text_at(311,461," planets ",planets?255:0);
+        expect_text_at(485,461," grid ",grid?255:0);
+        expect_text_at(422,461," paths ",trails?255:0);
+        expect_text_at(347,461," planets ",planets?255:0);
         expect_text_at(542,461," constellations",constellation_mode?255:0);
         expect_header_icons(0);
         for(i=71*80;i<441*80;++i)assert(!xram[i]);
     }
-    expect_busy(1);++sky_checks;sky_compute(d,o,s);
+    expect_stage("[INFO] Calculating Sun & Moon...");++sky_checks;sky_compute(d,o,s);
 }
 static void checked_sky_positions(const Date *d,const Observer *o,Sky *s)
 {
-    expect_busy(1);++trail_checks;sky_positions(d,o,s);
+    expect_jobs();++trail_checks;sky_positions(d,o,s);
 }
 static void checked_planets_compute(const Date *d,const Observer *o,Position *p)
 {
     if(!planet_checks)expect_header_icons(1); /* Sun/Moon published before planets/stars. */
-    expect_busy(1);++planet_checks;planets_compute(d,o,p);
+    expect_stage("[INFO] Calculating planets...");++planet_checks;planets_compute(d,o,p);
 }
 static void checked_scene_begin(void)
 {
     assert(!constellation_mode||!cs_busy());
+    expect_stage("[INFO] Drawing sky...");
     ++scene_checks;gx_scene_begin();
+}
+static void checked_scene_step(void)
+{
+    expect_stage("[INFO] Drawing sky...");gx_scene_step();
+}
+static unsigned char checked_rs_step(void)
+{
+    expect_jobs();return rs_step();
+}
+static unsigned char checked_cs_step(void)
+{
+    expect_jobs();return cs_step();
 }
 
 /* A clock read is cheaper than one 8 ms tick. Keep explicit minute jumps in
@@ -471,15 +511,15 @@ unsigned key_poll(void)
         assert(!memcmp(saved_overlay,ovl_memory,OVL_BYTES));
     }
 #endif
-    if(key_index==16)assert(!strcmp(note,"Warsaw [PL] (press Ctrl+S to save location)"));
+    if(key_index==16)assert(!note[0]);
     if(key_index==17) {
         assert(!strcmp(note,"[INFO] Configuration saved"));
-        expect_text_at(8,472,note,0);
+        expect_text_at(8,472,note,255);
         assert(!strcmp(location_name,"Warsaw [PL]"));
     }
     if(key_index>=4&&key_index<=6)assert(portal_writes<30000);
     if(key_index==7)assert(portal_writes>=25000); /* G off still clears the plot. */
-    if(key_index>=4&&key_index<=7)for(i=473;i<479;++i)
+    if(key_index>=4&&key_index<=7)for(i=485;i<491;++i)
         assert(!!(xram[461*80+i/8]&(128>>(i&7)))==!!grid);
     portal_writes=0;
     if(cities_active)++menu_seen;

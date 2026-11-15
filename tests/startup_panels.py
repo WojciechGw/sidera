@@ -31,11 +31,14 @@ with rp6502.Emu() as emu:
     text_at(data,256,31,'Rio de Janeiro [BR]')
     text_at(data,226,43,'Sun AZ ... ALT ...')
     text_at(data,412,43,'Moon AZ ... ALT ... LIT ...')
-    for x,y,text in ((473,461,' grid '),(398,461,' paths '),(311,461,' planets '),(542,461,' constellations')):
+    for x,y,text in ((485,461,' grid '),(422,461,' paths '),(347,461,' planets '),(542,461,' constellations')):
         text_at(data,x,y,text,True)
-    text_at(data,473,472,'scale')
+    text_at(data,485,472,'scale')
     text_at(data,542,472,'navigational')
-    text_at(data,8,472,'[INFO] Working, please wait...')
+    text_at(data,8,472,'[INFO] Calculating Sun & Moon...',True)
+    for y in range(472,480):
+        for x in range(8+len('[INFO] Calculating Sun & Moon...')*6,476):
+            assert data[y*80+x//8] & (128 >> (x%8))
     for y in range(1,9):
         for x in range(424,574):
             assert not (data[y*80+x//8] & (128 >> (x%8)))

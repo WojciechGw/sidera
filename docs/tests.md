@@ -19,7 +19,7 @@
   They exercise saved LIVE presets and default settings, with one final scene.
   Footer checks reject writes outside a changed option's label, including pixels
   sharing boundary bytes, with G/C transitions also updating their colon/line
-  columns. All mode combinations verify 1 px white lines at x=469/538 from
+  columns. All mode combinations verify 1 px white lines at x=481/538 from
   y=462 through y=479 and restored colons in mode 0. Notes start at x=8;
   expiration, clearing and panel return preserve the active lines.
   They require zero writes for unchanged states; during
@@ -40,6 +40,16 @@
   Busy feedback uses the bottom message field with an INFO prefix, persists
   beyond five seconds, yields to save/reload results and resumes after their
   expiration if work remains. Busy transitions leave the header unchanged.
+  Stage checks require the matching Sun/Moon, planets, stars, rise/set, paths
+  or drawing text before the corresponding application-loop job. They also
+  verify stage preservation during generic busy polling, unchanged pixels on
+  repeated stages, note priority and restoration of the latest stage on expiry.
+  Pending-job checks cover all stars/rise-set/paths combinations against the
+  actual unfinished jobs. A write-level guard rejects any G/C field write or
+  separator change during message transitions, including 99-character notes.
+  Message glyphs and the entire padding must be inverted while nonempty; empty
+  transitions restore black. Startup-ROM checks also verify the white padding.
+  CITIES/L/Z acceptance must leave notes empty, with no save reminder.
   S opens SOLAR and X has no action. Footer checks enforce 8 px side margins
   and all G/T/P/C highlights in the third row, including partial writes.
   The first shortcut row must survive scene redraws and editor return;
@@ -56,14 +66,43 @@
   Bitmap checks require an exact inversion of rows 424–438 with every other
   pixel (including V) unchanged, also after interrupted view/FOV redraws.
   City rendering checks verify the frame, preservation of surrounding pixels,
-  incremental redraws, search and 20-row pagination, plus exact sky and footer restoration
+  incremental redraws, search and 22-row pagination, plus exact sky and footer restoration
   after closing the panel in night and daylight views.
+  Nine detail rows cover aligned labels (including LAT/LON/AMSL and uppercase UTC),
+  DMS and metre units, DST transitions,
+  historical and fractional offsets, southern-hemisphere seasons, negative DST,
+  years without DST, clearing empty results and preserving the active zone/cache.
+  Station checks cover AQ/operator CLI lookup, unchanged city defaults, station
+  precedence, both Concordia operators, station/city label switching, Antarctic
+  region, complete source records and station configuration save/reload.
+  The actual-ROM CITIES smoke captures Arctowski and Concordia as well as cities.
+  It also captures/applies all four special locations and waits for astronomy
+  to finish at both geographic poles. Host checks cover exact coordinates,
+  XX/name lookup, UTC, missing country/continent labels, explicit zero-region
+  maps with markers, and saving/reloading a special location.
+  The expanded XX catalogue checks all 17 new bare-name and XX/name lookups,
+  local IANA zones, dual-country Everest/Mont Blanc aliases, country search,
+  Greenwich's historic meridian, and the unchanged country-code defaults.
+  The actual-ROM CITIES smoke also captures Everest and Longyearbyen details.
+
+  Time-zone tests compare offsets and seasonal previews across all 598 zones
+  against the pinned IANA data, including transition instants and legacy files.
   `sidera_platform_6502` checks the 125 Hz clock code, 16-bit counter wraparound,
   waiting, VGA detection, console I/O, the monitor argument buffer and the
   keyboard decoder (RIA sequences, physical LCtrl versus RCtrl/both modifiers,
   Ctrl+Q/Ctrl+S/Ctrl+F with either/both Ctrl keys, Esc and timeout), USB bitmap mapping,
   failure handling and unmapping.
   The test controls RIA registers and time; sim65 executes the code.
+- `sidera_busy`: observes the actual ROM's foreground Moon at (3,33), its
+  initial delay, original phase pixels and changing orientations during sky,
+  CITIES, FIND and SOLAR work, plus disappearance and idle editor behavior.
+  Its affine transform preserves the centre and scale with a fixed 15-degree
+  counterclockwise tilt throughout the phase cycle.
+  FIND is sampled every video frame to reject disappearing animation frames;
+  host hooks also reject hiding before an animation read or during descriptor
+  writes. Applying CITIES and accepting Z must expose work without Ctrl+S.
+  Host checks cover all 20 frames over exactly 250 ticks, clock wrap, the real
+  Moon buffer swap, unchanged modal bitmaps and notes, and failed image reads.
 - `sidera_rom`: checks the actual built ROM: lower/HIGH resident code and reset
   vector in initial memory, six overlays as resources, headers, CRC32, the shared build
   identifier, BSS, resident addresses and the stack. This check is also a required

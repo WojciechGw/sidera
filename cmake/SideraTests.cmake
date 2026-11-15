@@ -53,6 +53,11 @@ rp6502_test(NAME sidera_cities_map COMMAND tests/cities_map_smoke.py
     -- /config SAVE:/cities-map.cfg /date "2026-11-12 20:00:00"
     /location PL/Warsaw /grid 1 /paths off /constellations 0 /planets off)
 set_tests_properties(sidera_cities_map PROPERTIES TIMEOUT 180)
+rp6502_test(NAME sidera_busy COMMAND tests/busy_smoke.py
+    --memseed 123 --phi2 8000 "$<TARGET_PROPERTY:sidera,RP6502_ROM>"
+    -- /config SAVE:/busy.cfg /date "2026-11-12 20:00:00"
+    /location PL/Warsaw /grid 0 /paths off /constellations 1 /planets off)
+set_tests_properties(sidera_busy PROPERTIES TIMEOUT 180)
 add_test(NAME sidera_generated_assets
     COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/scripts/regenerate.py"
         --output "${CMAKE_CURRENT_BINARY_DIR}/generated" --check)

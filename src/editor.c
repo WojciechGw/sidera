@@ -54,8 +54,8 @@ unsigned char edit_key(unsigned k)
         previous=observer;
         if(editing==1?location_parse(edit,&observer):editing==3?tz_set(edit):date_parse(edit,&moment)) {
             if(editing==1&&memcmp(&previous,&observer,sizeof(observer)))location_name[0]=0;
-            if(editing==2){live=0;playing=0;note[0]=0;}
-            else strcpy(note,"Location/zone changed (press Ctrl+S to save location)");
+            if(editing==2){live=0;playing=0;}
+            note[0]=0;
             editing=0;return 1;
         }
         strcpy(note,editing==1?"Invalid DMS location or height (-500..10000 m).":

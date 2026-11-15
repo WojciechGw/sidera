@@ -10,6 +10,7 @@ static int zone_fd=-1;
 static unsigned zone_count,intervals;
 static long table;
 static unsigned char record[48],cached;
+static unsigned char has_seasons;
 static int32_t first_day,first_sec,last_day,last_sec,utc_offset;
 
 void tz_close(void)
@@ -33,6 +34,7 @@ static int open_zones(void)
     if(zone_fd<0)zone_fd=open("MSC0:/sidera.tz",O_RDONLY);
     if(zone_fd<0)return 0;
     if(!fetch(0,record,24)||memcmp(record,"SIDTZ001",8)||record[10]!=48||record[11])goto bad;
+    has_seasons=!memcmp(record+12,"DST1",4);
     zone_count=record[8]|((unsigned)record[9]<<8);
     if(zone_count&&zone_count<1024)return 1;
 bad:
@@ -96,5 +98,28 @@ int tz_local(const Date *utc,Date *local,int32_t *offset)
         local->hour=(unsigned char)(s/3600);local->minute=(unsigned char)(s/60%60);
         local->second=(unsigned char)(s%60);
     }
+    return 1;
+}
+
+#ifdef SIDERA_OVERLAYS
+#pragma code-name ("CITIES_CODE")
+#endif
+int tz_details(unsigned id,const Date *utc,char *name,int32_t *offset,unsigned char *kind)
+{
+    int32_t pos,row[3],day=date_day(utc),sec=(int32_t)utc->hour*3600+utc->minute*60u+utc->second;
+    unsigned n,lo=0,hi,mid;
+    *kind=3;name[0]=0;
+    if(!open_zones()||id>=zone_count||!fetch(24L+(long)id*48,record,48)||record[39])return 0;
+    memcpy(&pos,record+40,4);n=record[44]|((unsigned)record[45]<<8);
+    if(!n||pos<24L+(long)zone_count*48)return 0;
+    strcpy(name,(char *)record);hi=n;
+    while(lo<hi) {
+        mid=lo+(hi-lo)/2;
+        if(!fetch(pos+(long)mid*12,row,12))return 0;
+        if(before(day,sec,row[0],row[1]))hi=mid;else lo=mid+1;
+    }
+    if(!lo||!fetch(pos+(long)(lo-1)*12,row,12)||row[2]<=-86400L||row[2]>=86400L)return 0;
+    *offset=row[2];
+    if(has_seasons&&(!fetch(pos+(long)n*12+lo-1,kind,1)||*kind>2))*kind=3;
     return 1;
 }

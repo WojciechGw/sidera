@@ -1,0 +1,51 @@
+SIDERA Antarctic research stations - attribution and provenance
+
+COMNAP (2025), Antarctic Facilities Information
+Copyright COMNAP. Facility information is supplied by national Antarctic
+programmes. Reviewed snapshot: 15 November 2026, current interactive map:
+https://www.comnap.aq/antarctic-facilities-information
+https://comnap-antarctic-facilities.web.app/
+
+COMNAP's stated terms: "Data may be freely used for educational and
+non-commercial purposes only."
+These terms apply to the COMNAP-derived station data, including the station
+records in sidera.cty. They are separate from GPL-3.0-only for SIDERA's original
+code. The bundled station dataset is not licensed under the GPL and is not
+unrestricted open data. Preserve this notice with redistributed station data.
+
+Selection: 22 open research stations south of 60 degrees S, including seasonal
+stations and Antarctic islands. Stations without confirmed coordinates,
+sea-level elevation or civil time zone are omitted. The reviewed selection and
+exclusions, source links, map identifiers and snapshot hash are recorded in
+src/data/stations.json. This is a filtered snapshot, not a complete directory
+of all operating facilities. No automatic online updates are performed.
+
+Changes: short ASCII names, ISO operator codes, Antarctica [AQ] grouping,
+coordinates rounded to 0.1 arcsecond, representative sea-level heights in
+integer metres, and assignment to existing IANA time-zone identifiers.
+Arctowski is the AQ default. Coordinates are representative facility points,
+not navigation fixes. Heights from COMNAP marked WGS84 or without a datum are
+only used when an independent source corroborates a sea-level height; some
+values are replaced by operator-reported heights.
+
+Time-zone assignments use IANA tzdb Antarctica comments and station-specific
+research/operator sources linked in stations.json. They are not inferred from
+longitude or operator nationality. IANA data is public domain; the packaged
+tzdata notices are in sidera-timezones-license.txt. Fixed Etc/GMT zones describe
+documented operating time, not a reconstruction of station history. Regional
+zones retain their IANA history, which need not describe an unoccupied station.
+Troll retains IANA's UTC/UTC+2 approximation. Future time follows bundled rules.
+
+Independent facts used to confirm or replace elevations and time zones:
+- Arctowski: DOI 10.1007/s00484-025-03099-9 (2026), 2 m a.s.l., UTC-3.
+- Dome Fuji: DOI 10.1029/2009JD011886, UTC+3.
+- Neumayer III: DOI 10.5194/tc-15-4745-2021, UTC.
+- Princess Elisabeth: International Polar Foundation, BELARE news January
+  2026, same civil time zone as Belgium.
+- Amundsen-Scott: USAP Participant Guide (2022), 2835 m a.s.l.
+- Dumont d'Urville: French Polar Institute station page, 20 m altitude.
+- Rothera: British Antarctic Survey meteorological database, 16 m altitude.
+- Scott Base: Antarctica New Zealand station page, 10 m above sea level.
+- Troll: Antarctic Treaty inspection ATCM36 attachment 109, 1275 m a.s.l.
+Only factual catalogue values are incorporated; no photographs, diagrams or
+article text from these sources are included.

@@ -12,6 +12,9 @@ extern char zone_name[40];
 int tz_set(const char *name);
 int tz_select(unsigned id);
 int tz_local(const Date *utc,Date *local,int32_t *offset);
+/* CITIES-only preview: does not select the zone or alter the conversion cache.
+ * kind: 0 no DST in this local year, 1 standard, 2 daylight, 3 unavailable. */
+int tz_details(unsigned id,const Date *utc,char *name,int32_t *offset,unsigned char *kind);
 void tz_close(void);
 
 /* XRAM layout for VGA resources and astronomical working data. */
@@ -35,6 +38,7 @@ void tz_close(void);
 #define XR_LABELS 0xDF78u /* 96 label rectangles, five bytes each. */
 #define XR_CITY_IMAGE 0xE700u /* Eight 1bpp rows, then two palette entries. */
 #define XR_CITY_PAL (XR_CITY_IMAGE+8)
+#define XR_WAIT_CFG 0xE6E0u /* 20-byte affine busy Moon; above FIND/SOLAR scratch. */
 #define XR_PLANET_PAL 0xE800u
 #define XR_EDGES 0xF400u
 #define CATALOGUE_RECORD_BYTES (SIDERA_RECORD_COUNT*4u)
@@ -52,6 +56,7 @@ void tz_close(void);
 #define DATA_META (DATA_COVER_PAL+33L*512)
 int asset_read(int32_t offset,unsigned addr,unsigned count);
 void show_cover(void);
+extern const char *const startup_messages[4]; /* COVER-only, consumed synchronously. */
 #define VIEW_LEFT 28
 #define VIEW_RIGHT 628 /* exclusive */
 #define VIEW_CENTER 328
@@ -97,6 +102,7 @@ unsigned char option_code(const char *name);
 int option_value(unsigned char code,const char *value,unsigned char apply);
 int location_parse(const char *text, Observer *o);
 void location_format(char *text, const Observer *o, unsigned char utf8);
+char *coordinate_format(char *text,int32_t value,char positive,char negative,unsigned char utf8);
 int date_parse(const char *text, Date *d);
 void date_format(char *text, const Date *d);
 int assets_open(void);
@@ -117,7 +123,7 @@ void cities_close(void);
 unsigned char cities_step(void);
 void world_begin(void);
 void world_close(void);
-void world_select(unsigned char continent,const Observer *place);
+unsigned char world_select(unsigned char continent,const Observer *place);
 extern unsigned char find_active;
 int find_start(void);
 unsigned char find_step(void);
@@ -165,7 +171,16 @@ int gx_label_damaged(int x,int y,int w);
 void gx_grid_cycle(void);
 void gx_grid_add(void);
 void gx_clock(void);
+/* 0 ends work; 1 continues it without replacing an already selected stage. */
+#define GX_WORK_SUN_MOON 2
+#define GX_WORK_PLANETS 3
+#define GX_WORK_DRAW 4
+/* Cooperative jobs form a set, rather than replacing each other's labels. */
+#define GX_WORK_STARS 8
+#define GX_WORK_RISESET 16
+#define GX_WORK_PATHS 32
 void gx_status(unsigned char busy);
+void gx_wait_step(void);
 void gx_header(void);
 void gx_header_pending(void);
 int gx_header_ready(void);

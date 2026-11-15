@@ -4,6 +4,7 @@ from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(root/'scripts'))
 from world_regions import region
+from cities import catalogue_rows
 data=(root/'src/rom/sidera.map').read_bytes()
 assert struct.unpack_from('<8sHHI',data)==(b'SIDMAP1\0',300,150,46816)
 assert len(data)==91816 and set(data[46816:])==set(range(1,8))
@@ -17,10 +18,10 @@ samples={(21,52):1,(139,35):2,(31,30):3,(-74,40):4,(-43,-23):5,(151,-34):6,(0,-8
          (-157,21):6,(140,-3):6,(119,-5):2,(37,56):1,(61,57):2,(-25,38):1,(-16,28):3,
          (-22,75):4,(-20,64):1,(173,53):4,(29,41.1):1,(33,35):2,(-61.5,10.6):4}
 for point,expected in samples.items():assert region(*point)==expected,(point,expected)
-rows=json.loads((root/'src/data/cities.json').read_text())['cities']
+rows=catalogue_rows(json.loads((root/'src/data/cities.json').read_text()))
 catalogue=(root/'src/rom/sidera.cty').read_bytes()
 for i,city in enumerate(rows):
     flags=catalogue[16+i*96+93]
-    assert flags>>4==region(city['longitude'],city['latitude'])
+    assert (flags>>4)&7==(city['region'] if 'location' in city else region(city['longitude'],city['latitude']))
     assert flags&7==int(city['default'])+2*int(city['capital'])+4*int(city['seat'])
 print('PASS: seven geographic regions, dateline/islands, catalogue tags, map dimensions and protected edge bits')

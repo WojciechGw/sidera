@@ -8,15 +8,49 @@ static unsigned moon_image=XR_MOON1;
 static int loaded_phase=-1;
 static unsigned char header_visible;
 static unsigned char calculating,status_drawn=255;
+static const char *const work_messages[]={
+    "","Working, please wait...","Calculating Sun & Moon...",
+    "Calculating planets...","Drawing sky..."
+};
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (push, "HIGH_RODATA")
+#endif
+static const char *const work_jobs[]={
+    "","stars","rise/set","stars & rise/set","paths","stars & paths",
+    "rise/set & paths","stars, rise/set & paths"
+};
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (pop)
+#endif
+/* 0 disabled, 1 idle, 2 delay, 3 animating, 4 asset failure until idle. */
+static unsigned char wait_state,wait_frame;
+static uint16_t wait_tick;
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (push, "HIGH_RODATA")
+#endif
+static const int16_t wait_transform[2][6]={
+    {66,247,-884,-247,66,6774},{-66,-247,8820,247,-66,1162}
+};
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (pop)
+#endif
 static unsigned char footer_valid,footer_flags; /* Valid bits: help rows 1, note row 2. */
-static char footer_note[sizeof(note)];
+/* 78 cells: x=8..475. G starts at its separator, x=481. */
+static char footer_note[79];
+static unsigned char footer_work;
 static unsigned char footer_grid,footer_constellation;
-static const char grid_modes[4][6]={"     ","scale","cross","full "};
+static const char grid_modes[4][6]={"     ","scale","cross","net  "};
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (push, "HIGH_RODATA")
+#endif
 static const char constellation_modes[5][15]={
     "              ","stars         ","charts        ","charts & names","navigational  "
 };
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (pop)
+#endif
 static unsigned char panel_dirty;
-static char text[120];
+static char text[80]; /* Header coordinates and all work descriptions fit. */
 int fov=120,gx_circle=1800; /* Horizontal degrees; pixels per full azimuth turn. */
 static int last_elevation=-100,origin_y;
 static int last_bearing=-1;
@@ -73,6 +107,37 @@ void gx_write(unsigned addr,const void *data,unsigned char count)
 
 /* Read/modify/write through the RIA portals. */
 static void put16(unsigned v) { RIA.rw0=(unsigned char)v;RIA.rw0=(unsigned char)(v>>8); }
+static void wait_hide(void)
+{
+    RIA.step0=1;RIA.addr0=XR_WAIT_CFG+12;put16(-64);
+}
+void gx_wait_step(void)
+{
+    uint16_t now,elapsed;
+    unsigned image;
+    unsigned char frame,phase;
+    if(wait_state!=2&&wait_state!=3)return;
+    now=(uint16_t)platform_ticks();elapsed=(uint16_t)(now-wait_tick);
+    if(wait_state==2) {
+        if(elapsed<63)return;
+        wait_state=3;wait_tick+=63;elapsed-=63;
+    }
+    /* Keep the origin near now, including across the 16-bit clock wrap. */
+    if(elapsed>=250){elapsed%=250;wait_tick=now-elapsed;}
+    frame=(unsigned char)(elapsed*2/25);
+    if(frame==wait_frame)return;
+    wait_frame=frame;phase=frame<=10?frame:20-frame;
+    image=moon_image==XR_MOON0?XR_MOON1:XR_MOON0;
+    if(!assets_phase((unsigned char)((unsigned)phase*128/10),image)) {
+        wait_hide();wait_state=4;return; /* Keep the real Moon and the user's note intact. */
+    }
+    /* Unscaled, 15 degrees counterclockwise about (15.5,15.5).
+       Inverse 8.8 transform: sin(15)=66, cos(15)=247; then phase orientation. */
+    gx_write(XR_WAIT_CFG,wait_transform[frame>10],12);
+    /* Keep the previous frame visible throughout the asset read. */
+    RIA.addr0=XR_WAIT_CFG+16;put16(image);
+    RIA.addr0=XR_WAIT_CFG+12;put16(3); // hourglass X
+}
 void gx_clear(int y,int rows)
 {
     unsigned a;
@@ -85,6 +150,7 @@ void gx_clear(int y,int rows)
         if(y<480&&y+rows>472)footer_valid&=~2;
     }
     for(;rows>0;--rows,++y) {
+        if(!(rows&7))gx_wait_step();
         if(y<0||y>=480)continue;
         a=(unsigned)y*80u;
         RIA.step0=1;RIA.addr0=a;
@@ -130,6 +196,7 @@ void gx_line(int x0,int y0,int x1,int y1,unsigned char dashed)
 static void draw_text(int x,int y,const char *p,unsigned char inverse)
 {
     unsigned a;unsigned char row,c,b,v,shift;
+    gx_wait_step();
     while(*p && x<=634) {
         c=(unsigned char)*p++;
         if(c==0xC2 && (unsigned char)*p==0xB0){c=1;++p;}
@@ -237,6 +304,9 @@ static void wait_vsync(void)
     /* A disconnected VGA must never hang the application. */
     while(v==RIA.vsync && (unsigned)(platform_ticks()-start)<4) {}
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (push, "COVER_CODE")
+#endif
 int gx_canvas(void)
 {
     int r;
@@ -246,6 +316,15 @@ int gx_canvas(void)
     panel_dirty=0;
     header_icons(0);
     status_drawn=255;
+    wait_state=1;wait_frame=255;
+    RIA.step0=1;RIA.addr0=XR_WAIT_CFG;
+    for(i=0;i<20;++i)RIA.rw0=0;
+    RIA.addr0=XR_WAIT_CFG+14;
+    put16(33); // hourglass Y
+    put16(XR_MOON0);
+    RIA.rw0=5;
+    RIA.rw0=0;
+    wait_hide();
     RIA.step0=1;RIA.addr0=XR_CFG;
     put16(0);put16(0);put16(0);put16(640);put16(480);put16(0);put16(0xFFFF);
     r=xreg(1,0,0,3);
@@ -263,10 +342,15 @@ int gx_canvas(void)
     /* Plane 0 sprite overlays the bitmap fill, below the header Sun. */
     if(r>=0)r=xreg(1,0,1,5,56,XR_CITY_CFG,1,0,75,229);
     if(r>=0)r=xreg(1,0,1,4,1,XR_MOON_HEADER_CFG,1,1,0,VIEW_TOP);
+    if(r>=0)r=xreg(1,0,1,4,1,XR_WAIT_CFG,1,2,33,65); // hourglass scanlines Y,Y+32
     return r>=0;
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (pop)
+#endif
 void gx_console(void)
 {
+    wait_state=0;
     xreg(1,0,0,0);
 }
 static unsigned char panel_hit(int x,int y,int w,int h)
@@ -281,6 +365,7 @@ static int draw_objects(unsigned char chart)
     unsigned next,distance;
     unsigned char i,j,rank;
     if(loaded_phase!=(int)sky.phase) {
+        if(wait_state==3){wait_hide();wait_frame=255;}
         next=moon_image==XR_MOON0?XR_MOON1:XR_MOON0;
         if(!assets_phase(sky.phase,next))return 0;
         moon_image=next;loaded_phase=sky.phase;
@@ -394,7 +479,13 @@ static void status_header(void)
 }
 void gx_status(unsigned char busy)
 {
-    calculating=!!busy;
+    if(wait_state) {
+        if(busy) {
+            if(wait_state==1){wait_state=2;wait_tick=platform_ticks();wait_frame=255;}
+            gx_wait_step();
+        } else if(wait_state!=1){wait_hide();wait_state=1;}
+    }
+    if(busy!=1||!calculating)calculating=busy;
     if(!solar_visible&&!find_active&&!cities_active&&!editing)gx_footer();
     status_header();
 }
@@ -434,6 +525,10 @@ static void header_values(void)
         gx_text(i?412:226,43,text);
     }
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (push, "COVER_CODE")
+#pragma rodata-name (push, "COVER_RODATA")
+#endif
 void gx_header_pending(void)
 {
     header_base();
@@ -441,6 +536,10 @@ void gx_header_pending(void)
     gx_text(412,43,"Moon AZ ... ALT ... LIT ...");
     gx_riseset();
 }
+#ifdef SIDERA_OVERLAYS
+#pragma rodata-name (pop)
+#pragma code-name (pop)
+#endif
 int gx_header_ready(void)
 {
     /* Publish the initial Sun/Moon results without exposing plot sprites or
@@ -473,43 +572,65 @@ static void footer_bar(unsigned x,unsigned y,unsigned char active)
         RIA.rw0=active||y==462||y==465?v|mask:v&~mask;
     }
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (pop)
+#endif
+static void footer_message(void)
+{
+    const char *message;
+    char next[79];
+    unsigned char end=78,inverse;
+    if((footer_valid&2)&&!note[0]&&footer_work==calculating)return;
+    if(calculating>=GX_WORK_STARS)
+        sprintf(text,"[INFO] Calculating %s...",work_jobs[calculating>>3]);
+    else if(calculating)sprintf(text,"[INFO] %s",work_messages[calculating]);
+    else text[0]=0;
+    message=note[0]?note:text;
+    inverse=message[0]?78:0;
+    sprintf(next,"%-78.78s",message);
+    /* Full restoration only after panels/editors or an explicit clear. */
+    if(!(footer_valid&2))gx_clear(472,8);
+    else if(!!inverse==!!footer_work)
+        while(end&&next[end-1]==footer_note[end-1])--end;
+    memcpy(footer_note,next,sizeof(next));
+    next[end]=0;draw_text(8,472,next,inverse);
+    footer_work=note[0]?255:calculating;
+}
+#ifdef SIDERA_OVERLAYS
+#pragma code-name (push, "HIGH_CODE")
+#endif
 void gx_footer(void)
 {
-    const char *message=note[0]?note:calculating?"[INFO] Working, please wait...":"";
     unsigned char flags=!!grid|((!!trails)<<1)|((!!planets)<<2)|((!!constellation_mode)<<3);
     unsigned char changed;
     if(!(footer_valid&1)) {
         gx_clear(FOOTER_TOP,472-FOOTER_TOP);
         /* Three rows span x=8..631. Gaps differ by at most one pixel per row. */
         gx_text(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV");
-        gx_text(232,441,"Ctrl+S: save");gx_text(323,441,"Ctrl+R: reload");
-        gx_text(427,441,"Ctrl+F: find object");
+        gx_text(232,441,"Ctrl+S/+R: safe/reload config");
+        gx_text(426,441,"Ctrl+F: find object");
         gx_text(560,441,"Ctrl+Q: quit");
         gx_text(8,451,"N: now");gx_text(92,451,"Space: SIM PAUSE/PLAY");
         gx_text(266,451,"+/-: 15 min");gx_text(380,451,"[/]: day");
         gx_text(476,451,"D: date");
         gx_text(566,451,"Z: Timezone");
-        gx_text(8,461,"L: location");gx_text(101,461,"K: cities");
-        gx_text(182,461,"S: Solar system");gx_text(299,461,"P: planets");
-        gx_text(386,461,"T: paths");gx_text(461,461,"G: grid");
+        gx_text(8,461,"L: location");gx_text(89,461,"K: cities & locations");
+        gx_text(230,461,"S: Solar system");gx_text(335,461,"P: planets");
+        gx_text(410,461,"T: paths");gx_text(473,461,"G: grid");
         gx_text(530,461,"C: constellations");
         footer_flags=0;footer_valid|=1;
     }
     changed=flags^footer_flags;
-    if(changed&1)draw_text(473,461," grid ",flags&1?255:0);
-    if(changed&2)draw_text(398,461," paths ",flags&2?255:0);
-    if(changed&4)draw_text(311,461," planets ",flags&4?255:0);
+    if(changed&1)draw_text(485,461," grid ",flags&1?255:0);
+    if(changed&2)draw_text(422,461," paths ",flags&2?255:0);
+    if(changed&4)draw_text(347,461," planets ",flags&4?255:0);
     /* No trailing highlight cell past the right margin. */
     if(changed&8)draw_text(542,461," constellations",flags&8?255:0);
     footer_flags=flags;
-    if(!(footer_valid&2)||strcmp(footer_note,message)) {
-        gx_clear(472,8);gx_text(8,472,message);
-        strcpy(footer_note,message);
-        footer_grid=footer_constellation=255;
-    }
-    if(footer_grid!=grid)gx_text(473,472,grid_modes[grid]);
-    if(footer_constellation!=constellation_mode)gx_text(542,472,constellation_modes[constellation_mode]);
-    if((changed&1)||!(footer_valid&2))footer_bar(469,changed&1?462:472,grid);
+    footer_message();
+    if(!(footer_valid&2)||footer_grid!=grid)gx_text(485,472,grid_modes[grid]);
+    if(!(footer_valid&2)||footer_constellation!=constellation_mode)gx_text(542,472,constellation_modes[constellation_mode]);
+    if((changed&1)||!(footer_valid&2))footer_bar(481,changed&1?462:472,grid);
     if((changed&8)||!(footer_valid&2))footer_bar(538,changed&8?462:472,constellation_mode);
     footer_grid=grid;footer_constellation=constellation_mode;footer_valid|=2;
 }

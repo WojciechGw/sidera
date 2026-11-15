@@ -41,20 +41,25 @@ void world_begin(void)
        buffer[8]!=44||buffer[9]!=1||buffer[10]!=150||buffer[11]||
        lseek(map_fd,0,SEEK_END)!=91816L)unavailable();
 }
-void world_select(unsigned char continent,const Observer *place)
+unsigned char world_select(unsigned char continent,const Observer *place)
 {
-    if(map_fd<0)return;
+    /* Bit 3 means an explicit region, including zero (contours only). */
+    if(continent>15)continent=0;
+    if(map_fd<0)return continent&7;
     point=place!=0;dirty=1;
     if(point) {
         mx=(unsigned)(((place->longitude/100+64800L)*299+64800L)/129600L);
         my=(unsigned char)(((32400L-place->latitude/100)*149+32400L)/64800L);
         /* Older external SIDCITY2 catalogues have no region tag. */
-        if(!continent||continent>7) {
+        if(!continent) {
             if(lseek(map_fd,46816L+(long)my*300+mx,SEEK_SET)<0||read(map_fd,&continent,1)!=1)
-                {unavailable();return;}
+                {unavailable();return 0;}
+            if(continent>7)continent=0;
         }
     } else continent=0;
+    continent&=7;
     if(want!=continent){want=continent;map_row=0;marker(0xFFC0u,0);}
+    return continent;
 }
 unsigned char cities_step(void)
 {

@@ -14,15 +14,17 @@ int host_open(const char *p,int f){return _open(p,f|_O_BINARY,_S_IREAD|_S_IWRITE
 int host_close(int fd){return _close(fd);}
 int main(int argc,char **argv)
 {
-    unsigned id,previous=65535;int y,mo,d,h,mi,s;Date utc,local;int32_t offset;
+    unsigned id,previous=65535;int y,mo,d,h,mi,s;Date utc,local;int32_t offset,preview;
+    char name[40];unsigned char kind;
     assert(argc==2);sprintf(asset_path,"%s/sidera.dat",argv[1]);
     while(scanf("%u %d %d %d %d %d %d",&id,&y,&mo,&d,&h,&mi,&s)==7) {
         if(id!=previous){assert(tz_select(id));previous=id;}
         utc.year=y;utc.month=(unsigned char)mo;utc.day=(unsigned char)d;
         utc.hour=(unsigned char)h;utc.minute=(unsigned char)mi;utc.second=(unsigned char)s;
         assert(tz_local(&utc,&local,&offset));
-        printf("%ld %04d-%02u-%02u %02u:%02u:%02u\n",(long)offset,local.year,
-               local.month,local.day,local.hour,local.minute,local.second);
+        assert(tz_details(id,&utc,name,&preview,&kind)&&preview==offset&&!strcmp(name,zone_name));
+        printf("%ld %04d-%02u-%02u %02u:%02u:%02u %u %s\n",(long)offset,local.year,
+               local.month,local.day,local.hour,local.minute,local.second,kind,name);
     }
     tz_close();return 0;
 }

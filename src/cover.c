@@ -5,6 +5,12 @@
 #pragma code-name ("COVER_CODE")
 #pragma rodata-name ("COVER_RODATA")
 #endif
+const char *const startup_messages[4]={
+    "sidera: graphics file is truncated.\r\n",
+    "System clock unavailable. D sets UTC date.",
+    "sidera: cannot load sprite or configure VGA.\r\n",
+    "Cannot map USB keyboard state."
+};
 void show_cover(void)
 {
     static const uint16_t config[]={0,0,30,320,180,0x1000,0x0400};

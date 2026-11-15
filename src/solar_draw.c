@@ -67,6 +67,7 @@ int solar_draw(void)
     gx_text(SOLAR_RIGHT-2-10*6,SOLAR_BOTTOM-11,"Esc: close");
     sprite(0,SOLAR_CX-16,SOLAR_CY-16,XR_SUN,XR_PAL,0x77);
     for(i=8;i>0;) {
+        gx_wait_step();
         --i;solar_orbit(i,&solar_date,&orbit);circle(radii[i]);
         solar_point(&orbit,orbit.phase,&hx,&hy);
         longitude=as_atan(hy,hx);

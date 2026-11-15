@@ -5,8 +5,9 @@
 #include <string.h>
 #include <unistd.h>
 #include "sidera.h"
+#include "overlays/overlay.h"
 
-#define ROWS 20
+#define ROWS 22
 #define ROW_Y (CITIES_TOP+60)
 #define ROW_HEIGHT 14
 #define TEXT_X (CITIES_LEFT+6)
@@ -16,6 +17,11 @@
 #define LIST_CHARS 52
 #define RECORD 96
 unsigned char cities_active=0;
+/* Keep these fixed labels resident to leave room for CITIES' zone lookup. */
+static const char continents[][14]={"-","Europe","Asia","Africa","North America","South America","Oceania","Antarctica"};
+static const char kinds[][18]={"standard (no DST)","standard (winter)","daylight (summer)","unavailable"};
+static const char detail_labels[][11]={"city:","country:","continent:","LAT:","LON:","AMSL:","timezone:","UTC:","time:"};
+static const char special_group[]="Special locations";
 #ifdef SIDERA_OVERLAYS
 #pragma code-name ("CITIES_CODE")
 #pragma rodata-name ("CITIES_RODATA")
@@ -26,9 +32,17 @@ unsigned char cities_active=0;
 #endif
 static int fd=-1;
 static unsigned count,total,selected,page,ids[ROWS];
+static unsigned details_zone=65535;
 static unsigned char rows;
+#ifdef SIDERA_OVERLAYS
+/* 248 of the 256 scratch bytes; config I/O uses it only outside CITIES. */
+#define record ((unsigned char *)OVL_SCRATCH)
+#define query ((char *)OVL_SCRATCH+96)
+#define line ((char *)OVL_SCRATCH+136)
+#else
 static char query[40],line[112];
 static unsigned char record[RECORD];
+#endif
 static Observer candidate;
 
 void cities_close(void)
@@ -60,6 +74,7 @@ static int read_city(unsigned index)
 {
     long offset=16L+(long)index*RECORD;
     int16_t height;
+    gx_wait_step();
     if(index>=count||lseek(fd,offset,SEEK_SET)!=offset||read(fd,record,RECORD)!=RECORD)return bad();
     if(record[2]||record[42]||record[82]||record[0]<'A'||record[0]>'Z'||
        record[1]<'A'||record[1]>'Z'||!record[3]||!record[43])return bad();
@@ -76,16 +91,28 @@ static int apply_city(void)
     }
     observer=candidate;sprintf(location_name,"%s [%s]",record+43,record);return 1;
 }
+/* Country padding: station |CC Country at 14; special |CC at 32. */
+static int country_match(const char *name)
+{
+    char *p=(char *)record+(record[93]&128?32:14);
+    if(!strnicmp(name,(char *)record,2))return 1;
+    if(record[93]&136)while((p=strchr(p,'|'))!=0)
+        if(!strnicmp(name,++p,2))return 1;
+    return 0;
+}
 /* Exact city, CC, or CC/City. Ambiguity never silently selects a country. */
 int cities_lookup(const char *name)
 {
     unsigned i,matches=0,n=(unsigned)strlen(name),found=0;
     unsigned char match;
+    char *suffix;
     if(!open_catalogue())return 0;
     for(i=0;i<count;++i) {
         if(!read_city(i)){cities_close();return 0;}
+        if((record[93]&136)&&(suffix=strrchr((char *)record+43,'['))!=0&&
+           suffix>(char *)record+43&&suffix[-1]==' ')suffix[-1]=0;
         if(n==2)match=!stricmp(name,(char *)record)&&(record[93]&1);
-        else if(n>3&&name[2]=='/')match=!strnicmp(name,(char *)record,2)&&!stricmp(name+3,(char *)record+43);
+        else if(n>3&&name[2]=='/')match=country_match(name)&&!stricmp(name+3,(char *)record+43);
         else match=!stricmp(name,(char *)record+43);
         if(match){++matches;found=i;}
     }
@@ -116,10 +143,12 @@ static int fill(void)
     }
     for(i=0;i<count;++i) {
         if(!read_city(i)){rows=total=0;return 0;}
-        match=n==2&&!stricmp(query,(char *)record);
+        match=n==2&&country_match(query);
         /* A valid country code supersedes earlier matches in unrelated names. */
         if(match&&!country){rows=total=0;country=1;}
-        if(match||(!country&&(contains((char *)record+3)||contains((char *)record+43)))) {
+        if(match||(!country&&(contains((char *)record+3)||contains((char *)record+43)||
+                            ((record[93]&128)&&contains(special_group))||
+                            ((record[93]&8)&&contains((char *)record+14))))) {
             if(total>=page&&rows<ROWS)ids[rows++]=i;
             ++total;
         }
@@ -133,26 +162,24 @@ int cities_start(void)
     if(!fill()){cities_close();return 0;}
     cities_active=1;return 1;
 }
-/* Clear only the interior: preserve the frame and surrounding sky pixels,
- * including the partial bytes at the left and right edges. */
+/* The full-width panel has one white frame pixel at each edge. */
 static void clear_rows(int y,int height)
 {
-    unsigned char row[(CITIES_RIGHT-2)/8-(CITIES_LEFT+1)/8+1];
-    unsigned a;
-    memset(row,0,sizeof(row));
-    for(;height>0;--height,++y) {
-        a=(unsigned)y*80u+(CITIES_LEFT+1)/8;
-        gx_read(a,row,1);row[0]&=0xFFu<<(8-((CITIES_LEFT+1)&7));
-        gx_read(a+sizeof(row)-1,row+sizeof(row)-1,1);
-        row[sizeof(row)-1]&=0xFFu>>( (CITIES_RIGHT-1)&7);
-        gx_write(a,row,sizeof(row));
-    }
+    unsigned char row[80];
+    memset(row,0,sizeof(row));row[0]=128;row[79]=1;
+    while(height--)gx_write((unsigned)y++*80u,row,sizeof(row));
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name ("CODE")
+#endif
 static void clear_list_rows(unsigned y,unsigned char height)
 {
     unsigned char row[41];memset(row,0,sizeof(row));row[0]=128;
     while(height--)gx_write(y++*80u,row,sizeof(row));
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name ("HIGH_CODE")
+#endif
 static void fit_line(unsigned char width)
 {
     if(strlen(line)>width)strcpy(line+width-3,"...");
@@ -162,35 +189,64 @@ static void draw_search(void)
     clear_list_rows(CITIES_TOP+28,8);
     sprintf(line,"Search: %s",query);gx_text(TEXT_X,CITIES_TOP+28,line);
 }
+#ifdef SIDERA_OVERLAYS
+#pragma code-name ("CITIES_CODE")
+#endif
 static int draw_row(unsigned char i)
 {
     clear_list_rows(ROW_Y-1+i*ROW_HEIGHT,10);
     if(!read_city(ids[i]))return 0;
-    sprintf(line,"%s %s - %s%s",record,record+3,record+43,
+    sprintf(line,"%s %s - %s%s",record,record[93]&128?special_group:(char *)record+3,record+43,
             record[93]&2?" [Capital]":record[93]&4?" [Seat]":"");
     fit_line(LIST_CHARS);gx_label(TEXT_X,ROW_Y+i*ROW_HEIGHT,line,selected==page+i);return 1;
 }
 static void draw_list(void)
 {
     unsigned char i;
-    clear_list_rows(ROW_Y-1,140);clear_list_rows(ROW_Y-1+140,140);
+    clear_list_rows(ROW_Y-1,140);clear_list_rows(ROW_Y-1+140,(ROWS-1)*ROW_HEIGHT+10-140);
     for(i=0;i<rows;++i)if(!draw_row(i))break;
     if(!total)gx_text(TEXT_X,ROW_Y,"No matching cities.");
 }
 static void draw_details(void)
 {
-    unsigned char n,ok=0;
-    clear_rows(DETAILS_Y,8);
+    unsigned char n,ok=0,continent=0,zone_ok=0,kind=3,len,width;
+    unsigned zone;
+    int32_t offset=0,absolute;
+    gx_label(CITIES_RIGHT-72,DETAILS_Y,"           ",0);
     if(rows&&read_city(ids[selected-page])) {
         ok=1;
-        location_format(line,&candidate,0);gx_text(TEXT_X,DETAILS_Y,line);
-        world_select(record[93]>>4,&candidate);
+        zone=record[94]|((unsigned)record[95]<<8);
+        continent=world_select(record[93]>>4,&candidate);
     } else world_select(0,0);
-    for(n=0;n<2;++n) {
-        memset(line,' ',39);line[39]=0;
-        if(ok)memcpy(line,record+(n?3:43),strlen((char *)record+(n?3:43)));
+    for(n=0;n<9;++n) {
+        /* Panel time is frozen. A move within the same zone preserves all
+         * three timezone rows and requires no additional catalogue reads. */
+        if(n==6&&ok&&zone<1024&&zone==details_zone)break;
+        width=n<2||n==6?50:29;
+        memset(line,' ',width);line[width]=0;
+        if(ok) {
+            memcpy(line,detail_labels[n],strlen(detail_labels[n]));
+            if(!n&&(record[93]&8))memcpy(line,"station:",8);
+            if(!n&&(record[93]&128))memcpy(line,"location:",9);
+            if(n<2)strcpy(line+11,(char *)record+(n?3:43));
+            else if(n==2)strcpy(line+11,continents[continent]);
+            else if(n<5)coordinate_format(line+11,n==3?candidate.latitude:candidate.longitude,n==3?'N':'E',n==3?'S':'W',0);
+            else if(n==5)sprintf(line+11,"%d m",candidate.altitude);
+            else if(n==6) {
+                zone_ok=tz_details(zone,&moment,line+11,&offset,&kind);
+                if(!line[11])strcpy(line+11,"unavailable");
+            } else if(n==7) {
+                if(zone_ok) {
+                    absolute=offset<0?-offset:offset;
+                    sprintf(line+11,"%c%02u:%02u",offset<0?'-':'+',(unsigned)(absolute/3600),(unsigned)(absolute/60%60));
+                    if(absolute%60)sprintf(line+17,":%02u",(unsigned)(absolute%60));
+                } else strcpy(line+11,"unavailable");
+            } else strcpy(line+11,kinds[kind]);
+            len=(unsigned char)strlen(line);memset(line+len,' ',width-len);
+        }
         gx_label(334,240+n*14,line,0);
     }
+    if(n==9)details_zone=zone_ok?zone:65535;
     sprintf(line,"%u / %u",total?selected+1:0,total);
     gx_text(CITIES_RIGHT-6-(int)strlen(line)*6,DETAILS_Y,line);
 }
@@ -200,17 +256,18 @@ static void draw_note(void)
 }
 void cities_draw(void)
 {
+    details_zone=65535;
     clear_rows(CITIES_TOP+1,CITIES_BOTTOM-CITIES_TOP-2);
     gx_line(CITIES_LEFT,CITIES_TOP,CITIES_RIGHT-1,CITIES_TOP,0);
     gx_line(CITIES_LEFT,CITIES_TOP,CITIES_LEFT,CITIES_BOTTOM-1,0);
     gx_line(CITIES_RIGHT-1,CITIES_TOP,CITIES_RIGHT-1,CITIES_BOTTOM-1,0);
     gx_line(CITIES_LEFT,CITIES_BOTTOM-1,CITIES_RIGHT-1,CITIES_BOTTOM-1,0);
-    gx_label(CITIES_LEFT+2,CITIES_TOP+12," CITIES ",1);
+    gx_label(CITIES_LEFT+2,CITIES_TOP+12," CITIES & LOCATIONS ",1);
     world_begin();
-    gx_text(TEXT_X,CITIES_TOP+44,"Country - City  [Capital / Seat of government]");
+    gx_text(TEXT_X,CITIES_TOP+44,"Group - Location [country/operator codes]");
     draw_search();draw_list();draw_details();
     gx_text(TEXT_X,CITIES_BOTTOM-26,"Type: search (2+ chars)  Backspace: erase  Up/Down: select  PgUp/PgDn: page");
-    gx_text(TEXT_X,CITIES_BOTTOM-14,"Enter: use city  Esc: cancel");
+    gx_text(TEXT_X,CITIES_BOTTOM-14,"Enter: use location  Esc: cancel");
     draw_note();
 }
 /* Same results as the coordinate editor: 1 commit, 2 cancel, 0 continue. */
@@ -223,7 +280,7 @@ unsigned char cities_key(unsigned k)
         if(!read_city(ids[selected-page])){cities_close();return 2;}
         if(!apply_city()){draw_note();return 0;}
         cities_close();
-        sprintf(note,"%s (press Ctrl+S to save location)",location_name);return 1;
+        note[0]=0;return 1;
     }
     if(k==K_UP&&selected)--selected;
     else if(k==K_DOWN&&selected+1<total)++selected;
@@ -232,7 +289,7 @@ unsigned char cities_key(unsigned k)
     else if(k==K_HOME)selected=0;
     else if(k==K_END&&total)selected=total-1;
     else if(k==K_BS&&n){query[n-1]=0;search=1;}
-    else if(k>=32&&k<127&&n<sizeof(query)-1){query[n]=(char)k;query[n+1]=0;search=1;}
+    else if(k>=32&&k<127&&n<39){query[n]=(char)k;query[n+1]=0;search=1;}
     if(search) {
         draw_search();note[0]=0;
         if(n>=2||strlen(query)>=2){selected=0;fill();draw_list();draw_details();}

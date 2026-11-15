@@ -65,9 +65,18 @@ functions. An overlay cannot replace its own window or retain pointers into it
 after returning. Startup proceeds through INIT prepare, optional CITIES for
 `/location`, INIT apply, COVER and the sky view. During observation, overlays
 load when entering K, L/D/Z, S or Ctrl+F, and INIT loads for Ctrl+R configuration
-reloads. Sky calculations and Ctrl+S saving are resident; footer rendering is
-resident HIGH code. Reload validates the whole file and the clock for LIVE before
+reloads. Sky calculations and Ctrl+S saving are resident; footer layout and mode
+bars use HIGH, with the message-cache helper in lower resident code. Reload
+validates the whole file and the clock for LIVE before
 applying settings, then refreshes the sky without resetting the selected target.
+sky_start orchestrates the splash, assets, VGA, keyboard mapping and initial
+header in COVER, including gx_canvas and gx_header_pending. It returns to main
+before COVER can be replaced; failure cleanup remains equivalent to startup.
+Its startup-only message table lives in COVER and is copied/printed synchronously.
+The resident busy-Moon timer uses the inactive Moon image buffer and a separate
+foreground descriptor at XRAM $E6E0..$E6F3, outside FIND/SOLAR scratch. Real
+phase updates invalidate the busy image before exchanging the Moon buffers.
+No pointers into COVER are retained by the running animation.
 
 FIND holds a frozen date and a four-record scan budget. Its 855 match indices use
 1069 bytes of XRAM at `$E200–$E62C`, packed as 10-bit values, after label storage
@@ -94,7 +103,7 @@ new navigation cancels pending geometry and replaces the selected page/row.
 
 K opens CITIES at x=0..639, y=71..479: a 640×409 px rectangle covering the plot,
 both compasses, side scales and footer, with no outer margin and a 1 px white frame.
-The black-on-white ` CITIES ` label uses the Solar System title style. Search, 20 rows
+The black-on-white ` CITIES & LOCATIONS ` label uses the Solar System title style. Search, 22 rows
 spaced 14 px apart, coordinates, result count, messages and help stay inside.
 Long text is clipped with an ellipsis before it reaches the frame.
 
@@ -112,7 +121,11 @@ Map code is resident HIGH, but its file descriptor, 117-byte buffer and flags
 belong to CITIES. Close the map and hide the sprite before unloading the overlay.
 No sky XRAM caches are borrowed. Missing map data leaves city selection available.
 
-Partial-byte masks preserve the frame during incremental row updates.
+Row clears retain one white frame bit at each full-width panel edge.
+The record, query and line buffers occupy 248 bytes of shared scratch at
+`$DF00–$DFF7`, used by configuration I/O only outside CITIES. Station metadata
+fits in the existing SIDCITY2 role byte and country padding; see the
+[catalogue format](technical-reference.md#resources-and-settings).
 Opening the selector keeps VGA planes and header configured; sky sprites
 are hidden. The resident event loop suspends sky jobs while CITIES is active.
 Only city controls are shown while the selector is active. On selection or
@@ -152,27 +165,36 @@ At the bottom, `Schematic view (not in AU scale)` is left-aligned and `Esc: clos
 is right-aligned, each with a 2 px margin. The sky keyboard shortcuts return after
 closing. All three rows span x=8..631, leaving 8 px side margins. The first row
 (y=441) contains
-`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S: save`, `Ctrl+R: reload`,
-`Ctrl+F: find object` and `Ctrl+Q: quit`, with 19-20 px gaps. The second (y=451) contains N,
+`Arrows/+Shift/+Ctrl: view/NWSE/FOV`, `Ctrl+S/+R: safe/reload config`,
+`Ctrl+F: find object` and `Ctrl+Q: quit`, with 20 px gaps. The second (y=451) contains N,
 `Space: SIM PAUSE/PLAY`, +/-, [/], D and Z with 48 px gaps.
-The third (y=461) contains `L: location`, `K: cities`, `S: Solar system`,
-`P: planets`, `T: paths`, `G: grid` and `C: constellations`, with 27 px gaps.
+The third (y=461) contains `L: location`, `K: cities & locations`, `S: Solar system`,
+`P: planets`, `T: paths`, `G: grid` and `C: constellations`, with 15 px gaps.
 The final C highlight ends at the label boundary to preserve the right margin.
 The compass ends at y=438; y=439..440
 stay empty. Scene clearing stops before `FOOTER_TOP` (441), and editors clear
 from there through the screen bottom. G/T/C/P retain
 inverse-video state labels. Messages start at x=8 on a separate row at y=472, aligned with Arrows.
-When no note is present, pending work shows `[INFO] Working, please wait...`
-until it finishes. Save/reload results override it for five seconds. The
+When no note is present, pending sky work shows `[INFO] Calculating ...` for
+Sun & Moon, planets, stars, rise/set or paths, or `[INFO] Drawing sky...`.
+The caller selects the stage before running its work; generic busy polling
+preserves that selection. Cooperative stars/rise-set/paths jobs form one pending
+set: the text combines their names and removes each completed or disabled job.
+Save/reload results override it for five seconds,
+then the latest stage returns if work remains. The
 LIVE/SIM header is drawn independently and contains no busy text.
-Active G/C replace their colons with 1 px white lines at x=469/538, y=462..479;
+Active G/C replace their colons with 1 px white lines at x=481/538, y=462..479;
 mode 0 restores the colons. Message clearing and panel restoration preserve them.
-The same row shows persistent white-on-black mode labels under G (x=473,
-30 px) and C (x=542, 84 px). G1/G2/G3 read `scale`/`cross`/`full`;
+The same row shows persistent white-on-black mode labels under G (x=485,
+30 px) and C (x=542, 84 px). G1/G2/G3 read `scale`/`cross`/`net`;
 C1/C2/C3/C4 read `stars`/`charts`/`charts & names`/`navigational`.
-G0/C0 are blank. Ordinary messages must stay short enough to end before the G separator at x=469.
+G0/C0 are blank. Ordinary messages must stay short enough to end before the G separator at x=481.
 Independent caches redraw only a changed mode field; clearing the message row
-restores both labels. Padded strings clear the full field on every transition.
+restores both labels only after footer invalidation. Ordinary messages occupy
+78 padded/clipped cells at x=8..475, leaving G/C bytes and separators untouched.
+Nonempty messages invert the whole field, with black text and white padding;
+when the message disappears, all 78 cells return to black.
+Successful CITIES, L and Z changes clear notes without a save reminder.
 
 Six planets use the existing images and palettes. The additional resource
 `ROM:sidera-solar.dat` contains Earth and Neptune.

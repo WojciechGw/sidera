@@ -66,7 +66,8 @@
   RCtrl and the former H shortcuts do not. The USB HID bitmap occupies XRAM
   `$FFC0–$FFDF` and must be unmapped on exit. VGA is required.
   CITIES fills x=0..639, y=71..479, covering the plot, compasses, side scales and
-  footer, with no outer margin, a 1-pixel frame and 20 rows per page. Preserve
+  footer, with no outer margin, a 1-pixel frame and 22 rows per page. Keep the
+  inverse " CITIES & LOCATIONS " title at x=2, y=83. Preserve
   the header and show only city controls. Closing clears the panel and
   invalidates axes and footer so the sky and its shortcuts are restored.
   SOLAR uses the same 640x409 bounds and frame, with an enlarged centred orbit
@@ -85,14 +86,41 @@
   "[!] Failed to reload configuration". These results expire after five seconds;
   repeating the action restarts the timer. Expiration preserves G/C mode labels
   and never paints over modal panels or clears a newer, unrelated note.
-  Footer rendering resides in HIGH.
+  Footer layout and mode bars reside in HIGH; the message-cache helper is lower resident code.
   CITIES reserves x=334..633, y=77..226 for a 300x150 geographic locator;
-  the 20-row list stays left of x=328. Full city/country names sit below the map.
+  the 22-row list stays left of x=328 and its last row starts at y=425.
+  Nine rows below the map at x=334, y=240+14*n show city:, country:, continent:,
+  LAT:, LON:, AMSL:, timezone:, UTC:, time:, with values at x=400.
+  LAT/LON retain DMS with 0.1 arcsec precision and N/S/E/W; AMSL is in metres.
+  The former bottom coordinate line is removed; the result count stays at right.
+  Zone offset and winter/summer/no-DST status use the displayed LIVE/SIM instant;
+  browsing preserves the active zone/cache. DST1 metadata in sidera.tz classifies
+  each interval for its local year; negative DST is normalized to winter/summer.
+  Same-zone navigation preserves the timezone/UTC/time rows without I/O or drawing.
   `world_map.c` streams three rows per `cities_step()` and moves only the sprite
   when the continent is unchanged. Keep its state in CITIES and
   call it only with that overlay loaded; rendering code resides in HIGH.
   SIDCITY2 flags bits 4..6 carry geographic region 1..7; zero uses the map's
   coarse lookup for older external catalogues. Preserve low role bits and format.
+  Bit 3 marks a research station. `src/data/stations.json` records reviewed
+  COMNAP stations and exclusions, with separate educational/non-commercial
+  data terms in sidera-stations-license.txt. Stations precede cities under AQ;
+  operator codes/full names are searchable, and details use station:.
+  AQ defaults to Arctowski; PL defaults to Warsaw. AQ/Arctowski and
+  PL/Arctowski both work. Operator aliases occupy SIDCITY2 country padding
+  bytes 14..42; keep the 96-byte format and ordinary city records unchanged.
+  CITIES record/query/line use 248 scratch bytes at $DF00; configuration I/O
+  may borrow this buffer only outside CITIES.
+  SIDCITY2 bit 7 marks Special locations [XX], ordered before stations/cities.
+  `src/data/locations.json` holds 21 points: four original reference points,
+  nine summits (including Mont Blanc/Kosciuszko alternatives) and eight landmarks.
+  The original four and Vinson use Etc/UTC; other points use local IANA zones.
+  Details use location: and the actual country, or - for the original four.
+  Special country bytes 3..31 hold the name; 32..42 hold |CC search aliases.
+  Names show country codes; XX grouping and country searches are independent.
+  South Pole has region 7; the other three have explicit region 0 (contours and
+  marker). Bit 7 suppresses the legacy region lookup. XX has no CLI default;
+  names and XX/Name work. Keep the original city/station records unchanged.
   The city marker is a red 5x5 plus, one pixel thick and centered on the city,
   without backing, in a transparent 8x8 Mode 5
   sprite on plane 0, below the header Sun. Its descriptor occupies `$B0F0–$B0F9`
@@ -129,23 +157,51 @@
   G/T/P/C update their footer highlights before calculation or chart drawing.
   Three shortcut lines at y=441/451/461 have 8 px side margins and gaps
   differing by at most one pixel within each row. Row 1:
-  "Arrows/+Shift/+Ctrl: view/NWSE/FOV", "Ctrl+S: save", "Ctrl+R: reload", "Ctrl+F: find object",
+  "Arrows/+Shift/+Ctrl: view/NWSE/FOV", "Ctrl+S/+R: safe/reload config", "Ctrl+F: find object",
   "Ctrl+Q: quit". Row 2: N, Space, +/-, [/], D, Z; Space reads
-  "SIM PAUSE/PLAY". Row 3: "L: location", "K: cities", "S: Solar system",
+  "SIM PAUSE/PLAY". Row 3: "L: location", "K: cities & locations", "S: Solar system",
   "P: planets", "T: paths", "G: grid", "C: constellations".
-  Row 1 gaps are 19-20 px; row 2 gaps are 48 px; row 3 gaps are 27 px.
+  Row 1 gaps are 20 px; row 2 gaps are 48 px; row 3 gaps are 15 px.
   FIND appears only in row 1.
   Notes start at x=8, y=472, aligned with Arrows. Active G/C replace their
-  colons with 1 px white lines at x=469/538, y=462..479; mode 0 restores
+  colons with 1 px white lines at x=481/538, y=462..479; mode 0 restores
   the colons. Preserve these lines through message clearing and panel restoration.
-  At x=473, G1/G2/G3 show "scale"/"cross"/"full";
+  At x=485, G1/G2/G3 show "scale"/"cross"/"net";
   at x=542, C1/C2/C3/C4 show "stars"/"charts"/"charts & names"/
   "navigational", white on black. G0/C0 leave their fields blank.
   Keep ordinary notes short enough to end before these persistent mode labels.
-  The busy label "[INFO] Working, please wait..." uses the bottom message field
-  at x=8, y=472 while work is pending, without a timer. Nonempty notes take
-  priority; after a save/reload result expires, restore busy text if work remains.
+  Sky work uses the bottom message field at x=8, y=472 without a timer:
+  "[INFO] Calculating Sun & Moon...", "Calculating planets...", "Calculating stars...",
+  "Calculating rise/set...", "Calculating paths..." or "Drawing sky...", all with
+  the INFO prefix. Select the stage before its work; gx_status(1) preserves it,
+  gx_status(0) clears it. Stars, rise/set and paths are a pending-job bitmask:
+  show one combined description and remove finished/disabled jobs, rather than
+  alternating descriptions for each batch. Nonempty notes take priority; after save/reload results
+  expire, restore the latest stage if work remains. Stage changes keep the Moon
+  animation running continuously. Detailed text is sky-only, never in panels.
+  Message updates draw only 78 padded/clipped cells at x=8..475, never clearing
+  G/C fields or their separators. Full row clearing is only for invalidated
+  footer restoration. CITIES, L and Z acceptance clear notes; no save reminder.
+  All nonempty sky messages (work, save/reload and errors) invert the entire
+  x=8..475, y=472..479 field. Empty messages restore black. Appearance/disappearance
+  redraws all 78 cells; changing a nonempty message preserves the inverted tail.
+  Reuse descriptions for unchanged work sets and redraw only through the last
+  differing character. Startup-only error strings are in COVER's startup_messages.
   Keep the top-right LIVE/SIM status separate and never paint over modal panels.
+  Busy work also animates the existing unscaled 32x32 Moon at x=3, y=33 after
+  63 ticks (~0.5 s). Twenty phase/orientation frames take 250 ticks (2 s).
+  Only this indicator has a fixed 15-degree counterclockwise tilt about its centre.
+  It applies to sky and modal work, never idle text entry. The Mode 4 descriptor
+  at $E6E0..$E6F3 uses plane 2, clipped to y=33..64, above the header sprites.
+  Reuse only the inactive Moon image buffer; real phase changes hide/invalidate
+  the animation before swapping buffers. Ordinary animation uploads keep the
+  previous sprite visible throughout the read; never hide it per frame.
+  Animation failure hides it without
+  changing notes. Service it at bounded work points, not from interrupts.
+  sky_start, gx_canvas and gx_header_pending are startup-only COVER code, called while
+  COVER remains loaded; gx_wait_step and its state remain resident. Never call
+  these startup functions with another overlay loaded. Do not retain a sequential asset_fd read position across
+  gx_wait_step: animation uploads seek within sidera.dat.
   The compass ends at y=438; keep y=439..440 blank. Scene clearing stops before
   FOOTER_TOP (441); editors clear from there. Keep highlights aligned.
   Cache footer highlights, mode labels and note text; unchanged content must cause no bitmap

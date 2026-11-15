@@ -25,6 +25,9 @@ static const char *city_file;
 static unsigned char fail_find_open,fail_find_read;
 static unsigned char fail_map_open,fail_map_read;
 static unsigned char fail_rom_zones;
+static unsigned char fail_phase_read;
+static unsigned phase_reads;
+static unsigned char protect_modes,visible_wait;
 static int fail_star_seek;
 static unsigned file_reads;
 static int checking_cities;
@@ -48,6 +51,12 @@ unsigned platform_ticks(void){++ticks;++RIA.vsync;return ticks;}
 void xr_write0(unsigned v)
 {
     assert(RIA.addr0<XR_END);
+    if(protect_modes&&RIA.addr0>=472*80&&RIA.addr0<480*80) {
+        assert(RIA.addr0%80<60); /* Never rewrite even unchanged G/C bytes. */
+        if(RIA.addr0%80==59)assert(!((xram[RIA.addr0]^v)&15));
+    }
+    if(visible_wait&&RIA.addr0==XR_WAIT_CFG+12)assert((v&255)==3);
+    if(visible_wait&&RIA.addr0==XR_WAIT_CFG+13)assert(!(v&255));
     if(checking_footer) {
         unsigned x=(RIA.addr0%80)*8,y=RIA.addr0/80,bit;
         assert(y>=footer_y&&y<footer_y+footer_h&&x<footer_x+footer_w&&x+8>footer_x);
@@ -98,7 +107,7 @@ int host_open(const char *p,int flags)
 }
 int host_close(int fd){return _close(fd);}
 void platform_puts(const char *p){}
-int read_xram(unsigned a,unsigned n,int fd){assert(a+n<=XR_END);if(a==XR_VECTORS)++vector_reads;return _read(fd,xram+a,n);}
+int read_xram(unsigned a,unsigned n,int fd){assert(a+n<=XR_END);if(a==XR_VECTORS)++vector_reads;if(n==2048){++phase_reads;if(visible_wait)assert(xram[XR_WAIT_CFG+12]==3&&!xram[XR_WAIT_CFG+13]);if(fail_phase_read)return -1;}return _read(fd,xram+a,n);}
 int xreg(int a,int b,int c,...)
 {
     va_list ap;int mode,options,length,plane,top,bottom;unsigned cfg;
@@ -120,6 +129,10 @@ int xreg(int a,int b,int c,...)
         if(cfg==XR_CITY_CFG) {
             length=va_arg(ap,int);plane=va_arg(ap,int);top=va_arg(ap,int);bottom=va_arg(ap,int);
             assert(mode==5&&options==56&&length==1&&plane==0&&top==75&&bottom==229);
+        }
+        if(cfg==XR_WAIT_CFG) {
+            length=va_arg(ap,int);plane=va_arg(ap,int);top=va_arg(ap,int);bottom=va_arg(ap,int);
+            assert(mode==4&&options==1&&length==1&&plane==2&&top==33&&bottom==65);
         }
         va_end(ap);
     }
@@ -153,7 +166,7 @@ static void corrected_date(void)
     assert(edit_key('\r')==1&&!editing);
     assert(!note[0]&&!live&&!playing);
     assert(moment.year==original.year&&moment.month==original.month&&moment.day==original.day);
-    gx_footer();for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));
+    gx_footer();for(i=0;i<8*485;++i)assert(pixel(i%485,472+i/485)==(grid&&i%485==481));
     live=old_live;playing=old_playing;
 }
 static void expect_text(int x,int y,const char *p,unsigned inverse)
@@ -201,7 +214,9 @@ static void reload_assets(void)
     memset(xram+0xC000,0,XR_END-0xC000); /* Simulate lost resource bytes before an explicit reload. */
     assert(assets_base());cs_begin();while(cs_busy())cs_step();gx_scene();
     assert(!memcmp(before_clock,xram,480*80));
-    assert(!memcmp(before_clock+XR_PLANETS,xram+XR_PLANETS,XR_END-XR_PLANETS));
+    /* The live busy descriptor is configured by gx_canvas, not assets_base. */
+    assert(!memcmp(before_clock+XR_PLANETS,xram+XR_PLANETS,XR_WAIT_CFG-XR_PLANETS));
+    assert(!memcmp(before_clock+XR_WAIT_CFG+20,xram+XR_WAIT_CFG+20,XR_END-XR_WAIT_CFG-20));
     constellation_mode=0;
 }
 static void catalogue_recovery(void)
@@ -215,7 +230,7 @@ static void catalogue_recovery(void)
     cs_begin();assert(!cs_step());assert(note[0]); /* do not hide an unresolved error */
     while(cs_busy())cs_step();assert(!note[0]);
     gx_footer();
-    {unsigned i;for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));}
+    {unsigned i;for(i=0;i<8*485;++i)assert(pixel(i%485,472+i/485)==(grid&&i%485==481));}
     strcpy(note,"Location/zone changed (press Ctrl+S to save location)");
     cs_begin();while(cs_busy())cs_step();
     assert(!strcmp(note,"Location/zone changed (press Ctrl+S to save location)"));
@@ -288,7 +303,8 @@ static void location_names(void)
     strcpy(config_path,"sidera-name-test.cfg");
     strcpy(location_name,"Sosnowiec [PL]");gx_header();
     expect_text(256,31,"Sosnowiec [PL]",0);
-    edit_start(1);assert(edit_key('\r')==1&&!strcmp(location_name,"Sosnowiec [PL]"));
+    edit_start(1);assert(edit_key('\r')==1&&!note[0]&&!strcmp(location_name,"Sosnowiec [PL]"));
+    edit_start(3);assert(edit_key('\r')==1&&!note[0]);
     edit_start(1);assert(edit_key(K_ESC)==2&&location_name[0]);
     edit_start(1);strcpy(edit,"bad location");assert(!edit_key('\r')&&location_name[0]);
     assert(edit_key(K_ESC)==2);
@@ -324,7 +340,7 @@ static void location_names(void)
     f=fopen(config_path,"rb");assert(f);n=(unsigned)fread(contents,1,255,f);contents[n]=0;fclose(f);
     assert(strstr(contents,"m AMSL")&&!strstr(contents,"n.p.m."));
     remove(config_path);bearing=saved_bearing;location_name[0]=note[0]=0;gx_header();gx_footer();
-    for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));
+    for(i=0;i<8*485;++i)assert(pixel(i%485,472+i/485)==(grid&&i%485==481));
 }
 static void header_sprites(void)
 {
@@ -358,6 +374,17 @@ static void initial_panels(void)
 }
 static void calculation_status(void)
 {
+    static const unsigned char ids[]={GX_WORK_SUN_MOON,GX_WORK_PLANETS,
+        GX_WORK_STARS,GX_WORK_RISESET,GX_WORK_PATHS,GX_WORK_DRAW,
+        GX_WORK_STARS|GX_WORK_RISESET,GX_WORK_STARS|GX_WORK_PATHS,
+        GX_WORK_RISESET|GX_WORK_PATHS,GX_WORK_STARS|GX_WORK_RISESET|GX_WORK_PATHS};
+    static const char *const stages[]={
+        "[INFO] Calculating Sun & Moon...","[INFO] Calculating planets...",
+        "[INFO] Calculating stars...","[INFO] Calculating rise/set...",
+        "[INFO] Calculating paths...","[INFO] Drawing sky...",
+        "[INFO] Calculating stars & rise/set...","[INFO] Calculating stars & paths...",
+        "[INFO] Calculating rise/set & paths...","[INFO] Calculating stars, rise/set & paths..."
+    };
     unsigned mode,i,writes;int x;
     assert(!note[0]);
     for(mode=0;mode<3;++mode) {
@@ -365,20 +392,20 @@ static void calculation_status(void)
         memcpy(before_clock,xram,sizeof(xram));
         portal_writes=0;gx_status(1);assert(portal_writes<2000);
         x=mode==0?604:mode==1?580:574;
-        expect_text(8,472,"[INFO] Working, please wait...",0);
+        expect_text(8,472,"[INFO] Working, please wait...",255);
         expect_text(x,1,mode==0?" LIVE ":mode==1?"SIM / PLAY":"SIM / PAUSE",mode==0?6:0);
         for(i=0;i<sizeof(xram);++i)
             if(i<472*80||i>=480*80)assert(xram[i]==before_clock[i]);
         writes=portal_writes;gx_status(1);assert(writes==portal_writes);
-        gx_header();expect_text(8,472,"[INFO] Working, please wait...",0);
+        gx_header();expect_text(8,472,"[INFO] Working, please wait...",255);
         gx_status(0);assert(!memcmp(before_clock,xram,sizeof(xram)));
     }
     live=1;gx_status(1);live=0;playing=1;gx_status(1);playing=0;gx_status(1);
-    expect_text(8,472,"[INFO] Working, please wait...",0);expect_text(574,1,"SIM / PAUSE",0);
+    expect_text(8,472,"[INFO] Working, please wait...",255);expect_text(574,1,"SIM / PAUSE",0);
     for(i=424;i<640;++i)assert(!pixel(i,0)); /* LIVE bar is erased */
     strcpy(note,"[INFO] Configuration saved");gx_footer();gx_status(0);gx_status(1);
-    expect_text(8,472,note,0);
-    note[0]=0;gx_footer();expect_text(8,472,"[INFO] Working, please wait...",0);
+    expect_text(8,472,note,255);
+    note[0]=0;gx_footer();expect_text(8,472,"[INFO] Working, please wait...",255);
     /* Busy transitions cannot paint over any modal panel. */
     for(mode=0;mode<4;++mode) {
         if(mode==0)solar_visible=1;else if(mode==1)find_active=1;
@@ -386,14 +413,86 @@ static void calculation_status(void)
         memcpy(before_clock,xram,sizeof(xram));gx_status(0);gx_status(1);
         assert(!memcmp(before_clock,xram,sizeof(xram)));
         solar_visible=find_active=cities_active=editing=0;
-        gx_footer();expect_text(8,472,"[INFO] Working, please wait...",0);
+        gx_footer();expect_text(8,472,"[INFO] Working, please wait...",255);
     }
     gx_status(0);gx_header();
+    protect_modes=1;
+    for(mode=0;mode<sizeof(ids);++mode) {
+        memcpy(before_clock,xram,480*80);
+        gx_status(ids[mode]);expect_text(8,472,stages[mode],255);
+        assert(!memcmp(before_clock,xram,472*80));
+        memcpy(before_clock,xram,480*80);writes=portal_writes;
+        gx_status(1);gx_status(ids[mode]);
+        assert(!memcmp(before_clock,xram,480*80));
+        /* The animation may write its descriptor, but no bitmap pixels. */
+        strcpy(note,"[INFO] Configuration saved");gx_footer();
+        gx_status(ids[(mode+1)%sizeof(ids)]);expect_text(8,472,note,255);
+        note[0]=0;gx_footer();expect_text(8,472,stages[(mode+1)%sizeof(ids)],255);
+    }
+    memset(note,'W',99);note[99]=0;gx_footer();
+    {char clipped[79];memset(clipped,'W',78);clipped[78]=0;expect_text(8,472,clipped,255);}
+    note[0]=0;gx_status(0);protect_modes=0;
+    gx_status(0);gx_header();
+}
+static void busy_moon(void)
+{
+    unsigned saved_ticks=ticks,start,i,phase,image,active,writes,reads;
+    unsigned char expected[2048],real[2048],saved_phase=sky.phase;
+    char path[600];FILE *f;
+    sprintf(path,"%s/sidera.dat",rom_dir);f=fopen(path,"rb");assert(f);
+    gx_status(0);strcpy(note,"Keep this message");gx_footer();
+    memcpy(before_clock,xram,480*80);
+    active=word(XR_MOON_CFG+16);memcpy(real,xram+active,2048);
+    ticks=65500;start=ticks+1;gx_status(1);
+    ticks=(uint16_t)(start+61);gx_wait_step();
+    assert((int16_t)word(XR_WAIT_CFG+12)==-64);
+    for(i=0;i<=20;++i) {
+        visible_wait=i!=0;
+        ticks=(uint16_t)(start+63+(i*25+1)/2-1);gx_wait_step();
+        phase=i<=10?i:20-i;phase=phase*128/10;
+        image=word(XR_WAIT_CFG+16);
+        assert(word(XR_WAIT_CFG+12)==3&&word(XR_WAIT_CFG+14)==33);
+        assert(xram[XR_WAIT_CFG+18]==5&&xram[XR_WAIT_CFG+19]==0);
+        assert((int16_t)word(XR_WAIT_CFG)==(i<=10||i==20?66:-66));
+        assert((int16_t)word(XR_WAIT_CFG+8)==(int16_t)word(XR_WAIT_CFG));
+        assert((int16_t)word(XR_WAIT_CFG+2)==(i<=10||i==20?247:-247));
+        assert((int16_t)word(XR_WAIT_CFG+6)==-(int16_t)word(XR_WAIT_CFG+2));
+        assert((int16_t)word(XR_WAIT_CFG+4)==(i<=10||i==20?-884:8820));
+        assert((int16_t)word(XR_WAIT_CFG+10)==(i<=10||i==20?6774:1162));
+        assert(image!=active&&(image==XR_MOON0||image==XR_MOON1));
+        assert(!fseek(f,DATA_PHASES+phase*2048L,SEEK_SET)&&fread(expected,1,2048,f)==2048);
+        assert(!memcmp(expected,xram+image,2048)&&!memcmp(real,xram+active,2048));
+        assert(!memcmp(before_clock,xram,480*80)&&!strcmp(note,"Keep this message"));
+        reads=phase_reads;gx_wait_step();assert(phase_reads==reads); /* same frame */
+    }
+    visible_wait=0;
+    /* A real phase update swaps buffers without exposing animation as sky data. */
+    sky.phase=saved_phase==64?65:64;assert(gx_objects());gx_wait_step();
+    active=word(XR_MOON_CFG+16);assert(word(XR_WAIT_CFG+16)!=active);
+    assert(!fseek(f,DATA_PHASES+sky.phase*2048L,SEEK_SET)&&fread(expected,1,2048,f)==2048);
+    assert(!memcmp(expected,xram+active,2048));
+    sky.phase=saved_phase;assert(gx_objects());gx_status(0);
+    assert((int16_t)word(XR_WAIT_CFG+12)==-64);
+    writes=portal_writes;ticks+=1000;gx_wait_step();assert(portal_writes==writes);
+    for(i=0;i<4;++i) {
+        if(i==0)cities_active=1;else if(i==1)find_active=1;else if(i==2)solar_visible=1;else editing=1;
+        memcpy(before_clock,xram,480*80);gx_status(1);ticks+=63;gx_wait_step();
+        assert(word(XR_WAIT_CFG+12)==3&&!memcmp(before_clock,xram,480*80));
+        gx_status(0);assert((int16_t)word(XR_WAIT_CFG+12)==-64);
+        cities_active=find_active=solar_visible=editing=0;
+    }
+    fail_phase_read=1;gx_status(1);ticks+=63;gx_wait_step();
+    assert((int16_t)word(XR_WAIT_CFG+12)==-64&&!strcmp(note,"Keep this message"));
+    reads=phase_reads;ticks+=100;gx_wait_step();assert(phase_reads==reads);
+    fail_phase_read=0;gx_status(0);gx_status(1);ticks+=63;gx_wait_step();
+    assert(word(XR_WAIT_CFG+12)==3);gx_status(0);
+    fclose(f);note[0]=0;gx_footer();ticks=saved_ticks;
+    puts("PASS: busy Moon delay, 20 frames/2 seconds, clock wrap, original phases, modal panels, idle and read failure");
 }
 static void footer_states(void)
 {
-    const char *label_chars="scale cross full stars charts & names navigational";
-    static const char *const grid_labels[]={"     ","scale","cross","full "};
+    const char *label_chars="scale cross net stars charts & names navigational";
+    static const char *const grid_labels[]={"     ","scale","cross","net  "};
     static const char *const constellation_labels[]={
         "              ","stars         ","charts        ","charts & names","navigational  "
     };
@@ -407,27 +506,27 @@ static void footer_states(void)
     }
     for(g=0;g<4;++g)for(c=0;c<5;++c)for(flags=0;flags<4;++flags) {
         grid=g;constellation_mode=c;trails=flags&1;planets=flags&2;gx_footer();
-        expect_text(473,472,grid_labels[g],0);
+        expect_text(485,472,grid_labels[g],0);
         expect_text(542,472,constellation_labels[c],0);
-        expect_text(473,461," grid ",g?255:0);
-        expect_text(398,461," paths ",trails?255:0);
+        expect_text(485,461," grid ",g?255:0);
+        expect_text(422,461," paths ",trails?255:0);
         expect_text(542,461," constellations",c?255:0);
-        expect_text(311,461," planets ",planets?255:0);
-        expect_text(461,461,"G",0);expect_text(386,461,"T:",0);
+        expect_text(347,461," planets ",planets?255:0);
+        expect_text(473,461,"G",0);expect_text(410,461,"T:",0);
         expect_text(530,461,"C",0);
-        for(y=461;y<480;++y)for(x=467;x<473;++x)
-            assert(pixel(x,y)==(x==469&&(g?y>=462:y==462||y==465)));
+        for(y=461;y<480;++y)for(x=479;x<485;++x)
+            assert(pixel(x,y)==(x==481&&(g?y>=462:y==462||y==465)));
         for(y=461;y<480;++y)for(x=536;x<542;++x)
             assert(pixel(x,y)==(x==538&&(c?y>=462:y==462||y==465)));
-        expect_text(299,461,"P:",0);
+        expect_text(335,461,"P:",0);
         expect_text(566,451,"Z: Timezone",0);
-        expect_text(101,461,"K: cities",0);expect_text(427,441,"Ctrl+F: find object",0);
-        expect_text(182,461,"S: Solar system",0);
+        expect_text(89,461,"K: cities & locations",0);expect_text(426,441,"Ctrl+F: find object",0);
+        expect_text(230,461,"S: Solar system",0);
         expect_text(8,441,"Arrows/+Shift/+Ctrl: view/NWSE/FOV",0);
         expect_text(8,451,"N: now",0);expect_text(92,451,"Space: SIM PAUSE/PLAY",0);
         expect_text(266,451,"+/-: 15 min",0);expect_text(380,451,"[/]: day",0);
         expect_text(476,451,"D: date",0);expect_text(8,461,"L: location",0);
-        expect_text(232,441,"Ctrl+S: save",0);expect_text(323,441,"Ctrl+R: reload",0);
+        expect_text(232,441,"Ctrl+S/+R: safe/reload config",0);
         expect_text(560,441,"Ctrl+Q: quit",0);
         for(y=439;y<441;++y)for(x=0;x<640;++x)assert(!pixel(x,y));
         for(y=441;y<480;++y)for(x=0;x<8;++x)
@@ -442,7 +541,7 @@ static void footer_region(unsigned x,unsigned y,unsigned w,unsigned h)
 }
 static void footer_updates(void)
 {
-    static const unsigned x[]={467,398,311,536},y[]={461,461,461,461},w[]={42,42,54,96};
+    static const unsigned x[]={479,422,347,536},y[]={461,461,461,461},w[]={42,42,54,96};
     static unsigned char expected[480*80];
     unsigned char saved_g=grid,saved_t=trails,saved_p=planets,saved_c=constellation_mode;
     unsigned i,on,full,writes[4];
@@ -465,7 +564,7 @@ static void footer_updates(void)
     grid=constellation_mode=1;gx_footer();
     for(i=2;i<=4;++i) {
         if(i<4) {
-            grid=i;footer_region(473,472,30,8);assert(portal_writes);
+            grid=i;footer_region(485,472,30,8);assert(portal_writes);
         }
         constellation_mode=i;footer_region(542,472,84,8);assert(portal_writes);
         memcpy(expected,xram,sizeof(expected));
@@ -473,12 +572,13 @@ static void footer_updates(void)
         portal_writes=0;gx_footer();assert(!portal_writes);
     }
     strcpy(note,"Saved");footer_region(0,472,640,8);assert(portal_writes);
-    expect_text(8,472,"Saved",0);
-    expect_text(473,472,"full ",0);expect_text(542,472,"navigational  ",0);
-    for(i=0;i<8*640;++i)if(i%640>=38&&i%640<473)assert(pixel(i%640,472+i/640)==(i%640==469));
+    expect_text(8,472,"Saved",255);
+    expect_text(485,472,"net  ",0);expect_text(542,472,"navigational  ",0);
+    for(i=0;i<8*640;++i)if(i%640>=38&&i%640<485)
+        assert(pixel(i%640,472+i/640)==(i%640<476||i%640==481));
     note[0]=0;footer_region(0,472,640,8);
-    expect_text(473,472,"full ",0);expect_text(542,472,"navigational  ",0);
-    for(i=0;i<8*473;++i)assert(pixel(i%473,472+i/473)==(grid&&i%473==469));
+    expect_text(485,472,"net  ",0);expect_text(542,472,"navigational  ",0);
+    for(i=0;i<8*485;++i)assert(pixel(i%485,472+i/485)==(grid&&i%485==481));
     portal_writes=0;gx_footer();assert(!portal_writes);
     /* Rebuild only the cleared region, or both after an editor owns the footer. */
     gx_clear(474,1);footer_region(0,472,640,8);assert(portal_writes);
@@ -559,10 +659,10 @@ static void planet_display(const char *path)
         assert(word(XR_PLANET_PAL+i*512)==0); /* transparent background */
     }
     assert(!memcmp(before_clock,xram,64*80));
-    expect_text(311,461," planets ",255); /* P feedback precedes the scene. */
+    expect_text(347,461," planets ",255); /* P feedback precedes the scene. */
     for(i=416*80;i<480*80;++i)for(c=0;c<8;++c)
         if((before_clock[i]^xram[i])&(128>>c))
-        assert(i/80>=461&&i/80<469&&(i%80)*8+c>=311&&(i%80)*8+c<365);
+        assert(i/80>=461&&i/80<478&&(i%80)*8+c>=347&&(i%80)*8+c<401);
     sprintf(file,"%s.planet-icons",path);f=fopen(file,"wb");assert(f);
     assert(fwrite(xram,1,65536,f)==65536);fclose(f);
     assert(planet_key('P')&&!planets);assert(gx_objects());gx_scene();
@@ -923,6 +1023,49 @@ static void city_count(const char *text)
 {
     expect_text(CITIES_RIGHT-6-(int)strlen(text)*6,CITIES_BOTTOM-60,text,0);
 }
+static void city_detail_fields(void)
+{
+    static const struct {const char *city,*date,*continent,*zone,*offset,*kind;} cases[]={
+        {"Warsaw","2026-03-29 00:59:59","Europe","Europe/Warsaw","+01:00","standard (winter)"},
+        {"Warsaw","2026-03-29 01:00:00","Europe","Europe/Warsaw","+02:00","daylight (summer)"},
+        {"Warsaw","2026-10-25 00:59:59","Europe","Europe/Warsaw","+02:00","daylight (summer)"},
+        {"Warsaw","2026-10-25 01:00:00","Europe","Europe/Warsaw","+01:00","standard (winter)"},
+        {"Warsaw","1900-01-01 12:00:00","Europe","Europe/Warsaw","+01:24","standard (no DST)"},
+        {"Paris","1900-01-01 12:00:00","Europe","Europe/Paris","+00:09:21","standard (no DST)"},
+        {"Honolulu","2026-07-15 12:00:00","Oceania","Pacific/Honolulu","-10:00","standard (no DST)"},
+        {"Kathmandu","2026-07-15 12:00:00","Asia","Asia/Kathmandu","+05:45","standard (no DST)"},
+        {"Sydney","2026-01-15 12:00:00","Oceania","Australia/Sydney","+11:00","daylight (summer)"},
+        {"Sydney","2026-07-15 12:00:00","Oceania","Australia/Sydney","+10:00","standard (winter)"},
+        {"Dublin","2026-01-15 12:00:00","Europe","Europe/Dublin","+00:00","standard (winter)"},
+        {"Dublin","2026-07-15 12:00:00","Europe","Europe/Dublin","+01:00","daylight (summer)"},
+        {"Sao Paulo","2026-07-15 12:00:00","South America","America/Sao_Paulo","-03:00","standard (no DST)"},
+        {"Warsaw","1915-01-01 12:00:00","Europe","Europe/Warsaw","+01:24","standard (no DST)"}
+    };
+    Date saved=moment,local;Observer place=observer;int32_t offset;unsigned i,n;
+    char previous[40],text[64];strcpy(previous,zone_name);
+    assert(tz_set("Etc/UTC"));
+    for(i=0;i<sizeof(cases)/sizeof(cases[0]);++i) {
+        assert(date_parse(cases[i].date,&moment));
+        assert(tz_local(&moment,&local,&offset)&&!offset);
+        assert(cities_start());cities_draw();type_city(cases[i].city);
+        sprintf(text,"city:      %s",cases[i].city);expect_text(334,240,text,0);
+        sprintf(text,"continent: %s",cases[i].continent);expect_text(334,268,text,0);
+        sprintf(text,"timezone:  %s",cases[i].zone);expect_text(334,324,text,0);
+        sprintf(text,"UTC:       %s",cases[i].offset);expect_text(334,338,text,0);
+        sprintf(text,"time:      %s",cases[i].kind);expect_text(334,352,text,0);
+        if(!i) {
+            expect_text(334,282,"LAT:       52\x01" "13\x02" "47.2\x03 N",0);
+            expect_text(334,296,"LON:       21\x01" "00\x02" "42.4\x03 E",0);
+            expect_text(334,310,"AMSL:      113 m",0);
+        }
+        assert(!strcmp(zone_name,"Etc/UTC")&&!memcmp(&observer,&place,sizeof(place)));
+        file_reads=0;assert(tz_local(&moment,&local,&offset)&&!offset&&!file_reads);
+        type_city("zzzz");
+        for(n=0;n<9;++n)expect_text(334,240+n*14,"                                                  ",0);
+        assert(cities_key(K_ESC)==2);
+    }
+    assert(tz_set(previous));moment=saved;
+}
 static void city_bounds(void)
 {
     unsigned a,bit;
@@ -935,58 +1078,65 @@ static void city_bounds(void)
         assert(pixel(a,CITIES_TOP)&&pixel(a,CITIES_BOTTOM-1));
     for(a=CITIES_TOP;a<CITIES_BOTTOM;++a)
         assert(pixel(CITIES_LEFT,a)&&pixel(CITIES_RIGHT-1,a));
-    expect_text(CITIES_LEFT+2,CITIES_TOP+12," CITIES ",255);
+    expect_text(CITIES_LEFT+2,CITIES_TOP+12," CITIES & LOCATIONS ",255);
 }
-static void city_key_checked(unsigned key,unsigned kind,unsigned old_row,unsigned new_row)
+static unsigned city_key_checked(unsigned key,unsigned kind,unsigned old_row,unsigned new_row)
 {
-    unsigned writes;
+    unsigned writes,reads;
     memset(city_allowed,0,sizeof(city_allowed));
     if(kind)memset(city_allowed+CITIES_BOTTOM-46,1,8);
     if(kind==1||kind==3)memset(city_allowed+CITIES_TOP+28,1,8);
-    if(kind>=2)memset(city_allowed+CITIES_BOTTOM-60,1,8);
-    if(kind>=2){memset(city_allowed+240-1,1,10);memset(city_allowed+254-1,1,10);}
+    if(kind>=2)memset(city_allowed+CITIES_BOTTOM-61,1,10);
+    if(kind>=2){unsigned n;for(n=0;n<9;++n)memset(city_allowed+239+n*14,1,10);}
     if(kind==2) {
         memset(city_allowed+CITIES_TOP+59+old_row*14,1,10);memset(city_allowed+CITIES_TOP+59+new_row*14,1,10);
     }
-    if(kind==3)memset(city_allowed+CITIES_TOP+59,1,20*14);
+    if(kind==3)memset(city_allowed+CITIES_TOP+59,1,21*14+10);
     checking_cities=1;portal_writes=file_reads=0;
-    assert(!cities_key(key));checking_cities=0;writes=portal_writes;
+    assert(!cities_key(key));checking_cities=0;writes=portal_writes;reads=file_reads;
     if(!kind)assert(!writes&&!file_reads);
     if(kind==1)assert(!file_reads&&writes<3000);
-    if(kind==2)assert(file_reads<=3&&writes<8000);
+    if(kind==2)assert(file_reads<=19&&writes<11000);
     city_map_settle();memcpy(before_clock,xram,sizeof(xram));cities_draw();city_map_settle();
     assert(!memcmp(before_clock,xram,sizeof(xram))); /* identical to a fresh full draw */
+    return reads;
 }
 static void city_incremental(void)
 {
+    city_detail_fields();
     memcpy(before_clock,xram,sizeof(xram));
     assert(cities_start());cities_draw();city_bounds();
+    expect_text(CITIES_LEFT+6,CITIES_TOP+60+20*14,"XX Special locations - Longyearbyen [NO]",0);
+    expect_text(CITIES_LEFT+6,CITIES_TOP+60+21*14,"AQ Antarctica - Arctowski [PL]",0);
     city_key_checked(K_UP,0,0,0);city_key_checked(K_BS,0,0,0);
     city_key_checked(K_LEFT,0,0,0);
     city_key_checked(K_DOWN,2,0,1);
+    expect_text(CITIES_LEFT+6,CITIES_TOP+60+21*14,"AQ Antarctica - Arctowski [PL]",0);
     city_key_checked('s',1,0,0);
-    city_count("2 / 345");
+    city_count("2 / 388");
     city_key_checked('o',3,0,0);
     city_key_checked('s',3,0,0);city_count("1 / 1");
     expect_text(CITIES_LEFT+6,CITIES_TOP+60,"PL Poland - Sosnowiec",255);
-    city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,3,0,0);city_count("1 / 345");
+    city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,3,0,0);city_count("1 / 388");
     city_key_checked(K_BS,1,0,0);
-    city_key_checked('p',1,0,0);city_key_checked('l',3,0,0);city_count("1 / 20");
+    city_key_checked('p',1,0,0);city_key_checked('l',3,0,0);city_count("1 / 21");
+    city_key_checked(K_DOWN,2,0,1);
+    assert(city_key_checked(K_DOWN,2,1,2)==3); /* Same zone: only the city records. */
     city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,1,0,0);
-    city_key_checked('u',1,0,0);city_key_checked('s',3,0,0);city_count("1 / 8");
-    expect_text(CITIES_LEFT+6,CITIES_TOP+60,"US United States - Washington [Capital]",255);
+    city_key_checked('u',1,0,0);city_key_checked('s',3,0,0);city_count("1 / 12");
+    expect_text(CITIES_LEFT+6,CITIES_TOP+60,"XX Special locations - Denali [US]",255);
     city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,1,0,0);
     city_key_checked('l',1,0,0);city_key_checked('o',3,0,0); /* non-code: match city/country names */
-    expect_text(CITIES_LEFT+6,CITIES_TOP+60,"BR Brazil - Sao Paulo",255);
+    expect_text(CITIES_LEFT+6,CITIES_TOP+60,"XX Special locations - North Pole",255);
     city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,1,0,0);
     city_key_checked('z',1,0,0);city_key_checked('z',3,0,0);city_key_checked('z',3,0,0);
     expect_text(CITIES_LEFT+6,CITIES_TOP+60,"No matching cities.",0);city_count("0 / 0");
     city_key_checked('\r',0,0,0);city_key_checked(K_DOWN,0,0,0);
     city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,3,0,0);city_key_checked(K_BS,1,0,0);
-    city_key_checked(K_PGDN,3,0,0);city_count("21 / 345");
+    city_key_checked(K_PGDN,3,0,0);city_count("23 / 388");
     city_key_checked(K_HOME,3,0,0);city_key_checked(K_END,3,0,0);
-    city_count("345 / 345");city_key_checked(K_DOWN,0,0,0);
-    city_key_checked(K_UP,2,4,3);
+    city_count("388 / 388");city_key_checked(K_DOWN,0,0,0);
+    city_key_checked(K_UP,2,13,12);
     assert(cities_key(K_ESC)==2);
 }
 static void city_catalogue(const char *asset,const char *output)
@@ -997,6 +1147,78 @@ static void city_catalogue(const char *asset,const char *output)
     char *args[5];FILE *f;
     city_file=NULL;
     city_incremental();
+    {
+        static const char *const names[]={"North Pole","South Pole","Null Island","Nemo point"};
+        static const int32_t lats[]={3240000L,-3240000L,0,-1759560L};
+        static const int32_t lons[]={0,0,0,-4442160L};
+        for(i=0;i<4;++i) {
+            assert(cities_lookup(names[i]));
+            assert(observer.latitude==lats[i]&&observer.longitude==lons[i]);
+            assert(observer.altitude==(i==1?2835:0)&&!strcmp(zone_name,"Etc/UTC"));
+            sprintf(name,"XX/%s",names[i]);assert(cities_lookup(name));
+            assert(cities_start());cities_draw();type_city("XX");city_count("1 / 21");
+            {unsigned j;for(j=0;j<i;++j)assert(!cities_key(K_DOWN));}
+            sprintf(name,"location:  %s",names[i]);expect_text(334,240,name,0);
+            expect_text(334,254,"country:   -",0);
+            expect_text(334,268,i==1?"continent: Antarctica":"continent: -",0);
+            expect_text(334,324,"timezone:  Etc/UTC",0);
+            expect_text(334,338,"UTC:       +00:00",0);
+            assert(cities_key('\r')==1&&observer.latitude==lats[i]);
+        }
+        strcpy(config_path,config);assert(config_save());assert(cities_lookup("PL"));
+        assert(config_load()==1&&observer.latitude==-1759560L&&observer.longitude==-4442160L);
+        assert(!strcmp(location_name,"Nemo point [XX]")&&!strcmp(zone_name,"Etc/UTC"));
+        assert(!cities_lookup("XX")); /* A group has no arbitrary default point. */
+    }
+    {
+        static const char *const places[]={"Everest","Aconcagua","Denali","Kilimanjaro","Elbrus","Puncak Jaya","Mount Vinson","Mont Blanc","Mount Kosciuszko","Machu Picchu","Stonehenge","Great Pyramid of Giza","Greenwich","Nordkapp","Cape Horn","Cape of Good Hope","Longyearbyen"};
+        static const char *const zones[]={"Asia/Kathmandu","America/Argentina/Mendoza","America/Anchorage","Africa/Dar_es_Salaam","Europe/Moscow","Asia/Jayapura","Etc/UTC","Europe/Paris","Australia/Sydney","America/Lima","Europe/London","Africa/Cairo","Europe/London","Europe/Oslo","America/Punta_Arenas","Africa/Johannesburg","Arctic/Longyearbyen"};
+        for(i=0;i<17;++i) {
+            assert(cities_lookup(places[i])&&!strcmp(zone_name,zones[i]));
+            chosen=observer;sprintf(name,"XX/%s",places[i]);
+            assert(cities_lookup(name)&&observer.latitude==chosen.latitude);
+        }
+        assert(cities_lookup("NP/Everest")&&observer.altitude==8849);chosen=observer;
+        assert(cities_lookup("CN/Everest")&&observer.longitude==chosen.longitude);
+        assert(cities_lookup("FR/Mont Blanc")&&observer.altitude==4807);
+        assert(cities_lookup("IT/Mont Blanc")&&observer.altitude==4807);
+        assert(cities_lookup("NO/Longyearbyen")&&observer.latitude>78*36000L);
+        assert(cities_lookup("GB/Greenwich")&&observer.longitude<0&&observer.longitude> -100);
+        assert(!cities_lookup("PL/Everest"));
+        assert(cities_start());cities_draw();type_city("Nepal");
+        expect_text(334,240,"location:  Everest [NP/CN]",0);
+        expect_text(334,254,"country:   Nepal / China",0);
+        expect_text(334,268,"continent: Asia",0);
+        expect_text(334,324,"timezone:  Asia/Kathmandu",0);
+        expect_text(334,338,"UTC:       +05:45",0);
+        assert(cities_key(K_ESC)==2);
+    }
+    assert(cities_lookup("AQ"));saved=observer;
+    assert(!strcmp(location_name,"Arctowski [PL] [AQ]")&&!strcmp(zone_name,"Etc/GMT+3"));
+    assert(observer.latitude< -62*36000L&&observer.longitude< -58*36000L&&observer.altitude==2);
+    assert(cities_lookup("PL/Arctowski")&&observer.latitude==saved.latitude);
+    assert(cities_lookup("AQ/Arctowski")&&observer.latitude==saved.latitude);
+    assert(cities_lookup("Arctowski")&&observer.latitude==saved.latitude);
+    assert(cities_lookup("FR/Concordia")&&!strcmp(zone_name,"Asia/Singapore"));
+    chosen=observer;
+    assert(cities_lookup("IT/Concordia")&&observer.latitude==chosen.latitude);
+    assert(cities_lookup("AQ/Concordia")&&observer.latitude==chosen.latitude);
+    assert(!cities_lookup("PL/Concordia")&&observer.latitude==chosen.latitude);
+    assert(cities_start());cities_draw();type_city("France");assert(!cities_key(K_DOWN));
+    expect_text(334,240,"station:   Concordia [FR/IT]",0);
+    assert(cities_key(K_ESC)==2);
+    assert(cities_start());cities_draw();type_city("PL");
+    expect_text(334,240,"station:   Arctowski [PL]",0);
+    expect_text(334,254,"country:   Antarctica",0);
+    expect_text(334,268,"continent: Antarctica",0);
+    assert(!cities_key(K_DOWN));expect_text(334,240,"city:      Warsaw",0);
+    assert(cities_key(K_ESC)==2);
+    assert(cities_start());cities_draw();type_city("AQ");city_count("1 / 23");assert(!cities_key(K_DOWN));
+    assert(cities_key('\r')==1&&observer.latitude==saved.latitude);
+    strcpy(config_path,config);assert(config_save());
+    assert(cities_lookup("PL"));assert(config_load()==1);
+    assert(observer.latitude==saved.latitude&&!strcmp(location_name,"Arctowski [PL] [AQ]"));
+    assert(!strcmp(zone_name,"Etc/GMT+3"));
     assert(cities_lookup("pl"));saved=observer;
     assert(!strcmp(location_name,"Warsaw [PL]"));
     assert(observer.latitude>52*36000L&&observer.latitude<53*36000L);
@@ -1028,10 +1250,10 @@ static void city_catalogue(const char *asset,const char *output)
     args[4]="PL/Radziechowy";assert(command_line(5,args)==0&&observer.altitude==437);
     assert(cities_start());cities_draw();type_city("Sosnowiec");
     assert(cities_key('\r')==1&&observer.latitude==1810326L&&observer.altitude==256);
-    assert(!strcmp(note,"Sosnowiec [PL] (press Ctrl+S to save location)"));
+    assert(!note[0]);
     assert(!strcmp(location_name,"Sosnowiec [PL]"));
     assert(cities_start());cities_draw();type_city("Poland");
-    assert(!cities_key(K_END));city_count("20 / 20");
+    assert(!cities_key(K_END));city_count("21 / 21");
     sprintf(name,"%s.poland",output);f=fopen(name,"wb");assert(f);
     assert(fwrite(xram,1,65536,f)==65536);fclose(f);
     assert(cities_key(K_ESC)==2);
@@ -1040,11 +1262,11 @@ static void city_catalogue(const char *asset,const char *output)
     city_file=NULL;observer=saved;
     assert(cities_start()&&cities_active);modes=planet_mode;
     assert(gx_objects()&&planet_mode==modes); /* retain VGA planes and header sprites */
-    cities_draw();assert(!cities_key(K_PGDN));city_count("21 / 345");
-    assert(!cities_key(K_END));city_count("345 / 345");
-    assert(!cities_key(K_HOME));assert(!cities_key(K_DOWN));
+    cities_draw();assert(!cities_key(K_PGDN));city_count("23 / 388");
+    assert(!cities_key(K_END));city_count("388 / 388");
+    type_city("AL");
     assert(cities_key('\r')==1&&!cities_active&&observer.latitude==albania.latitude);
-    assert(!strcmp(note,"Tirana [AL] (press Ctrl+S to save location)"));
+    assert(!note[0]);
     assert(gx_objects()&&planet_mode==modes); /* restore sky sprites without resetting VGA */
     assert(config_load()==1&&observer.latitude==saved.latitude); /* no implicit save */
     assert(cities_start());assert(gx_objects());cities_draw();type_city("United States");
@@ -1056,7 +1278,7 @@ static void city_catalogue(const char *asset,const char *output)
     assert(cities_key(K_ESC)==2&&observer.latitude==saved.latitude);
     assert(cities_start());cities_draw();type_city("Los Angeleq");assert(!cities_key(K_BS));type_city("s");
     assert(cities_key('\r')==1&&observer.latitude==chosen.latitude);
-    assert(!strcmp(note,"Los Angeles [US] (press Ctrl+S to save location)"));
+    assert(!note[0]);
     assert(config_save());observer=saved;location_name[0]=0;
     assert(config_load()==1&&observer.latitude==chosen.latitude&&!strcmp(location_name,"Los Angeles [US]"));
     sky_compute(&moment,&observer,&sky);planets_compute(&moment,&observer,planet_positions);
@@ -1071,6 +1293,19 @@ static void city_catalogue(const char *asset,const char *output)
     f=fopen("cities-test-bad/sidera.cty","wb");assert(f);
     assert(fwrite("broken",1,6,f)==6);fclose(f);
     assert(!cities_lookup("PL")&&!cities_active&&observer.latitude==chosen.latitude);
+    {
+        unsigned char row[112];
+        sprintf(name,"%s/sidera.cty",rom_dir);f=fopen(name,"rb");assert(f);
+        assert(fread(row,1,sizeof(row),f)==sizeof(row));fclose(f);
+        row[8]=1;row[9]=0;row[110]=row[111]=255;
+        f=fopen(city_file,"wb");assert(f);
+        assert(fwrite(row,1,sizeof(row),f)==sizeof(row));fclose(f);
+        assert(cities_start());cities_draw();
+        expect_text(334,324,"timezone:  unavailable",0);
+        expect_text(334,338,"UTC:       unavailable",0);
+        expect_text(334,352,"time:      unavailable",0);
+        assert(cities_key(K_ESC)==2&&observer.latitude==chosen.latitude);
+    }
     remove("cities-test-bad/sidera.cty");_rmdir("cities-test-bad");
     city_file=NULL;assert(gx_canvas());
     for(i=XR_END;i<65536;++i)assert(xram[i]==0xA5);
@@ -1223,7 +1458,7 @@ int main(int argc,char **argv)
     header_layout();
     location_names();
     header_sprites();
-    calculation_status();
+    calculation_status();busy_moon();
     footer_states();footer_updates();initial_panels();
     assert(word(XR_CFG+6)==640&&word(XR_CFG+8)==480);
     assert(word(XR_SUN_CFG+4)==XR_SUN);

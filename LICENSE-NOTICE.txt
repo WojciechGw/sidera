@@ -32,6 +32,9 @@ Third-party data and assets retain their existing terms:
 * src/data/NOTICE.txt and src/rom/sidera-license.txt: constellation data,
   model attribution, artwork and graphics provenance.
 * src/rom/sidera-cities-license.txt: GeoNames city data and attribution.
+* src/rom/sidera-stations-license.txt: COMNAP-derived Antarctic station data,
+  limited by COMNAP to educational and non-commercial use. This dataset is
+  separate from the original GPL code and is not unrestricted open data.
 * src/rom/sidera-map-license.txt: public-domain Natural Earth land contours.
 * src/rom/sidera-timezones-license.txt: Python tzdata / IANA notices,
   including the Apache License 2.0 text. The source wheel is in src/data/.

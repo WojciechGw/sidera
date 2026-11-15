@@ -49,10 +49,14 @@ static void world_map_tests(const char *output)
     world_select(4,&place);city_map_settle();map_expect(4,&place);
     place.latitude=-3240000L;place.longitude=6480000L;
     world_select(7,&place);city_map_settle();map_expect(7,&place);
+    /* Explicit zero region retains the marker and skips the legacy lookup. */
+    file_reads=0;assert(world_select(8,&place)==0);assert(!file_reads);
+    city_map_settle();map_expect(0,&place);
+    assert(world_select(15,&place)==7);city_map_settle();map_expect(7,&place);
     assert(cities_key(K_ESC)==2);
     assert((int16_t)word(XR_CITY_CFG)==-64);
     assert(cities_start());cities_draw();type_city("Warsaw");city_map_settle();
-    expect_text(334,240,"Warsaw",0);expect_text(334,254,"Poland",0);
+    expect_text(334,240,"city:      Warsaw",0);expect_text(334,254,"country:   Poland",0);
     sprintf(path,"%s.world",output);file=fopen(path,"wb");assert(file);
     assert(fwrite(xram,1,sizeof(xram),file)==sizeof(xram));fclose(file);
     type_city("zz");city_map_settle();map_expect(0,0);expect_text(334,240,"      ",0);

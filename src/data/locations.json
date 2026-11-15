@@ -1,0 +1,277 @@
+{
+  "source": "Geographic reference points; reviewed 2026-11-15",
+  "notes": [
+    "XX is an internal catalogue group, not a country assignment.",
+    "Etc/UTC is the agreed reference time for the original four points and Mount Vinson. New locations otherwise use the listed local IANA zone; Everest uses Nepal time.",
+    "Longitude at each geographic pole is conventionally set to zero.",
+    "Ocean points use sea-level observer height, not seabed depth.",
+    "Nemo uses NOAA's published rounded coordinates, 48 degrees 52.6 minutes S, 123 degrees 23.6 minutes W.",
+    "Country codes are search aliases, independent of the XX group. Mont Blanc lists France and Italy without resolving their differing summit boundary depictions. Longyearbyen is assigned to Norway.",
+    "Heights are approximate AMSL at the reference point, rounded to whole metres. Snow summit heights vary; Mont Blanc uses the cited IGN/Peakbagger 4807.2 m value.",
+    "Machu Picchu denotes the archaeological site. Greenwich uses the historic courtyard meridian in WGS84, not GPS longitude zero. Monument records use ground height, not structure height. Cape Horn uses the land point at the small southern lighthouse."
+  ],
+  "locations": [
+    {
+      "location": "North Pole",
+      "latitude": 90,
+      "longitude": 0,
+      "altitude": 0,
+      "region": 0,
+      "timezone": "Etc/UTC"
+    },
+    {
+      "location": "South Pole",
+      "latitude": -90,
+      "longitude": 0,
+      "altitude": 2835,
+      "region": 7,
+      "timezone": "Etc/UTC",
+      "elevation_source": "https://www.usap.gov/usapgov/travelAndDeployment/documents/FINAL_2022_ParticipantGuide.pdf"
+    },
+    {
+      "location": "Null Island",
+      "latitude": 0,
+      "longitude": 0,
+      "altitude": 0,
+      "region": 0,
+      "timezone": "Etc/UTC"
+    },
+    {
+      "location": "Nemo point",
+      "latitude": -48.876666666666665,
+      "longitude": -123.39333333333333,
+      "altitude": 0,
+      "region": 0,
+      "timezone": "Etc/UTC",
+      "coordinate_source": "https://oceanservice.noaa.gov/facts/nemo.html"
+    },
+    {
+      "location": "Everest",
+      "countries": [
+        "NP",
+        "CN"
+      ],
+      "latitude": 27.988257,
+      "longitude": 86.925145,
+      "altitude": 8849,
+      "region": 2,
+      "timezone": "Asia/Kathmandu",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=10640",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=10640"
+    },
+    {
+      "location": "Aconcagua",
+      "countries": [
+        "AR"
+      ],
+      "latitude": -32.653099,
+      "longitude": -70.012088,
+      "altitude": 6962,
+      "region": 5,
+      "timezone": "America/Argentina/Mendoza",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=8594",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=8594"
+    },
+    {
+      "location": "Denali",
+      "countries": [
+        "US"
+      ],
+      "latitude": 63.069042,
+      "longitude": -151.006347,
+      "altitude": 6191,
+      "region": 4,
+      "timezone": "America/Anchorage",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=271",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=271"
+    },
+    {
+      "location": "Kilimanjaro",
+      "countries": [
+        "TZ"
+      ],
+      "latitude": -3.076448,
+      "longitude": 37.354034,
+      "altitude": 5895,
+      "region": 3,
+      "timezone": "Africa/Dar_es_Salaam",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=11202",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=11202"
+    },
+    {
+      "location": "Elbrus",
+      "countries": [
+        "RU"
+      ],
+      "latitude": 43.353811,
+      "longitude": 42.436098,
+      "altitude": 5642,
+      "region": 1,
+      "timezone": "Europe/Moscow",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=10381",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=10381"
+    },
+    {
+      "location": "Puncak Jaya",
+      "countries": [
+        "ID"
+      ],
+      "latitude": -4.078531,
+      "longitude": 137.158077,
+      "altitude": 4884,
+      "region": 6,
+      "timezone": "Asia/Jayapura",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=11360",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=11360"
+    },
+    {
+      "location": "Mount Vinson",
+      "countries": [
+        "AQ"
+      ],
+      "latitude": -78.525483,
+      "longitude": -85.617147,
+      "altitude": 4892,
+      "region": 7,
+      "timezone": "Etc/UTC",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=12108",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=12108"
+    },
+    {
+      "location": "Mont Blanc",
+      "countries": [
+        "FR",
+        "IT"
+      ],
+      "latitude": 45.83267,
+      "longitude": 6.86512,
+      "altitude": 4807,
+      "region": 1,
+      "timezone": "Europe/Paris",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=9941",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=9941"
+    },
+    {
+      "location": "Mount Kosciuszko",
+      "countries": [
+        "AU"
+      ],
+      "latitude": -36.456076,
+      "longitude": 148.263399,
+      "altitude": 2228,
+      "region": 6,
+      "timezone": "Australia/Sydney",
+      "coordinate_source": "https://www.peakbagger.com/peak.aspx?pid=11624",
+      "elevation_source": "https://www.peakbagger.com/peak.aspx?pid=11624"
+    },
+    {
+      "location": "Machu Picchu",
+      "countries": [
+        "PE"
+      ],
+      "latitude": -13.1631,
+      "longitude": -72.5456,
+      "altitude": 2430,
+      "region": 5,
+      "timezone": "America/Lima",
+      "coordinate_source": "https://mapcarta.com/Machu_Picchu",
+      "elevation_source": "https://www.machupicchu.gob.pe/history/?lang=en"
+    },
+    {
+      "location": "Stonehenge",
+      "countries": [
+        "GB"
+      ],
+      "latitude": 51.178888888888885,
+      "longitude": -1.826111111111111,
+      "altitude": 102,
+      "region": 1,
+      "timezone": "Europe/London",
+      "coordinate_source": "https://web.astronomicalheritage.net/show-entity?identity=49&idsubentity=1",
+      "elevation_source": "https://web.astronomicalheritage.net/show-entity?identity=49&idsubentity=1"
+    },
+    {
+      "location": "Great Pyramid of Giza",
+      "countries": [
+        "EG"
+      ],
+      "latitude": 29.9805,
+      "longitude": 31.1342,
+      "altitude": 58,
+      "region": 3,
+      "timezone": "Africa/Cairo",
+      "coordinate_source": "https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza",
+      "elevation_source": "https://api.open-meteo.com/v1/elevation?latitude=29.9805&longitude=31.1342",
+      "reference_point": "Selected ground point north of the pyramid footprint (about 145 m north of its centre); no pyramid height added.",
+      "elevation_method": "Copernicus GLO-90 via Open-Meteo, retrieved 2026-11-15: 58.0 m"
+    },
+    {
+      "location": "Greenwich",
+      "countries": [
+        "GB"
+      ],
+      "latitude": 51.477941,
+      "longitude": -0.001497,
+      "altitude": 46,
+      "region": 1,
+      "timezone": "Europe/London",
+      "coordinate_source": "https://www.thegreenwichmeridian.org/tgm/location.php?i_latitude=51.477941",
+      "elevation_source": "https://web.astronomicalheritage.net/show-entity?identity=34&idsubentity=1"
+    },
+    {
+      "location": "Nordkapp",
+      "countries": [
+        "NO"
+      ],
+      "latitude": 71.17101,
+      "longitude": 25.78307,
+      "altitude": 307,
+      "region": 1,
+      "timezone": "Europe/Oslo",
+      "coordinate_source": "https://mapcarta.com/N420351312",
+      "elevation_source": "https://www.nordkapp.no/places/north-cape-plateau/"
+    },
+    {
+      "location": "Cape Horn",
+      "countries": [
+        "CL"
+      ],
+      "latitude": -55.97746,
+      "longitude": -67.26263,
+      "altitude": 55,
+      "region": 5,
+      "timezone": "America/Punta_Arenas",
+      "coordinate_source": "https://mapcarta.com/34894730",
+      "elevation_source": "https://api.open-meteo.com/v1/elevation?latitude=-55.97746&longitude=-67.26263",
+      "reference_point": "Selected ground point about 26 m east of the small southern lighthouse; no tower height added.",
+      "elevation_method": "Copernicus GLO-90 via Open-Meteo, retrieved 2026-11-15: 55.0 m. Coastal GeoNames DEM values are not used."
+    },
+    {
+      "location": "Cape of Good Hope",
+      "countries": [
+        "ZA"
+      ],
+      "latitude": -34.35027,
+      "longitude": 18.47909,
+      "altitude": 112,
+      "region": 3,
+      "timezone": "Africa/Johannesburg",
+      "coordinate_source": "https://www.geonames.org/3367577/cape-of-good-hope.html",
+      "elevation_source": "https://www.geonames.org/3367577/cape-of-good-hope.html"
+    },
+    {
+      "location": "Longyearbyen",
+      "countries": [
+        "NO"
+      ],
+      "latitude": 78.22334,
+      "longitude": 15.64689,
+      "altitude": 6,
+      "region": 1,
+      "timezone": "Arctic/Longyearbyen",
+      "coordinate_source": "https://www.geonames.org/2729907/longyearbyen.html",
+      "elevation_source": "https://www.geonames.org/2729907/longyearbyen.html",
+      "elevation_method": "GeoNames ASTER terrain at the populated-place reference point; not a uniform town elevation."
+    }
+  ]
+}

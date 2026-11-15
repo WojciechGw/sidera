@@ -23,7 +23,7 @@ static char buffer[224];
 #ifndef SIDERA_OVERLAYS
 #include "overlays/init_files.inc"
 #endif
-static char *coord_out(char *p,int32_t v,char pos,char neg,unsigned char utf8)
+char *coordinate_format(char *p,int32_t v,char pos,char neg,unsigned char utf8)
 {
     int d,m,s,t;
     char c=pos;
@@ -36,8 +36,8 @@ static char *coord_out(char *p,int32_t v,char pos,char neg,unsigned char utf8)
 }
 void location_format(char *text,const Observer *o,unsigned char utf8)
 {
-    char *p=coord_out(text,o->latitude,'N','S',utf8);
-    strcpy(p,", ");p+=2;p=coord_out(p,o->longitude,'E','W',utf8);
+    char *p=coordinate_format(text,o->latitude,'N','S',utf8);
+    strcpy(p,", ");p+=2;p=coordinate_format(p,o->longitude,'E','W',utf8);
     sprintf(p,", %d m AMSL",o->altitude);
 }
 void date_format(char *text,const Date *d)
